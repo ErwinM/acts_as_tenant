@@ -33,14 +33,18 @@ This tells Acts_As_Tenant to use the current subdomain to identify the current t
     acts_as_tenant
   end
   
-Adding acts_as_tenant to your model will scope that model to the current tenant **if a current tenant has been set**. Acts_As_Tenant requires each scoped model to have a column in its db schema identifying its tenant. So in this example the migration for the Project model might look as follows:
-
-
-  @project = Project.new(:name => 'big project')    # 
-
-
-
-Setting the current_tenant is handled using the Acts_As_Tenant's methods in application controller.
+Acts_As_Tenant requires each scoped model to have a column in its db schema identifying its tenant. Adding acts_as_tenant to your model declaration will scope that model to the current tenant **if a current tenant has been set**.
+  Acts_As_Tenant.current_tenant = Account.find(3)   
+  
+  # New objects are scoped to the current tenant
+  @project = Project.new(:name => 'big project')    # => <#Project id: nil, name: 'big project', :account_id: 3>
+  
+  # It will not allow the creation of scoped objects linked to other than the current tenant
+  @project.account_id = 2
+  @project.save                                     # => false 
+  
+  
+  
 
 
 
