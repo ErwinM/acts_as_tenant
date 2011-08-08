@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Erwin Matthijssen"]
   s.email       = ["erwin.matthijssen@gmail.com"]
   s.homepage    = "http://www.rollcallnow.com/blog"
-  s.summary     = %q{not now}
-  s.description = %q{not now}
+  s.summary     = %q{Add multi-tenancy to Rails applications with a shared db}
+  s.description = %q{Integrates multi-tenancy into a Rails application}
 
   s.rubyforge_project = "acts_as_tenant"
 

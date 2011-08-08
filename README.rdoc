@@ -1,11 +1,47 @@
-=== Acts As Tenant
-- inspired by, borrows code from
-- 
+= Acts As Tenant
+This gem is based on the Multitenant gem by Ryan Sonnek and some of his code to set the default_scope. This gem was born out of the need for a fail-safe and out-of-the-way manner to add multi-tenancy to a Rails app, that integrates seamlessly with Rails.
 
-=== Installation
+Acts_As_Tenant adds the ability to scope models to a tenant model, such as an account. Acts_As_Tenant will set the current tenant for you and ensures all 'tenant models' are always properly scoped to the current tenant: when viewing, searching and creating.
+
+In addition, Acts_As_Tenant:
+* sets the current tenant using the subdomain or allows you to pass in the current tenant yourself
+* ensures scoping even in unusual usage cases, such as parameter manipulation
+* adds support for multi-tenancy to Rails' uniqueness validator, validates_uniqueness_of
+* sets up a helper method containing the current tenant
+
+== Installation
+Acts_As_Tenant is tested on Rails 3.x.
+
+To use it, add it to your Gemfile:
+  
+  gem 'acts_as_tenant'
+
+== Getting started
+=== Setting the current tenant
+  class ApplicationController < ActionController::Base
+    set_current_tenant_by_subdomain(:account)
+  end
+This tells Acts_As_Tenant to use the current subdomain to identify the current tenant. In addition, it tells Acts_As_Tenant that tenants are represented by the Account model.
+  
+=== Scoping models
+  create_table "projects", :force => true do |t|
+    t.integer  "account_id"      # foreign_key referencing the tenant model
+    t.string   "name"
+  end
+  
+  class Project < ActiveRecord::Base
+    acts_as_tenant
+  end
+  
+Adding acts_as_tenant to your model will scope that model to the current tenant **if a current tenant has been set**. Acts_As_Tenant requires each scoped model to have a column in its db schema identifying its tenant. So in this example the migration for the Project model might look as follows:
 
 
-=== Getting started
+  @project = Project.new(:name => 'big project')    # 
+
+
+
+Setting the current_tenant is handled using the Acts_As_Tenant's methods in application controller.
+
 
 
 === Configuring Application Controller
@@ -14,10 +50,15 @@
 === Configuring Models
 * validates uniqueness of limitation
 
+=== To Do
+
+
 === Bug reports & suggested improvements
 
 
 === Maintained by
+
+=== Credits
 
 
 === License
