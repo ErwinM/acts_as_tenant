@@ -1,0 +1,3 @@
+sqlite:
+  adapter: sqlite3
+  database: spec/actsastenant.sqlite3

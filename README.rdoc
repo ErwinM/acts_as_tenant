@@ -1,0 +1,24 @@
+=== Acts As Tenant
+- inspired by, borrows code from
+- 
+
+=== Installation
+
+
+=== Getting started
+
+
+=== Configuring Application Controller
+
+
+=== Configuring Models
+* validates uniqueness of limitation
+
+=== Bug reports & suggested improvements
+
+
+=== Maintained by
+
+
+=== License
+Copyright (c) 2011 [name of plugin creator], released under the MIT license
