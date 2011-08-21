@@ -22,9 +22,9 @@ module ActsAsTenant
     module ClassMethods
     
       def acts_as_tenant(association = :account)
-      
+        
         # Method that enables checking if a class is scoped by tenant
-        def scoped_to_tenant?
+        define_method "is_scoped_by_tenant?" do
           true
         end
         
