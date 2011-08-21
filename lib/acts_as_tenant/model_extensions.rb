@@ -24,7 +24,7 @@ module ActsAsTenant
       def acts_as_tenant(association = :account)
         
         # Method that enables checking if a class is scoped by tenant
-        define_method "is_scoped_by_tenant?" do
+        def self.is_scoped_by_tenant?
           true
         end
         
@@ -35,8 +35,13 @@ module ActsAsTenant
       
         # get the tenant model and its foreign key
         reflection = reflect_on_association association
-        fkey = reflection.foreign_key
-      
+        
+        # As the "foreign_key" method changed name in 3.1 we check for backward compatibility 
+        if reflection.respond_to?(:foreign_key)
+          fkey = reflection.foreign_key
+        else
+          fkey = reflection.association_foreign_key
+        end
     
         # set the current_tenant on newly created objects
         before_validation Proc.new {|m|
@@ -78,9 +83,10 @@ module ActsAsTenant
     
       private
        def scoped_validates_uniqueness_of(fields, args = {})
-         if self.respond_to?(:scoped_to_tenant?) && ActsAsTenant.tenant_class
+         if respond_to?(:is_scoped_by_tenant?)
            raise "ActsAsTenant: :scope argument of uniqueness validator is not available for classes that are scoped by acts_as_tenant" if args.has_key?(:scope)
-           args[:scope] = lambda {"#{ActsAsTenant.tenant_class.to_s.downcase}_id"}.call
+           args[:scope] = lambda { "#{ActsAsTenant.tenant_class.to_s.downcase}_id"}.call
+           puts "#{ActsAsTenant.tenant_class.to_s.downcase}_id"
          end
          ret = original_validates_uniqueness_of(fields, args)
        end

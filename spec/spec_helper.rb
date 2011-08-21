@@ -4,6 +4,7 @@ require 'rspec'
 require 'active_record'
 require 'action_controller'
 require 'logger'
+require 'database_cleaner'
 
 require 'acts_as_tenant/model_extensions'
 require 'acts_as_tenant/controller_extensions'
@@ -20,5 +21,21 @@ ActiveRecord::Base.establish_connection(config[ENV['DB'] || 'sqlite'])
 #Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
 #RSpec.configure do |config|
-  
 #end
+
+Spec::Runner.configure do |config|
+
+  config.before(:suite) do
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean_with(:truncation)
+  end
+
+  config.before(:each) do
+    DatabaseCleaner.start
+  end
+
+  config.after(:each) do
+    DatabaseCleaner.clean
+  end
+
+end

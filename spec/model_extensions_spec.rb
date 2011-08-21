@@ -18,6 +18,10 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column :completed, :boolean
   end
   
+  create_table :cities, :force => true do |t|
+    t.column :name, :string
+  end
+  
 end
 
 # Setup the models
@@ -37,8 +41,13 @@ class Task < ActiveRecord::Base
   default_scope :conditions => { :completed => nil }, :order => "name"
   
   acts_as_tenant :account
-  
+  validates_uniqueness_of :name
 end
+
+class City < ActiveRecord::Base
+  validates_uniqueness_of :name
+end
+
 
 # Start testing!
 describe ActsAsTenant do
@@ -49,6 +58,9 @@ describe ActsAsTenant do
     it { ActsAsTenant.current_tenant == :foo }
   end
   
+  describe 'is_scoped_as_tenant should return the correct value' do
+    it {Project.respond_to?(:is_scoped_by_tenant?).should == true}
+  end
   
   describe 'Project.all should be scoped to the current tenant if set' do
     before do
@@ -132,7 +144,7 @@ describe ActsAsTenant do
     it { @task.update_attributes(:project_id => @project1.id).should == false }
   end
   
-  describe 'When using validates_uniqueness_of in a model' do
+  describe 'When using validates_uniqueness_of in a aat model' do
     before do
       @account = Account.create!(:name => 'foo')
       ActsAsTenant.current_tenant = @account
@@ -148,8 +160,14 @@ describe ActsAsTenant do
       ActsAsTenant.current_tenant = @account
       @project2 = Project.create(:name => 'bar').valid?.should == true
     end
-    
   end
   
-  
+  describe 'When using validates_uniqueness_of in a NON-aat model' do
+    before do
+      @city1 = City.create!(:name => 'foo')
+    end
+    it 'should not be possible to create duplicates' do
+      @city2 = City.create(:name => 'foo').valid?.should == false
+    end
+  end
 end
