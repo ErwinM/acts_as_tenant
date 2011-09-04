@@ -35,7 +35,7 @@ module ActsAsTenant
   
     # helper method to have the current_tenant available in the controller  
     def current_tenant
-      @current_tenant_instance
+      ActsAsTenant.current_tenant
     end
     
     ActiveSupport.on_load(:action_controller) do
