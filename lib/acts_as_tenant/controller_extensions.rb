@@ -1,9 +1,5 @@
 module ActsAsTenant
   module ControllerExtensions
-      
-    helper_method :current_tenant
-    
-  
     
     # this method allows setting the current_account by reading the subdomain and looking
     # it up in the tenant-model passed to the method (defaults to Account). The method will 
