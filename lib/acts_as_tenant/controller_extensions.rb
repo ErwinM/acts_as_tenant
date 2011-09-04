@@ -36,6 +36,14 @@ module ActsAsTenant
         cattr_accessor :tenant_class
         attr_accessor :current_tenant
         before_filter lambda { @current_tenant_instance = ActsAsTenant.current_tenant = current_tenant_object }
+        
+        helper_method :current_tenant
+        
+        private
+          # helper method to have the current_tenant available in the controller  
+          def current_tenant
+            ActsAsTenant.current_tenant
+          end
       end
     end
 
