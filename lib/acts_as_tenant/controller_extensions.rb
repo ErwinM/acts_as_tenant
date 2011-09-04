@@ -16,14 +16,21 @@ module ActsAsTenant
       self.class_eval do
         before_filter :find_tenant_by_subdomain
 
+        helper_method :current_tenant
+        
         private
           def find_tenant_by_subdomain
             ActsAsTenant.current_tenant = tenant_class.where(tenant_column => request.subdomains.first).first
             @current_tenant_instance = ActsAsTenant.current_tenant
           end
+          
+          # helper method to have the current_tenant available in the controller  
+          def current_tenant
+            ActsAsTenant.current_tenant
+          end
       end
     end
-
+    
     def set_current_tenant_to(current_tenant_object)
       self.class_eval do
         cattr_accessor :tenant_class
@@ -32,10 +39,7 @@ module ActsAsTenant
       end
     end
 
-    # helper method to have the current_tenant available in the controller  
-    def current_tenant
-      @current_tenant_instance
-    end
+    
 
     ActiveSupport.on_load(:action_controller) do
       helper_method :current_tenant
