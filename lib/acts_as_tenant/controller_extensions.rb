@@ -1,7 +1,7 @@
 module ActsAsTenant
   module ControllerExtensions
     
-    # this method allows setting the current_account by reading the subdomain and looking
+    # this method allows setting the current_tenant by reading the subdomain and looking
     # it up in the tenant-model passed to the method (defaults to Account). The method will 
     # look for the subdomain in a column referenced by the second argument (defaults to subdomain).
     def set_current_tenant_by_subdomain(tenant = :account, column = :subdomain )
@@ -31,6 +31,8 @@ module ActsAsTenant
       end
     end
     
+    # this method allows manual setting of the current_tenant by passing in a tenant object
+    # 
     def set_current_tenant_to(current_tenant_object)
       self.class_eval do
         cattr_accessor :tenant_class
@@ -46,11 +48,5 @@ module ActsAsTenant
           end
       end
     end
-
-    
-
-    #ActiveSupport.on_load(:action_controller) do
-    #  helper_method :current_tenant
-    #end
   end
 end
