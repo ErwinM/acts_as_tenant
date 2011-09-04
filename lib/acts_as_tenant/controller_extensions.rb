@@ -44,9 +44,9 @@ module ActsAsTenant
         ActsAsTenant.current_tenant
       end
   
-  #ActiveSupport.on_load(:action_controller) do
-  #  helper_method :current_tenant
-  #end
+      ActiveSupport.on_load(:action_controller) do
+        helper_method :current_tenant
+      end
     end
   end
 end
