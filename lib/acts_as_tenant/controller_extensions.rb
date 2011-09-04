@@ -12,7 +12,7 @@ module ActsAsTenant
       end
     
       self.tenant_class = tenant.to_s.capitalize.constantize
-      self.tenant_column = tenant_column.to_sym
+      self.tenant_column = column.to_sym
     
       self.class_eval do
         before_filter :find_tenant_by_subdomain
