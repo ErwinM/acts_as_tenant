@@ -72,8 +72,10 @@ module ActsAsTenant
         end
       
         # add validation of associations against tenant scope
+        # we can't do this for polymorphic associations so we 
+        # exempt them
         reflect_on_all_associations.each do |a|
-          unless a == reflection || a.macro == :has_many
+          unless a == reflection || a.macro == :has_many || a.options[:polymorphic]
             validates_each a.foreign_key.to_sym do |record, attr, value|
               record.errors.add attr, "is invalid" unless a.name.to_s.classify.constantize.where(:id => value).present?
             end
