@@ -45,7 +45,8 @@ class Task < ActiveRecord::Base
 end
 
 class City < ActiveRecord::Base
-  validates_uniqueness_of :name
+  #validates_uniqueness_of :name
+  validates :name, :uniqueness => true
 end
 
 
