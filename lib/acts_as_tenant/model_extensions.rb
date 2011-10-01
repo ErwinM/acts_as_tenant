@@ -87,7 +87,6 @@ module ActsAsTenant
        if respond_to?(:is_scoped_by_tenant?)
          raise "ActsAsTenant: :scope argument of uniqueness validator is not available for classes that are scoped by acts_as_tenant" if args.has_key?(:scope)
          args[:scope] = lambda { "#{ActsAsTenant.tenant_class.to_s.downcase}_id"}.call
-         puts "#{ActsAsTenant.tenant_class.to_s.downcase}_id"
        end
        ret = original_validates_uniqueness_of(fields, args)
      end

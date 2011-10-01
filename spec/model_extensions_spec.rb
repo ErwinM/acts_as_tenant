@@ -18,6 +18,10 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column :completed, :boolean
   end
   
+  create_table :countries, :force => true do |t|
+    t.column :name, :string
+  end
+  
   create_table :cities, :force => true do |t|
     t.column :name, :string
   end
@@ -44,9 +48,14 @@ class Task < ActiveRecord::Base
   validates_uniqueness_of :name
 end
 
-class City < ActiveRecord::Base
-  #validates_uniqueness_of :name
+class Country < ActiveRecord::Base  
+  acts_as_tenant :account
   validates :name, :uniqueness => true
+end
+
+class City < ActiveRecord::Base
+  validates_uniqueness_of :name
+  #validates :name, :uniqueness => true
 end
 
 
@@ -162,6 +171,24 @@ describe ActsAsTenant do
       @project2 = Project.create(:name => 'bar').valid?.should == true
     end
   end
+  
+  describe 'When using validates :uniqueness => true in a aat model' do
+     before do
+       @account = Account.create!(:name => 'foo')
+       ActsAsTenant.current_tenant = @account
+       @country1 = Country.create!(:name => 'bar')
+     end
+
+     it 'should not be possible to create a duplicate within the same tenant' do
+       @project2 = Country.create(:name => 'bar').valid?.should == false
+     end
+
+     it 'should be possible to create a duplicate outside the tenant scope' do
+       @other_account = Account.create!(:name => 'baz')
+       ActsAsTenant.current_tenant = @other_account
+       @country2 = Country.create(:name => 'bar').valid?.should == true
+     end
+   end
   
   describe 'When using validates_uniqueness_of in a NON-aat model' do
     before do

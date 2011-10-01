@@ -1,6 +1,6 @@
 Acts As Tenant
 ==============
-This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to a Rails app, that integrates (near) seamless with Rails.
+This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to a Rails app with a shared database scheme, that integrates (near) seamless with Rails.
 
 Acts_As_Tenant adds the ability to scope models to a tenant model, such as an account. Acts_As_Tenant will set the current tenant for you and ensures all 'tenant models' are always properly scoped to the current tenant: when viewing, searching and creating.
 
@@ -54,7 +54,7 @@ Scoping your models
       acts_as_tenant(:account)
     end
   
-Acts_As_Tenant requires each scoped model to have a column in its db schema identifying its tenant. Adding acts_as_tenant to your model declaration will scope that model to the current tenant **if a current tenant has been set**.
+Acts_As_Tenant requires each scoped model to have a column in its schema linking it to a tenant. Adding acts_as_tenant to your model declaration will scope that model to the current tenant **if a current tenant has been set**.
   Acts_As_Tenant.current_tenant = Account.find(3)   
   
   # New objects are scoped to the current tenant
@@ -77,7 +77,6 @@ Acts_As_Tenant requires each scoped model to have a column in its db schema iden
 * validates uniqueness of limitation
 
 === To Do
-* validates :uniqueness =>
 
 === Bug reports & suggested improvements
 
@@ -85,7 +84,7 @@ Acts_As_Tenant requires each scoped model to have a column in its db schema iden
 === Maintained by
 
 === Credits
-This gem is used the Multitenant gem by Ryan Sonnek as a starting point and some of his code to set the default_scope is reused.
+This gem used the Multitenant gem by Ryan Sonnek as a starting point and some of his code to set the default_scope is reused.
 
 == License
 Copyright (c) 2011 Erwin Matthijssen, released under the MIT license
