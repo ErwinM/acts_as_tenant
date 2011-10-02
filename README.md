@@ -1,13 +1,16 @@
 Acts As Tenant
 ==============
-This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to a Rails app with a shared database scheme, that integrates (near) seamless with Rails.
 
-Acts_As_Tenant adds the ability to scope models to a tenant model, such as an account. Acts_As_Tenant will set the current tenant for you and ensures all 'tenant models' are always properly scoped to the current tenant: when viewing, searching and creating.
+note: acts_as_tenant was introduced in this blog post.
+
+This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to our Rails app with a shared database scheme, that integrates (near) seamless with Rails.
+
+Acts_As_Tenant adds the ability to scope models to a tenant. Tenants are represented by another model, such as @account@. Acts_As_Tenant will help you set the current tenant and ensures all 'tenant models' are always properly scoped to the current tenant: when viewing, searching and creating.
 
 In addition, Acts_As_Tenant:
 * sets the current tenant using the subdomain or allows you to pass in the current tenant yourself
-* ensures scoping even in unusual usage cases, such as parameter manipulation
-* adds support for multi-tenancy to Rails' uniqueness validator, validates_uniqueness_of
+* protects against various types of nastiness directed at circumventing the tenant scoping
+* adds a method to validate uniqueness to a tenant, validates_uniqueness_to_tenant
 * sets up a helper method containing the current tenant
 
 Installation
@@ -31,7 +34,7 @@ There are two ways to set the current tenant: (1) by using the subdomain to look
     class ApplicationController < ActionController::Base
       set_current_tenant_by_subdomain(:account, :subdomain)
     end
-This tells Acts_As_Tenant to use the current subdomain to identify the current tenant. In addition, it tells Acts_As_Tenant that tenants are represented by the Account model and the subdomain can be found in the 'subdomain' column within the Account model. If ommitted they will default to these values.
+This tells Acts_As_Tenant to use the current subdomain to identify the current tenant. In addition, it tells Acts_As_Tenant that tenants are represented by the Account model and this model has a column named 'subdomain' which can be used to lookup the Account using the actual subdomain. If ommitted, the parameters will default to the values used above.
 
 **OR Pass in the current tenant yourself**
 
@@ -41,7 +44,7 @@ This tells Acts_As_Tenant to use the current subdomain to identify the current t
     end
 This allows you to pass in the current tenant yourself.
 
-If the current tenant is not set by either of these methods, Acts_as_tenant will be unable to apply the proper scope to your models. So make sure you use one of the two methods to tell acts_as_tenant about the current tenant.
+*note:* If the current tenant is not set by either of these methods, Acts_as_tenant will be unable to apply the proper scope to your models. So make sure you use one of the two methods to tell acts_as_tenant about the current tenant.
   
 Scoping your models
 -------------------
@@ -55,36 +58,40 @@ Scoping your models
     end
   
 Acts_As_Tenant requires each scoped model to have a column in its schema linking it to a tenant. Adding acts_as_tenant to your model declaration will scope that model to the current tenant **if a current tenant has been set**.
+
+  # This manually sets the current tenant for testing purposes. In your app this is handled by the plugin.
   Acts_As_Tenant.current_tenant = Account.find(3)   
+  
+  # All searches are scoped by the tenant, the following searches will only return objects 
+  # where account_id == 3
+  Project.all =>  # all projects with account_id => 3
+  Project.tasks.all #  => all tasks with account_id => 3
+  
   
   # New objects are scoped to the current tenant
   @project = Project.new(:name => 'big project')    # => <#Project id: nil, name: 'big project', :account_id: 3>
   
-  # It will not allow the creation of scoped objects 
-  # linked to other than the current tenant
+  # It will not allow the creation of objects outside the current_tenant scope
   @project.account_id = 2
   @project.save                                     # => false 
   
-  
-  
+  # It will not allow association with objects outside the current tenant scope
+  # Assuming the Project with ID: 2 does not belong to Account with ID: 3
+  @task = Task.new  # => <#Task id: nil, name: bil, project_id: nil, :account_id: 3>
 
-
-
-=== Configuring Application Controller
-
-
-=== Configuring Models
-* validates uniqueness of limitation
-
-=== To Do
+Acts_as_tenant uses Rails' default_scope method to scope the models. Rails 3.1 changed the way default_scope works in a good way. A user defined default_scope should integrate seamlessly with the one added by acts_as_tenant.
 
 === Bug reports & suggested improvements
+If you have found a bug or want to suggest an improvement, please use our issue tracked at: https://github.com/ErwinM/Acts_As_Tenant/issues
 
+If you want to contribute, fork the project, write your improvements and make a pull request on Github. When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
 
-=== Maintained by
+=== Author
+Acts_as_tenant is written by Erwin Matthijssen.
+Erwin is currently lead developer for Roll Call.
 
 === Credits
-This gem used the Multitenant gem by Ryan Sonnek as a starting point and some of his code to set the default_scope is reused.
+This gem was inspired by Ryan Sonnek's Multitenant gem and its use of default_scope.
 
 == License
 Copyright (c) 2011 Erwin Matthijssen, released under the MIT license
