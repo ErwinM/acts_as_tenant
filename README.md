@@ -1,7 +1,7 @@
 Acts As Tenant
 ==============
 
-note: acts_as_tenant was introduced in [this](www.rollcallapp.com/blog/add) blog post.
+note: acts_as_tenant was introduced in [this](http://www.rollcallapp.com/blog/add) blog post.
 
 This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to our Rails app with a shared database scheme, that integrates (near) seamless with Rails.
 
@@ -78,7 +78,7 @@ Acts_As_Tenant requires each scoped model to have a column in its schema linking
     # Assuming the Project with ID: 2 does not belong to Account with ID: 3
     @task = Task.new  # => <#Task id: nil, name: bil, project_id: nil, :account_id: 3>
 
-Acts_as_tenant uses Rails' default_scope method to scope the models. Rails 3.1 changed the way default_scope works in a good way. A user defined default_scope should integrate seamlessly with the one added by acts_as_tenant.
+Acts_as_tenant uses Rails' default_scope method to scope models. Rails 3.1 changed the way default_scope works in a good way. A user defined default_scope should integrate seamlessly with the one added by acts_as_tenant.
 
 To Do
 -----
@@ -86,16 +86,17 @@ Change the tests to Test::Unit so I can easily add some controller tests.
 
 Bug reports & suggested improvements
 ------------------------------------
-If you have found a bug or want to suggest an improvement, please use our issue tracked at: https://github.com/ErwinM/Acts_As_Tenant/issues
+If you have found a bug or want to suggest an improvement, please use our issue tracked at:
+github.com/ErwinM/Acts_As_Tenant/issues
 
-If you want to contribute, fork the project, write your improvements and make a pull request on Github. When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
+If you want to contribute, fork the project and code your improvements and make a pull request on Github. When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
 
 Author & Credits
 ----------------
-Acts_as_tenant is written by Erwin Matthijssen.
-Erwin is currently lead developer for Roll Call.
+Acts_as_tenant is written by Erwin Matthijssen.  
+Erwin is currently lead developer for [Roll Call](http://www.rollcallapp.com/ "Roll Call App").
 
-This gem was inspired by Ryan Sonnek's Multitenant gem and its use of default_scope.
+This gem was inspired by Ryan Sonnek's [Multitenant](https://github.com/wireframe/multitenant) gem and its use of default_scope.
 
 License
 -------
