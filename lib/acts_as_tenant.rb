@@ -2,6 +2,7 @@
 
 require "active_record"
 require "action_controller"
+require "active_model"
 
 #$LOAD_PATH.unshift(File.dirname(__FILE__))
 

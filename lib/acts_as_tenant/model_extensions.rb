@@ -12,12 +12,6 @@ module ActsAsTenant
     extend ActiveSupport::Concern
   
     # Alias the v_uniqueness_of method so we can scope it to the current tenant when relevant
-    included do
-      class << self
-        alias original_validates_uniqueness_of :validates_uniqueness_of unless method_defined?(:original_validates_uniqueness_of)
-        alias validates_uniqueness_of :scoped_validates_uniqueness_of
-      end
-    end
   
     module ClassMethods
     
@@ -82,15 +76,14 @@ module ActsAsTenant
           end
         end 
       end
-    
-      def scoped_validates_uniqueness_of(fields, args = {})
-       if respond_to?(:is_scoped_by_tenant?)
-         raise "ActsAsTenant: :scope argument of uniqueness validator is not available for classes that are scoped by acts_as_tenant" if args.has_key?(:scope)
-         args[:scope] = lambda { "#{ActsAsTenant.tenant_class.to_s.downcase}_id"}.call
-       end
-       ret = original_validates_uniqueness_of(fields, args)
-     end
-  
+      
+      def validates_uniqueness_to_tenant(fields, args ={})
+        raise "ActsAsTenant::validates_uniqueness_to_tenant: no current tenant" unless respond_to?(:is_scoped_by_tenant?)
+        tenant_id = lambda { "#{ActsAsTenant.tenant_class.to_s.downcase}_id"}.call
+        args[:scope].nil? ? args[:scope] = tenant_id : args[:scope] << tenant_id
+        validates_uniqueness_of(fields, args)
+      end
+      
     end
   end
 end
