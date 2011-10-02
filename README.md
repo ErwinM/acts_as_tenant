@@ -3,11 +3,11 @@ Acts As Tenant
 
 note: acts_as_tenant was introduced in [this](http://www.rollcallapp.com/blog/add) blog post.
 
-This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to our Rails app with a shared database scheme, that integrates (near) seamless with Rails.
+This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to our Rails app through a shared database strategy, that integrates (near) seamless with Rails.
 
-Acts_As_Tenant adds the ability to scope models to a tenant. Tenants are represented by another model, such as `Account`. Acts_As_Tenant will help you set the current tenant and ensures all 'tenant models' are always properly scoped to the current tenant: when viewing, searching and creating.
+acts_as_tenant adds the ability to scope models to a tenant. Tenants are represented by a tenant model, such as `Account`. acts_as_tenant will help you set the current tenant on each request and ensures all 'tenant models' are always properly scoped to the current tenant: when viewing, searching and creating.
 
-In addition, Acts_As_Tenant:
+In addition, acts_as_tenant:
 * sets the current tenant using the subdomain or allows you to pass in the current tenant yourself
 * protects against various types of nastiness directed at circumventing the tenant scoping
 * adds a method to validate uniqueness to a tenant, validates_uniqueness_to_tenant
@@ -15,7 +15,7 @@ In addition, Acts_As_Tenant:
 
 Installation
 ------------
-Acts_As_Tenant will only work on Rails 3.1 and up. This is due to changes made to the handling of default_scope, an essential pillar of the gem.
+acts_as_tenant will only work on Rails 3.1 and up. This is due to changes made to the handling of default_scope, an essential pillar of the gem.
 
 To use it, add it to your Gemfile:
   
@@ -34,7 +34,7 @@ There are two ways to set the current tenant: (1) by using the subdomain to look
     class ApplicationController < ActionController::Base
       set_current_tenant_by_subdomain(:account, :subdomain)
     end
-This tells Acts_As_Tenant to use the current subdomain to identify the current tenant. In addition, it tells Acts_As_Tenant that tenants are represented by the Account model and this model has a column named 'subdomain' which can be used to lookup the Account using the actual subdomain. If ommitted, the parameters will default to the values used above.
+This tells acts_as_tenant to use the current subdomain to identify the current tenant. In addition, it tells acts_as_tenant that tenants are represented by the Account model and this model has a column named 'subdomain' which can be used to lookup the Account using the actual subdomain. If ommitted, the parameters will default to the values used above.
 
 **OR Pass in the current tenant yourself**
 
@@ -57,10 +57,11 @@ Scoping your models
       acts_as_tenant(:account)
     end
   
-Acts_As_Tenant requires each scoped model to have a column in its schema linking it to a tenant. Adding acts_as_tenant to your model declaration will scope that model to the current tenant **if a current tenant has been set**.
+acts_as_tenant requires each scoped model to have a column in its schema linking it to a tenant. Adding acts_as_tenant to your model declaration will scope that model to the current tenant **BUT ONLY if a current tenant has been set**.
 
-    # This manually sets the current tenant for testing purposes. In your app this is handled by the plugin.
-    Acts_As_Tenant.current_tenant = Account.find(3)   
+So examples to illustrate this behavior:
+    # This manually sets the current tenant for testing purposes. In your app this is handled by the gem.
+    acts_as_tenant.current_tenant = Account.find(3)   
     
     # All searches are scoped by the tenant, the following searches will only return objects 
     # where account_id == 3
@@ -87,14 +88,15 @@ Change the tests to Test::Unit so I can easily add some controller tests.
 Bug reports & suggested improvements
 ------------------------------------
 If you have found a bug or want to suggest an improvement, please use our issue tracked at:
-github.com/ErwinM/Acts_As_Tenant/issues
+
+[github.com/ErwinM/acts_as_tenant/issues](http://github.com/ErwinM/acts_as_tenant/issues)
 
 If you want to contribute, fork the project and code your improvements and make a pull request on Github. When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
 
 Author & Credits
 ----------------
-Acts_as_tenant is written by Erwin Matthijssen.  
-Erwin is currently lead developer for [Roll Call](http://www.rollcallapp.com/ "Roll Call App").
+acts_as_tenant is written by Erwin Matthijssen.  
+Erwin is currently developing [Roll Call](http://www.rollcallapp.com/ "Roll Call App").
 
 This gem was inspired by Ryan Sonnek's [Multitenant](https://github.com/wireframe/multitenant) gem and its use of default_scope.
 
