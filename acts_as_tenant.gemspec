@@ -7,9 +7,9 @@ Gem::Specification.new do |s|
   s.version     = ActsAsTenant::VERSION
   s.authors     = ["Erwin Matthijssen"]
   s.email       = ["erwin.matthijssen@gmail.com"]
-  s.homepage    = "http://www.rollcallnow.com/blog"
+  s.homepage    = "http://www.rollcallapp.com/blog"
   s.summary     = %q{Add multi-tenancy to Rails applications with a shared db}
-  s.description = %q{Integrates multi-tenancy into a Rails application}
+  s.description = %q{Integrates multi-tenancy into a Rails application in a convenient and out-of-your way manner}
 
   s.rubyforge_project = "acts_as_tenant"
 
