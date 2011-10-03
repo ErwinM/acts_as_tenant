@@ -1,7 +1,7 @@
 Acts As Tenant
 ==============
 
-note: acts_as_tenant was introduced in [this](http://www.rollcallapp.com/blog/add) blog post.
+note: acts_as_tenant was introduced in this [blog post](http://www.rollcallapp.com/blog/add).
 
 This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to our Rails app through a shared database strategy, that integrates (near) seamless with Rails.
 
@@ -85,6 +85,13 @@ Some examples to illustrate this behavior:
     @task = Task.new  # => <#Task id: nil, name: bil, project_id: nil, :account_id: 3>
 
 Acts_as_tenant uses Rails' default_scope method to scope models. Rails 3.1 changed the way default_scope works in a good way. A user defined default_scope should integrate seamlessly with the one added by acts_as_tenant.
+
+**Validating attribute uniqueness**
+If you need to validate for uniqueness, chances are that you want to scope this validation to a tenant. You can do so by using:
+
+    validates_uniqueness_to_tenant :name, :email
+
+All options available to Rails' own @validates_uniqueness_of@ are also available to this method.
 
 To Do
 -----
