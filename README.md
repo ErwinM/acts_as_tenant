@@ -25,6 +25,7 @@ To use it, add it to your Gemfile:
 Getting started
 ===============
 There are two steps in adding multi-tenancy to your app with acts_as_tenant:
+
 1. setting the current tenant and 
 2. scoping your models.
 
@@ -95,12 +96,12 @@ If you have found a bug or want to suggest an improvement, please use our issue 
 
 [github.com/ErwinM/acts_as_tenant/issues](http://github.com/ErwinM/acts_as_tenant/issues)
 
-If you want to contribute, fork the project and code your improvements and make a pull request on Github. When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
+If you want to contribute, fork the project, code your improvements and make a pull request on [Github](http://github.com/ErwinM/acts_as_tenant/). When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
 
 Author & Credits
 ----------------
 acts_as_tenant is written by Erwin Matthijssen.  
-Erwin is currently developing [Roll Call](http://www.rollcallapp.com/ "Roll Call App").
+Erwin is currently busy developing [Roll Call](http://www.rollcallapp.com/ "Roll Call App").
 
 This gem was inspired by Ryan Sonnek's [Multitenant](https://github.com/wireframe/multitenant) gem and its use of default_scope.
 
