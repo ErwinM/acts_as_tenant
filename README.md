@@ -25,8 +25,8 @@ To use it, add it to your Gemfile:
 Getting started
 ===============
 There are two steps in adding multi-tenancy to your app with acts_as_tenant:
-# setting the current tenant and 
-# scoping your models.
+1. setting the current tenant and 
+2. scoping your models.
 
 Setting the current tenant
 --------------------------
