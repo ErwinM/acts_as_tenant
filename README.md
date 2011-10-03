@@ -8,6 +8,7 @@ This gem was born out of our own need for a fail-safe and out-of-the-way manner 
 acts_as_tenant adds the ability to scope models to a tenant. Tenants are represented by a tenant model, such as `Account`. acts_as_tenant will help you set the current tenant on each request and ensures all 'tenant models' are always properly scoped to the current tenant: when viewing, searching and creating.
 
 In addition, acts_as_tenant:
+
 * sets the current tenant using the subdomain or allows you to pass in the current tenant yourself
 * protects against various types of nastiness directed at circumventing the tenant scoping
 * adds a method to validate uniqueness to a tenant, validates_uniqueness_to_tenant
@@ -61,7 +62,7 @@ Scoping your models
   
 acts_as_tenant requires each scoped model to have a column in its schema linking it to a tenant. Adding acts_as_tenant to your model declaration will scope that model to the current tenant **BUT ONLY if a current tenant has been set**.
 
-So examples to illustrate this behavior:
+Some examples to illustrate this behavior:
 
     # This manually sets the current tenant for testing purposes. In your app this is handled by the gem.
     acts_as_tenant.current_tenant = Account.find(3)   
