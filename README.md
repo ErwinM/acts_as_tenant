@@ -23,7 +23,9 @@ To use it, add it to your Gemfile:
   
 Getting started
 ===============
-There are two steps in adding multi-tenancy to your app with acts_as_tenant: (1) setting the current tenant  and (2) scoping your models.
+There are two steps in adding multi-tenancy to your app with acts_as_tenant:
+# setting the current tenant and 
+# scoping your models.
 
 Setting the current tenant
 --------------------------
@@ -60,6 +62,7 @@ Scoping your models
 acts_as_tenant requires each scoped model to have a column in its schema linking it to a tenant. Adding acts_as_tenant to your model declaration will scope that model to the current tenant **BUT ONLY if a current tenant has been set**.
 
 So examples to illustrate this behavior:
+
     # This manually sets the current tenant for testing purposes. In your app this is handled by the gem.
     acts_as_tenant.current_tenant = Account.find(3)   
     
@@ -83,7 +86,7 @@ Acts_as_tenant uses Rails' default_scope method to scope models. Rails 3.1 chang
 
 To Do
 -----
-Change the tests to Test::Unit so I can easily add some controller tests.
+* Change the tests to Test::Unit so I can easily add some controller tests.
 
 Bug reports & suggested improvements
 ------------------------------------
