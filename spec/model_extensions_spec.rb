@@ -83,6 +83,21 @@ describe ActsAsTenant do
     it { @projects.should == [@project1] }
   end
   
+  describe 'Project.unscoped.all should return the unscoped value' do
+    before do
+      @account1 = Account.create!(:name => 'foo')
+      @account2 = Account.create!(:name => 'bar')
+
+      @project1 = @account1.projects.create!(:name => 'foobar')
+      @project2 = @account2.projects.create!(:name => 'baz')
+      
+      ActsAsTenant.current_tenant= @account1
+      @projects = Project.unscoped.all
+    end
+    
+    it { @projects.length.should == 2 }
+  end
+  
   describe 'Associations should be correctly scoped by current tenant' do
     before do
       @account = Account.create!(:name => 'foo')
