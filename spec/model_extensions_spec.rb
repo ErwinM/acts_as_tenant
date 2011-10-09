@@ -26,6 +26,11 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column :name, :string
   end
   
+  create_table :sub_tasks, :force => true do |t|
+    t.column :name, :string
+    t.column :something_else, :integer
+  end
+  
 end
 
 # Setup the models
@@ -48,11 +53,13 @@ class Task < ActiveRecord::Base
   validates_uniqueness_of :name
 end
 
-
 class City < ActiveRecord::Base
   validates_uniqueness_of :name
 end
 
+class SubTask < ActiveRecord::Base
+  belongs_to :something_else, :class_name => "Project"
+end
 
 # Start testing!
 describe ActsAsTenant do
@@ -190,4 +197,10 @@ describe ActsAsTenant do
       @city2 = City.create(:name => 'foo').valid?.should == false
     end
   end
+  
+  describe "It should be possible to use aliased associations" do
+    it { @sub_task = SubTask.create(:name => 'foo').valid?.should == true }
+  end
+    
+  
 end

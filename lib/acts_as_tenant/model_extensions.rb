@@ -70,8 +70,11 @@ module ActsAsTenant
         # exempt them
         reflect_on_all_associations.each do |a|
           unless a == reflection || a.macro == :has_many || a.options[:polymorphic]
+            # check if the association is aliasing another class, if so 
+            # find the unaliased class name
+            association_class =  a.options[:class_name].nil? ? a.name.to_s.classify.constantize : a.options[:class_name].constantize
             validates_each a.foreign_key.to_sym do |record, attr, value|
-              record.errors.add attr, "is invalid" unless a.name.to_s.classify.constantize.where(:id => value).present?
+              record.errors.add attr, "is invalid" unless association_class.where(:id => value).present?
             end
           end
         end 

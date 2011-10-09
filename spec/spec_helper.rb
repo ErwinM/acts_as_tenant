@@ -23,7 +23,7 @@ ActiveRecord::Base.establish_connection(config[ENV['DB'] || 'sqlite'])
 #RSpec.configure do |config|
 #end
 
-Spec::Runner.configure do |config|
+RSpec.configure do |config|
 
   config.before(:suite) do
     DatabaseCleaner.strategy = :transaction
