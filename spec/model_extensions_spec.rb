@@ -58,6 +58,7 @@ class City < ActiveRecord::Base
 end
 
 class SubTask < ActiveRecord::Base
+  acts_as_tenant :account
   belongs_to :something_else, :class_name => "Project"
 end
 
