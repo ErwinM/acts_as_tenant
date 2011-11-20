@@ -11,6 +11,12 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column :account_id, :integer
   end
   
+  create_table :managers, :force => true do |t|
+    t.column :name, :string
+    t.column :project_id, :integer
+    t.column :account_id, :integer
+  end
+  
   create_table :tasks, :force => true do |t|
     t.column :name, :string
     t.column :account_id, :integer
@@ -39,10 +45,16 @@ class Account < ActiveRecord::Base
 end
 
 class Project < ActiveRecord::Base
+  has_one :manager
   has_many :tasks
   acts_as_tenant :account
   
   validates_uniqueness_to_tenant :name
+end
+
+class Manager < ActiveRecord::Base
+  belongs_to :project
+  acts_as_tenant :account
 end
 
 class Task < ActiveRecord::Base
@@ -202,6 +214,5 @@ describe ActsAsTenant do
   describe "It should be possible to use aliased associations" do
     it { @sub_task = SubTask.create(:name => 'foo').valid?.should == true }
   end
-    
   
 end

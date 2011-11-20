@@ -1,3 +1,8 @@
+0.2.3
+-----
+* Added support for models that declare a has_one relationships, these would error out in the previous versions.
+
+
 0.2.2
 -----
 * Enhancements
