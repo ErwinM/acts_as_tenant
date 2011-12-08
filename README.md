@@ -11,7 +11,7 @@ In addition, acts_as_tenant:
 
 * sets the current tenant using the subdomain or allows you to pass in the current tenant yourself
 * protects against various types of nastiness directed at circumventing the tenant scoping
-* adds a method to validate uniqueness to a tenant, validates_uniqueness_to_tenant
+* adds a method to validate uniqueness to a tenant, `validates_uniqueness_to_tenant`
 * sets up a helper method containing the current tenant
 
 Installation
@@ -87,11 +87,12 @@ Some examples to illustrate this behavior:
 Acts_as_tenant uses Rails' default_scope method to scope models. Rails 3.1 changed the way default_scope works in a good way. A user defined default_scope should integrate seamlessly with the one added by acts_as_tenant.
 
 **Validating attribute uniqueness**
+
 If you need to validate for uniqueness, chances are that you want to scope this validation to a tenant. You can do so by using:
 
     validates_uniqueness_to_tenant :name, :email
 
-All options available to Rails' own @validates_uniqueness_of@ are also available to this method.
+All options available to Rails' own `validates_uniqueness_of` are also available to this method.
 
 To Do
 -----
