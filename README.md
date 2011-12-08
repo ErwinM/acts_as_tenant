@@ -66,7 +66,7 @@ acts_as_tenant requires each scoped model to have a column in its schema linking
 Some examples to illustrate this behavior:
 
     # This manually sets the current tenant for testing purposes. In your app this is handled by the gem.
-    acts_as_tenant.current_tenant = Account.find(3)   
+    ActsAsTenant.current_tenant = Account.find(3)   
     
     # All searches are scoped by the tenant, the following searches will only return objects 
     # where account_id == 3
