@@ -215,4 +215,10 @@ describe ActsAsTenant do
     it { @sub_task = SubTask.create(:name => 'foo').valid?.should == true }
   end
   
+  describe "It should be possible to create and save an AaT-enabled child without it having a parent" do
+    @account = Account.create!(:name => 'baz')
+    ActsAsTenant.current_tenant = @account
+    @task = Task.new(:name => 'bar')
+    lambda { @task.save }.should_not raise_exception
+  end
 end
