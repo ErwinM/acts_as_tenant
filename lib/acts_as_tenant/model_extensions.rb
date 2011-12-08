@@ -74,7 +74,9 @@ module ActsAsTenant
             # find the unaliased class name
             association_class =  a.options[:class_name].nil? ? a.name.to_s.classify.constantize : a.options[:class_name].constantize
             validates_each a.foreign_key.to_sym do |record, attr, value|
-              record.errors.add attr, "is invalid" unless association_class.where(:id => value).present?
+              # Invalidate the association unless the parent is known to the tenant or no association has
+              # been set.
+              record.errors.add attr, "is invalid" unless association_class.where(:id => value).present? || value.nil?
             end
           end
         end 

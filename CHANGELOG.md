@@ -1,3 +1,8 @@
+0.2.4
+-----
+* Added correct handling of child models that do not have their parent set (foreign key == nil)
+
+
 0.2.3
 -----
 * Added support for models that declare a has_one relationships, these would error out in the previous versions.
