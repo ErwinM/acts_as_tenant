@@ -94,6 +94,10 @@ If you need to validate for uniqueness, chances are that you want to scope this 
 
 All options available to Rails' own `validates_uniqueness_of` are also available to this method.
 
+Note on testing
+---------------
+Whenever you set the `current_tenant` in your tests, either through integration tests or directly by calling `ActsAsTenant.current_tenant = some_tenant`, make sure to clean up the tenant after each test by calling `ActsAsTenant.current_tenant = nil`.
+
 To Do
 -----
 * Change the tests to Test::Unit so I can easily add some controller tests.
