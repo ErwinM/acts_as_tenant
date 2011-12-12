@@ -76,7 +76,7 @@ module ActsAsTenant
             validates_each a.foreign_key.to_sym do |record, attr, value|
               # Invalidate the association unless the parent is known to the tenant or no association has
               # been set.
-              record.errors.add attr, "is invalid" unless value.nil? || association_class.where(:id => value).present?
+              record.errors.add attr, "is invalid (Acts_as_Tenant)" unless value.nil? || association_class.where(:id => value).present?
             end
           end
         end 
