@@ -1,3 +1,7 @@
+0.2.5
+-----
+* Added Rails 3.2 compatibility
+
 0.2.4
 -----
 * Added correct handling of child models that do not have their parent set (foreign key == nil)
