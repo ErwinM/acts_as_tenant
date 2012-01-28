@@ -82,7 +82,7 @@ Some examples to illustrate this behavior:
       
     # It will not allow association with objects outside the current tenant scope
     # Assuming the Project with ID: 2 does not belong to Account with ID: 3
-    @task = Task.new  # => <#Task id: nil, name: bil, project_id: nil, :account_id: 3>
+    @task = Task.new  # => <#Task id: nil, name: nil, project_id: nil, :account_id: 3>
 
 Acts_as_tenant uses Rails' default_scope method to scope models. Rails 3.1 changed the way default_scope works in a good way. A user defined default_scope should integrate seamlessly with the one added by acts_as_tenant.
 
