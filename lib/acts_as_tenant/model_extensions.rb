@@ -40,7 +40,7 @@ module ActsAsTenant
         # set the current_tenant on newly created objects
         before_validation Proc.new {|m|
           return unless ActsAsTenant.current_tenant
-          m.send "#{association}=".to_sym, ActsAsTenant.current_tenant
+          m.send "#{association}_id=".to_sym, ActsAsTenant.current_tenant.id
         }, :on => :create
     
         # set the default_scope to scope to current tenant
