@@ -53,7 +53,7 @@ module ActsAsTenant
           if new_record?
             write_attribute(fkey, integer)  
           else
-            raise "#{fkey} is immutable!"
+            raise "#{fkey} is immutable! [ActsAsTenant]"
           end  
         end
       
@@ -61,7 +61,7 @@ module ActsAsTenant
           if new_record?
             write_attribute(association, model)  
           else
-            raise "#{association} is immutable!"
+            raise "#{association} is immutable! [ActsAsTenant]"
           end  
         end
       
@@ -76,14 +76,14 @@ module ActsAsTenant
             validates_each a.foreign_key.to_sym do |record, attr, value|
               # Invalidate the association unless the parent is known to the tenant or no association has
               # been set.
-              record.errors.add attr, "is invalid (Acts_as_Tenant)" unless value.nil? || association_class.where(:id => value).present?
+              record.errors.add attr, "is invalid [ActsAsTenant]" unless value.nil? || association_class.where(:id => value).present?
             end
           end
         end 
       end
       
       def validates_uniqueness_to_tenant(fields, args ={})
-        raise "ActsAsTenant::validates_uniqueness_to_tenant: no current tenant" unless respond_to?(:is_scoped_by_tenant?)
+        raise "[ActsAsTenant] validates_uniqueness_to_tenant: no current tenant" unless respond_to?(:is_scoped_by_tenant?)
         tenant_id = lambda { "#{ActsAsTenant.tenant_class.to_s.downcase}_id"}.call
         args[:scope].nil? ? args[:scope] = tenant_id : args[:scope] << tenant_id
         validates_uniqueness_of(fields, args)
