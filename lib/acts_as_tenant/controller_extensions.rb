@@ -10,7 +10,7 @@ module ActsAsTenant
         attr_accessor :current_tenant
       end
 
-      self.tenant_class = tenant.to_s.capitalize.constantize
+      self.tenant_class = tenant.to_s.camelcase.constantize
       self.tenant_column = column.to_sym
 
       self.class_eval do
