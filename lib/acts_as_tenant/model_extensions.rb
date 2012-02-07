@@ -59,7 +59,7 @@ module ActsAsTenant
       
         define_method "#{association}=" do |model|  
           if new_record?
-            write_attribute(association, model)  
+            super(model) 
           else
             raise "#{association} is immutable!"
           end  
