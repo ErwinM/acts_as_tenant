@@ -1,6 +1,11 @@
+0.2.6
+-----
+* Fixed a bug with resolving the tenant model name (thx devton!)
+* Added support for using relations: User.create(:account => Account.first) now works, while it wouldn't before (thx bnmrrs)
+
 0.2.5
 -----
-* Added Rails 3.2 compatibility
+* Added Rails 3.2 compatibility (thx nickveys!)
 
 0.2.4
 -----
