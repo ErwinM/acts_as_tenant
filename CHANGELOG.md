@@ -1,3 +1,7 @@
+0.2.7
+-----
+* Changed the interface for passing in the current_tenant manually in the controller. `set_current_tenant_to` has been deprecated and replaced by `set_current_tenant_through_filter` declaration and the `set_current_tenant` method. See readme for details.
+
 0.2.6
 -----
 * Fixed a bug with resolving the tenant model name (thx devton!)

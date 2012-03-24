@@ -43,10 +43,15 @@ This tells acts_as_tenant to use the current subdomain to identify the current t
 **OR Pass in the current tenant yourself**
 
     class ApplicationController < ActionController::Base
-      current_account = Account.find_the_current_account
-      set_current_tenant_to(current_account)
+      set_current_tenant_through_filter
+      before_filter :your_method_that_finds_the_current_tenant
+      
+      def your_method_that_finds_the_current_tenant
+        current_account = Account.find_it
+        set_current_tenant(current_account)
+      end
     end
-This allows you to pass in the current tenant yourself.
+Setting the current_tenant yourself, requires you to declare `set_current_tenant_through_filter` at the top of your application_controller to tell acts_as_tenant that you are going to use a before_filter to setup the current tenant. Next you should actually setup that before_filter to fetch the current tenant and pass it to `acts_as_tenant` by using `set_current_tenant(current_tenant)` in the before_filter.
 
 **note:** If the current tenant is not set by either of these methods, Acts_as_tenant will be unable to apply the proper scope to your models. So make sure you use one of the two methods to tell acts_as_tenant about the current tenant.
   

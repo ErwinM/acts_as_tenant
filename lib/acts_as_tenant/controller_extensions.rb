@@ -31,13 +31,36 @@ module ActsAsTenant
       end
     end
     
+    # This method sets up a method that allows manual setting of the current_tenant. This method should
+    # be used in a before_filter. In addition, a helper is setup that returns the current_tenant
+    def set_current_tenant_through_filter
+      self.class_eval do
+        helper_method :current_tenant
+        
+        def set_current_tenant(current_tenant_object)
+          ActsAsTenant.current_tenant = current_tenant_object
+        end
+        
+        private
+          # helper method to have the current_tenant available in the controller  
+          def current_tenant
+            ActsAsTenant.current_tenant
+          end
+      end
+    end
+    
+    
+    
     # this method allows manual setting of the current_tenant by passing in a tenant object
     # 
     def set_current_tenant_to(current_tenant_object)
       self.class_eval do
         cattr_accessor :tenant_class
         attr_accessor :current_tenant
-        before_filter lambda { @current_tenant_instance = ActsAsTenant.current_tenant = current_tenant_object }
+        before_filter lambda { 
+          ActiveSupport::Deprecation.warn "set_current_tenant_to is deprecated and will be removed from Acts_as_tenant in a future releases, please use set_current_tenant_through_filter instead.", caller
+          @current_tenant_instance = ActsAsTenant.current_tenant = current_tenant_object 
+          }
         
         helper_method :current_tenant
         
