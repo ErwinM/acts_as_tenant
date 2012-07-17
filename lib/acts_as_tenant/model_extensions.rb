@@ -45,7 +45,8 @@ module ActsAsTenant
     
         # set the default_scope to scope to current tenant
         default_scope lambda {
-          where({fkey => ActsAsTenant.current_tenant.id}) if ActsAsTenant.current_tenant
+          raise "Scope not set! [ActsAsTenant]" unless ActsAsTenant.current_tenant
+          where({fkey => ActsAsTenant.current_tenant.id})
         }
     
         # Rewrite accessors to make tenant foreign_key/association immutable
