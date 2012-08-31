@@ -220,4 +220,31 @@ describe ActsAsTenant do
       ActsAsTenant.current_tenant = @account
       Task.create(:name => 'bar').valid?.should == true
   end
+
+  describe "::with_tenant" do
+    it "should set current_tenant to the specified tenant inside the block" do
+      @account = Account.create!(:name => 'baz')
+
+      ActsAsTenant.with_tenant(@account) do
+        ActsAsTenant.current_tenant.should eq(@account)
+      end
+    end
+
+
+    it "should return current_tenant to the previous tenant once exiting the block" do
+      @account1 = Account.create!(:name => 'foo')
+      @account2 = Account.create!(:name => 'bar')
+      
+      ActsAsTenant.current_tenant = @account1
+      ActsAsTenant.with_tenant @account2 do
+
+      end
+
+      ActsAsTenant.current_tenant.should eq(@account1)
+    end
+
+    it "should raise an error when no block is provided" do
+      expect { ActsAsTenant.with_tenant(nil) }.to raise_error(ArgumentError, /block required/)
+    end
+  end
 end
