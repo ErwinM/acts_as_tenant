@@ -15,6 +15,20 @@ module ActsAsTenant
     def current_tenant
       Thread.current[:current_tenant]
     end
+
+    # Sets the current_tenant within the given block
+    def with_tenant(tenant, &block)
+      if block.nil?
+        raise ArgumentError, "block required"
+      end
+
+      old_tenant = self.current_tenant
+      self.current_tenant = tenant
+
+      block.call
+
+      self.current_tenant= old_tenant
+    end
   end
   
   module ModelExtensions
