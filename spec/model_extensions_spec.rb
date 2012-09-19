@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 # Setup the db
-ActiveRecord::Schema.define(:version => 1) do
+ActiveRecord::Schema.define(:version => 2) do
   create_table :accounts, :force => true do |t|
     t.column :name, :string
   end
@@ -36,6 +36,16 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column :name, :string
     t.column :something_else, :integer
   end
+
+  create_table :tools, :force => true do |t|
+    t.column :name, :string
+    t.column :account_id, :integer
+  end
+
+  create_table :managers_tools, {:force => true, id: false} do |t|
+    t.integer :manager_id
+    t.integer :tool_id
+  end
   
 end
 
@@ -54,6 +64,8 @@ end
 
 class Manager < ActiveRecord::Base
   belongs_to :project
+  has_and_belongs_to_many :tools
+
   acts_as_tenant :account
 end
 
@@ -72,6 +84,12 @@ end
 class SubTask < ActiveRecord::Base
   acts_as_tenant :account
   belongs_to :something_else, :class_name => "Project"
+end
+
+class Tool < ActiveRecord::Base
+  has_and_belongs_to_many :managers
+
+  acts_as_tenant :account
 end
 
 # Start testing!
@@ -219,6 +237,12 @@ describe ActsAsTenant do
       @account = Account.create!(:name => 'baz')
       ActsAsTenant.current_tenant = @account
       Task.create(:name => 'bar').valid?.should == true
+  end
+
+  describe "It should be possible to use direct many-to-many associations" do
+      @manager = Manager.create!(:name => 'fool')
+      @manager.tools.new(:name => 'golden hammer')
+      @manager.save.should == true
   end
 
   describe "::with_tenant" do
