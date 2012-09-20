@@ -31,8 +31,8 @@ There are two steps in adding multi-tenancy to your app with acts_as_tenant:
 
 Setting the current tenant
 --------------------------
-There are three ways to set the current tenant: (1) by using the subdomain to lookup the current tenant, (2) by setting  the current tenant in the controller and
-(3) setting the current tenant for a block.
+There are three ways to set the current tenant: (1) by using the subdomain to lookup the current tenant, (2) by setting  the current tenant in the controller, and
+(3) by setting the current tenant for a block.
 
 **Use the subdomain to lookup the current tenant**
 
