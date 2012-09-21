@@ -245,6 +245,30 @@ describe ActsAsTenant do
       @manager.save.should == true
   end
 
+  describe "It should be possible to use direct many-to-many associations" do
+    @manager = Manager.create!(:name => 'fool')
+    @manager.tools.new(:name => 'golden hammer')
+    @manager.save.should == true
+  end
+
+  describe "When using direct many-to-many associations they are correctly scoped to the tenant" do
+    before do
+      @account1 = Account.create!(:name => 'foo')
+      @account2 = Account.create!(:name => 'bar')
+
+      ActsAsTenant.current_tenant= @account1
+      @manager1 = Manager.create!(:name => 'fool')
+      @tool1 = @manager1.tools.create!(:name => 'golden hammer')
+
+      ActsAsTenant.current_tenant= @account2
+      @manager2 = Manager.create!(:name => 'pitty')
+      @tool2 = @manager2.tools.create!(:name => 'golden saw')
+
+      @tools = Tool.all
+    end
+    it { @tools.should == [@tool2] }
+  end
+
   describe "::with_tenant" do
     it "should set current_tenant to the specified tenant inside the block" do
       @account = Account.create!(:name => 'baz')
