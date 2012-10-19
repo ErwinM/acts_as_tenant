@@ -31,7 +31,8 @@ There are two steps in adding multi-tenancy to your app with acts_as_tenant:
 
 Setting the current tenant
 --------------------------
-There are two ways to set the current tenant: (1) by using the subdomain to lookup the current tenant and (2) by passing in the current tenant yourself.
+There are three ways to set the current tenant: (1) by using the subdomain to lookup the current tenant, (2) by setting  the current tenant in the controller, and
+(3) by setting the current tenant for a block.
 
 **Use the subdomain to lookup the current tenant**
 
@@ -40,7 +41,7 @@ There are two ways to set the current tenant: (1) by using the subdomain to look
     end
 This tells acts_as_tenant to use the current subdomain to identify the current tenant. In addition, it tells acts_as_tenant that tenants are represented by the Account model and this model has a column named 'subdomain' which can be used to lookup the Account using the actual subdomain. If ommitted, the parameters will default to the values used above.
 
-**OR Pass in the current tenant yourself**
+**Setting the current tenant in a controller, manually**
 
     class ApplicationController < ActionController::Base
       set_current_tenant_through_filter
@@ -53,7 +54,17 @@ This tells acts_as_tenant to use the current subdomain to identify the current t
     end
 Setting the current_tenant yourself, requires you to declare `set_current_tenant_through_filter` at the top of your application_controller to tell acts_as_tenant that you are going to use a before_filter to setup the current tenant. Next you should actually setup that before_filter to fetch the current tenant and pass it to `acts_as_tenant` by using `set_current_tenant(current_tenant)` in the before_filter.
 
-**note:** If the current tenant is not set by either of these methods, Acts_as_tenant will be unable to apply the proper scope to your models. So make sure you use one of the two methods to tell acts_as_tenant about the current tenant.
+
+**Setting the current tenant for a block**
+
+    ActsAsTenant.with_tenant(current_account) do
+      # Current tenant is set for all code in this block
+    end
+
+This approach is useful when running background processes for a specified tenant. For example, by putting this in your worker's run method,
+any code in this block will be scoped to the current tenant. All methods that set the current tenant are thread safe.
+
+**note:** If the current tenant is not set by one of these methods, Acts_as_tenant will be unable to apply the proper scope to your models. So make sure you use one of the two methods to tell acts_as_tenant about the current tenant.
   
 Scoping your models
 -------------------
