@@ -29,6 +29,14 @@ module ActsAsTenant
 
       self.current_tenant= old_tenant
     end
+
+    def tenant_required?
+      Thread.current[:tenant_required]
+    end
+
+    def require_tenant
+      Thread.current[:tenant_required] = true
+    end
   end
   
   module ModelExtensions
@@ -68,8 +76,10 @@ module ActsAsTenant
     
         # set the default_scope to scope to current tenant
         default_scope lambda {
-          raise "Scope not set! [ActsAsTenant]" unless ActsAsTenant.current_tenant
-          where({fkey => ActsAsTenant.current_tenant.id})
+          if ActsAsTenant.tenant_required?
+            raise "Scope not set! [ActsAsTenant]" unless ActsAsTenant.current_tenant
+          end
+          where({fkey => ActsAsTenant.current_tenant.id}) if ActsAsTenant.current_tenant
         }
     
         # Rewrite accessors to make tenant foreign_key/association immutable

@@ -72,7 +72,8 @@ Scoping your models
       def up
         add_column :users, :account_id, :integer
       end
-  
+    end
+
     class User < ActiveRecord::Base
       acts_as_tenant(:account)
     end
@@ -109,6 +110,9 @@ If you need to validate for uniqueness, chances are that you want to scope this 
     validates_uniqueness_to_tenant :name, :email
 
 All options available to Rails' own `validates_uniqueness_of` are also available to this method.
+
+**Requiring tenant to be set**
+If you want to require the tenant to be set at all times, include ```require_tenant``` in your ApplicationController
 
 Note on testing
 ---------------

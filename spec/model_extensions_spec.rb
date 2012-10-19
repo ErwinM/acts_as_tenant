@@ -102,7 +102,7 @@ describe ActsAsTenant do
     it { @projects.length.should == 1 }
     it { @projects.should == [@project1] }
   end
-  
+
   describe 'Project.unscoped.all should return the unscoped value' do
     before do
       @account1 = Account.create!(:name => 'foo')
@@ -245,6 +245,24 @@ describe ActsAsTenant do
 
     it "should raise an error when no block is provided" do
       expect { ActsAsTenant.with_tenant(nil) }.to raise_error(ArgumentError, /block required/)
+    end
+  end
+
+  context "tenant required" do
+    describe "raises exception if no tenant specified" do
+      before do
+        @account1 = Account.create!(:name => 'foo')
+        @account2 = Account.create!(:name => 'bar')
+
+        @project1 = @account1.projects.create!(:name => 'foobar')
+        @project2 = @account2.projects.create!(:name => 'baz')
+
+        ActsAsTenant.require_tenant
+      end
+
+      it "should raise an error when no block is provided" do
+        expect { Project.all }.to raise_error
+      end
     end
   end
 end
