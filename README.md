@@ -65,7 +65,11 @@ This approach is useful when running background processes for a specified tenant
 any code in this block will be scoped to the current tenant. All methods that set the current tenant are thread safe.
 
 **note:** If the current tenant is not set by one of these methods, Acts_as_tenant will be unable to apply the proper scope to your models. So make sure you use one of the two methods to tell acts_as_tenant about the current tenant.
-  
+
+**Requiring tenant to be set**
+
+If you want to require the tenant to be set at all times, include ```require_tenant``` in your ApplicationController
+
 Scoping your models
 -------------------
     class Addaccounttousers < ActiveRecord::Migration
@@ -110,9 +114,6 @@ If you need to validate for uniqueness, chances are that you want to scope this 
     validates_uniqueness_to_tenant :name, :email
 
 All options available to Rails' own `validates_uniqueness_of` are also available to this method.
-
-**Requiring tenant to be set**
-If you want to require the tenant to be set at all times, include ```require_tenant``` in your ApplicationController
 
 Note on testing
 ---------------
