@@ -29,6 +29,14 @@ module ActsAsTenant
 
       self.current_tenant= old_tenant
     end
+
+    def tenant_required?
+      Thread.current[:tenant_required]
+    end
+
+    def require_tenant
+      Thread.current[:tenant_required] = true
+    end
   end
   
   module ModelExtensions
@@ -68,6 +76,9 @@ module ActsAsTenant
     
         # set the default_scope to scope to current tenant
         default_scope lambda {
+          if ActsAsTenant.tenant_required?
+            raise ActsAsTenant::ScopeNotSet
+          end
           where({fkey => ActsAsTenant.current_tenant.id}) if ActsAsTenant.current_tenant
         }
     
