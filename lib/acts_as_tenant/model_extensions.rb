@@ -92,7 +92,7 @@ module ActsAsTenant
         # we can't do this for polymorphic associations so we 
         # exempt them
         reflect_on_all_associations.each do |a|
-          unless a == reflection || a.macro == :has_many || a.macro == :has_one || a.options[:polymorphic] 
+          unless a == reflection || a.macro == :has_many || a.macro == :has_one || a.macro == :has_and_belongs_to_many || a.options[:polymorphic]
             # check if the association is aliasing another class, if so 
             # find the unaliased class name
             association_class =  a.options[:class_name].nil? ? a.name.to_s.classify.constantize : a.options[:class_name].constantize
