@@ -1,3 +1,9 @@
+0.2.8
+-----
+* Added dependencies to gemspec (thx aaronrenner)
+* Added the `ActsAsTenant.with_tenant` block method (see readme) (thx aaronrenner)
+* Acts_as_Tenant is now thread safe (thx davide)
+
 0.2.7
 -----
 * Changed the interface for passing in the current_tenant manually in the controller. `set_current_tenant_to` has been deprecated and replaced by `set_current_tenant_through_filter` declaration and the `set_current_tenant` method. See readme for details.
