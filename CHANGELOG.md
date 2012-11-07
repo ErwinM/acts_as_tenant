@@ -1,3 +1,7 @@
+0.2.9
+-----
+* Added support for many-to-many associations (thx Nucleoid)
+
 0.2.8
 -----
 * Added dependencies to gemspec (thx aaronrenner)
