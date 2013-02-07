@@ -87,6 +87,12 @@ describe ActsAsTenant do
     it {Project.respond_to?(:is_scoped_by_tenant?).should == true}
   end
   
+  describe 'sets tenant_required' do
+    before { ActsAsTenant.require_tenant }
+    it { ActsAsTenant.tenant_required?.should be_true }
+    after { Thread.current[:tenant_required] = nil }
+  end
+  
   describe 'Project.all should be scoped to the current tenant if set' do
     before do
       @account1 = Account.create!(:name => 'foo')
@@ -260,8 +266,29 @@ describe ActsAsTenant do
         ActsAsTenant.require_tenant
       end
 
-      it "should raise an error when no block is provided" do
+      it "should raise an error when no tenant is provided" do
         expect { Project.all }.to raise_error
+      end
+      
+      after { Thread.current[:tenant_required] = nil }
+    end
+  end
+  
+  
+  
+  context "no tenant required" do
+    describe "does not raise exception if no tenant specified" do
+      before do
+        @account1 = Account.create!(:name => 'foo')
+        @account2 = Account.create!(:name => 'bar')
+
+        @project1 = @account1.projects.create!(:name => 'foobar')
+        @project2 = @account2.projects.create!(:name => 'baz')
+      end
+
+      it "should not raise an error when no tenant is provided" do
+        debugger
+        expect { Project.all }.should_not raise_error
       end
     end
   end

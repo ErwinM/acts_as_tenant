@@ -76,8 +76,8 @@ module ActsAsTenant
     
         # set the default_scope to scope to current tenant
         default_scope lambda {
-          if ActsAsTenant.tenant_required?
-            raise ActsAsTenant::ScopeNotSet
+          if ActsAsTenant.tenant_required? && ActsAsTenant.current_tenant.nil?
+            raise "No tenant found, while tenant_required is set to true [ActsAsTenant]"
           end
           where({fkey => ActsAsTenant.current_tenant.id}) if ActsAsTenant.current_tenant
         }

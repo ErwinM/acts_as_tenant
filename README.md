@@ -68,7 +68,7 @@ any code in this block will be scoped to the current tenant. All methods that se
 
 **Requiring tenant to be set**
 
-If you want to require the tenant to be set at all times, include ```require_tenant``` in your ApplicationController
+If you want to require the tenant to be set at all times, include ```require_tenant``` in your ApplicationController. Acts_as_tenant will then raise an exeception if a query is made without a tenant available.
 
 Scoping your models
 -------------------
