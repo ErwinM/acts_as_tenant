@@ -25,9 +25,10 @@ module ActsAsTenant
       old_tenant = self.current_tenant
       self.current_tenant = tenant
 
-      block.call
+      value = block.call
 
       self.current_tenant= old_tenant
+      return value
     end
   end
   
