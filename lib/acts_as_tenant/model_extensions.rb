@@ -119,7 +119,11 @@ module ActsAsTenant
       def validates_uniqueness_to_tenant(fields, args ={})
         raise "[ActsAsTenant] validates_uniqueness_to_tenant: no current tenant" unless respond_to?(:is_scoped_by_tenant?)
         tenant_id = lambda { "#{ActsAsTenant.tenant_class.to_s.downcase}_id"}.call
-        args[:scope].nil? ? args[:scope] = tenant_id : args[:scope] << tenant_id
+        if args[:scope]
+          args[:scope] = Array(args[:scope]) << tenant_id
+        else
+          args[:scope] = tenant_id
+        end
         validates_uniqueness_of(fields, args)
       end
       

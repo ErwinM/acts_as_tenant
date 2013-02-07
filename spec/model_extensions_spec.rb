@@ -34,7 +34,9 @@ ActiveRecord::Schema.define(:version => 1) do
   
   create_table :sub_tasks, :force => true do |t|
     t.column :name, :string
+    t.column :attribute2, :string
     t.column :something_else, :integer
+    t.column :account_id, :integer
   end
   
 end
@@ -72,6 +74,7 @@ end
 class SubTask < ActiveRecord::Base
   acts_as_tenant :account
   belongs_to :something_else, :class_name => "Project"
+  validates_uniqueness_to_tenant :name, scope: :attribute2
 end
 
 # Start testing!
@@ -287,7 +290,6 @@ describe ActsAsTenant do
       end
 
       it "should not raise an error when no tenant is provided" do
-        debugger
         expect { Project.all }.should_not raise_error
       end
     end
