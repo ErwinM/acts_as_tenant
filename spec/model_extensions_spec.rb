@@ -278,8 +278,7 @@ describe ActsAsTenant do
       end
     end
 
-
-    it "should return current_tenant to the previous tenant once exiting the block" do
+    it "should reset current_tenant to the previous tenant once exiting the block" do
       @account1 = Account.create!(:name => 'foo')
       @account2 = Account.create!(:name => 'bar')
       
@@ -289,6 +288,18 @@ describe ActsAsTenant do
       end
 
       ActsAsTenant.current_tenant.should eq(@account1)
+    end
+
+    it "should return the value of the block" do
+      @account1 = Account.create!(:name => 'foo')
+      @account2 = Account.create!(:name => 'bar')
+      
+      ActsAsTenant.current_tenant = @account1
+      value = ActsAsTenant.with_tenant @account2 do
+        "something"
+      end
+      
+      value.should eq "something"
     end
 
     it "should raise an error when no block is provided" do
