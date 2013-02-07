@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 # Setup the db
-ActiveRecord::Schema.define(:version => 2) do
+ActiveRecord::Schema.define(:version => 1) do
   create_table :accounts, :force => true do |t|
     t.column :name, :string
   end
@@ -36,16 +36,6 @@ ActiveRecord::Schema.define(:version => 2) do
     t.column :name, :string
     t.column :something_else, :integer
   end
-
-  create_table :tools, :force => true do |t|
-    t.column :name, :string
-    t.column :account_id, :integer
-  end
-
-  create_table :managers_tools, {:force => true, id: false} do |t|
-    t.integer :manager_id
-    t.integer :tool_id
-  end
   
 end
 
@@ -64,8 +54,6 @@ end
 
 class Manager < ActiveRecord::Base
   belongs_to :project
-  has_and_belongs_to_many :tools
-
   acts_as_tenant :account
 end
 
@@ -84,12 +72,6 @@ end
 class SubTask < ActiveRecord::Base
   acts_as_tenant :account
   belongs_to :something_else, :class_name => "Project"
-end
-
-class Tool < ActiveRecord::Base
-  has_and_belongs_to_many :managers
-
-  acts_as_tenant :account
 end
 
 # Start testing!
@@ -120,7 +102,7 @@ describe ActsAsTenant do
     it { @projects.length.should == 1 }
     it { @projects.should == [@project1] }
   end
-  
+
   describe 'Project.unscoped.all should return the unscoped value' do
     before do
       @account1 = Account.create!(:name => 'foo')
@@ -239,36 +221,6 @@ describe ActsAsTenant do
       Task.create(:name => 'bar').valid?.should == true
   end
 
-  describe "It should be possible to use direct many-to-many associations" do
-      @manager = Manager.create!(:name => 'fool')
-      @manager.tools.new(:name => 'golden hammer')
-      @manager.save.should == true
-  end
-
-  describe "It should be possible to use direct many-to-many associations" do
-    @manager = Manager.create!(:name => 'fool')
-    @manager.tools.new(:name => 'golden hammer')
-    @manager.save.should == true
-  end
-
-  describe "When using direct many-to-many associations they are correctly scoped to the tenant" do
-    before do
-      @account1 = Account.create!(:name => 'foo')
-      @account2 = Account.create!(:name => 'bar')
-
-      ActsAsTenant.current_tenant= @account1
-      @manager1 = Manager.create!(:name => 'fool')
-      @tool1 = @manager1.tools.create!(:name => 'golden hammer')
-
-      ActsAsTenant.current_tenant= @account2
-      @manager2 = Manager.create!(:name => 'pitty')
-      @tool2 = @manager2.tools.create!(:name => 'golden saw')
-
-      @tools = Tool.all
-    end
-    it { @tools.should == [@tool2] }
-  end
-
   describe "::with_tenant" do
     it "should set current_tenant to the specified tenant inside the block" do
       @account = Account.create!(:name => 'baz')
@@ -293,6 +245,24 @@ describe ActsAsTenant do
 
     it "should raise an error when no block is provided" do
       expect { ActsAsTenant.with_tenant(nil) }.to raise_error(ArgumentError, /block required/)
+    end
+  end
+
+  context "tenant required" do
+    describe "raises exception if no tenant specified" do
+      before do
+        @account1 = Account.create!(:name => 'foo')
+        @account2 = Account.create!(:name => 'bar')
+
+        @project1 = @account1.projects.create!(:name => 'foobar')
+        @project2 = @account2.projects.create!(:name => 'baz')
+
+        ActsAsTenant.require_tenant
+      end
+
+      it "should raise an error when no block is provided" do
+        expect { Project.all }.to raise_error
+      end
     end
   end
 end

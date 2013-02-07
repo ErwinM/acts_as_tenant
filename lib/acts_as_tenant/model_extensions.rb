@@ -29,6 +29,14 @@ module ActsAsTenant
 
       self.current_tenant= old_tenant
     end
+
+    def tenant_required?
+      Thread.current[:tenant_required]
+    end
+
+    def require_tenant
+      Thread.current[:tenant_required] = true
+    end
   end
   
   module ModelExtensions
@@ -68,6 +76,9 @@ module ActsAsTenant
     
         # set the default_scope to scope to current tenant
         default_scope lambda {
+          if ActsAsTenant.tenant_required?
+            raise ActsAsTenant::ScopeNotSet
+          end
           where({fkey => ActsAsTenant.current_tenant.id}) if ActsAsTenant.current_tenant
         }
     
@@ -92,7 +103,7 @@ module ActsAsTenant
         # we can't do this for polymorphic associations so we 
         # exempt them
         reflect_on_all_associations.each do |a|
-          unless a == reflection || a.macro == :has_many || a.macro == :has_one || a.macro == :has_and_belongs_to_many || a.options[:polymorphic]
+          unless a == reflection || a.macro == :has_many || a.macro == :has_one || a.options[:polymorphic] 
             # check if the association is aliasing another class, if so 
             # find the unaliased class name
             association_class =  a.options[:class_name].nil? ? a.name.to_s.classify.constantize : a.options[:class_name].constantize

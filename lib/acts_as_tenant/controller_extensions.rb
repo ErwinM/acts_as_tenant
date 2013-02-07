@@ -48,8 +48,10 @@ module ActsAsTenant
           end
       end
     end
-    
-    
+
+    def require_tenant
+      ActsAsTenant.require_tenant
+    end
     
     # this method allows manual setting of the current_tenant by passing in a tenant object
     # 
