@@ -1,6 +1,7 @@
 0.3.0
 -----
 * You can now raise an exception if a query on a scope model is made without a tenant set. Adding `require_tenant` to your application controller will invoke this behavior.
+* `ActsAsTenant.with_tenant` will now return the value of the block it evaluates instead of the original tenant. The original tenant is restored automatically.
 
 
 0.2.9
