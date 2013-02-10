@@ -201,13 +201,19 @@ describe ActsAsTenant do
     end
     
     it 'should not be possible to create a duplicate within the same tenant' do
-      @project2 = Project.create(:name => 'bar').valid?.should == false
+      Project.create(:name => 'bar').valid?.should == false
     end
     
     it 'should be possible to create a duplicate outside the tenant scope' do
-      @account = Account.create!(:name => 'baz')
-      ActsAsTenant.current_tenant = @account
-      @project2 = Project.create(:name => 'bar').valid?.should == true
+      account = Account.create!(:name => 'baz')
+      ActsAsTenant.current_tenant = account
+      Project.create(:name => 'bar').valid?.should == true
+    end
+    
+    it 'applies additional scopes' do
+      subtask1 = SubTask.create!(:name => 'foo', :attribute2 => 'unique_scope')
+      SubTask.create(:name => 'foo', :attribute2 => 'another_scope').should be_valid
+      SubTask.create(:name => 'foo', :attribute2 => 'unique_scope').should_not be_valid
     end
   end
   
@@ -216,12 +222,12 @@ describe ActsAsTenant do
       @city1 = City.create!(:name => 'foo')
     end
     it 'should not be possible to create duplicates' do
-      @city2 = City.create(:name => 'foo').valid?.should == false
+      City.create(:name => 'foo').valid?.should == false
     end
   end
   
   describe "It should be possible to use aliased associations" do
-    it { @sub_task = SubTask.create(:name => 'foo').valid?.should == true }
+    it { SubTask.create(:name => 'foo').valid?.should == true }
   end
   
   describe "It should be possible to create and save an AaT-enabled child without it having a parent" do
@@ -239,8 +245,7 @@ describe ActsAsTenant do
       end
     end
 
-
-    it "should return current_tenant to the previous tenant once exiting the block" do
+    it "should reset current_tenant to the previous tenant once exiting the block" do
       @account1 = Account.create!(:name => 'foo')
       @account2 = Account.create!(:name => 'bar')
       
@@ -250,6 +255,18 @@ describe ActsAsTenant do
       end
 
       ActsAsTenant.current_tenant.should eq(@account1)
+    end
+
+    it "should return the value of the block" do
+      @account1 = Account.create!(:name => 'foo')
+      @account2 = Account.create!(:name => 'bar')
+      
+      ActsAsTenant.current_tenant = @account1
+      value = ActsAsTenant.with_tenant @account2 do
+        "something"
+      end
+      
+      value.should eq "something"
     end
 
     it "should raise an error when no block is provided" do
