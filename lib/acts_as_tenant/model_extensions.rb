@@ -45,7 +45,7 @@ module ActsAsTenant
         
         default_scope lambda {
           if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil?
-            raise "No tenant found, while tenant_required is set to true [ActsAsTenant]"
+            raise ActsAsTenant::Errors::NoTenantSet
           end
           where({ActsAsTenant.fkey => ActsAsTenant.current_tenant.id}) if ActsAsTenant.current_tenant
         }
@@ -73,12 +73,12 @@ module ActsAsTenant
         # - Add a helper method to verify if a model has been scoped by AaT
         #
         define_method "#{ActsAsTenant.fkey}=" do |integer|
-          raise "#{ActsAsTenant.fkey} is immutable! [ActsAsTenant]" unless new_record?
+          raise ActsAsTenant::Errors::TenantIsImmutable unless new_record?
           write_attribute("#{ActsAsTenant.fkey}", integer)  
         end
 
         define_method "#{ActsAsTenant.tenant_klass.to_s}=" do |model|  
-          raise "#{ActsAsTenant.tenant_klass} is immutable! [ActsAsTenant]" unless new_record?
+          raise ActsAsTenant::Errors::TenantIsImmutable unless new_record?
           super(model) 
         end
         
@@ -88,7 +88,7 @@ module ActsAsTenant
       end
       
       def validates_uniqueness_to_tenant(fields, args ={})
-        raise "[ActsAsTenant] validates_uniqueness_to_tenant: model is not scoped by a tenant" unless respond_to?(:scoped_by_tenant?)
+        raise ActsAsTenant::Errors::ModelNotScopedByTenant unless respond_to?(:scoped_by_tenant?)
         tenant_id = lambda { "#{ActsAsTenant.fkey}"}.call
         if args[:scope]
           args[:scope] = Array(args[:scope]) << tenant_id

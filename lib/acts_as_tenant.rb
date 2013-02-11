@@ -8,6 +8,7 @@ require "active_model"
 
 require "acts_as_tenant"
 require "acts_as_tenant/version"
+require "acts_as_tenant/errors"
 require "acts_as_tenant/configuration"
 require "acts_as_tenant/controller_extensions"
 require "acts_as_tenant/model_extensions"
