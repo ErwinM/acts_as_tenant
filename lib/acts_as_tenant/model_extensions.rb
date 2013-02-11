@@ -32,14 +32,6 @@ module ActsAsTenant
     self.current_tenant= old_tenant
     return value
   end
-
-  def self.tenant_required?
-    Thread.current[:tenant_required]
-  end
-
-  def self.require_tenant
-    Thread.current[:tenant_required] = true
-  end
   
   module ModelExtensions
     def self.included(base)
@@ -52,7 +44,7 @@ module ActsAsTenant
         ActsAsTenant.set_tenant_klass(association)
         
         default_scope lambda {
-          if ActsAsTenant.tenant_required? && ActsAsTenant.current_tenant.nil?
+          if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil?
             raise "No tenant found, while tenant_required is set to true [ActsAsTenant]"
           end
           where({ActsAsTenant.fkey => ActsAsTenant.current_tenant.id}) if ActsAsTenant.current_tenant
@@ -103,6 +95,7 @@ module ActsAsTenant
         else
           args[:scope] = tenant_id
         end
+        
         validates_uniqueness_of(fields, args)
       end
     end

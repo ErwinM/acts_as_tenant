@@ -66,9 +66,9 @@ any code in this block will be scoped to the current tenant. All methods that se
 
 **note:** If the current tenant is not set by one of these methods, Acts_as_tenant will be unable to apply the proper scope to your models. So make sure you use one of the two methods to tell acts_as_tenant about the current tenant.
 
-**Requiring tenant to be set**
+**Require tenant to be set always**
 
-If you want to require the tenant to be set at all times, include ```require_tenant``` in your ApplicationController. Acts_as_tenant will then raise an exeception if a query is made without a tenant available.
+If you want to require the tenant to be set at all times, you can configure acts_as_tenant to raise an error when a query is made without a tenant available. See below under configuarion options.
 
 Scoping your models
 -------------------
@@ -114,6 +114,19 @@ If you need to validate for uniqueness, chances are that you want to scope this 
     validates_uniqueness_to_tenant :name, :email
 
 All options available to Rails' own `validates_uniqueness_of` are also available to this method.
+
+Configuration options
+---------------------
+An initializer can be created to control (currently one) option in ActsAsTenant. Defaults
+are shown below with sample overrides following. In `config/initializer/acts_as_tenant.rb`:
+
+```ruby
+ActsAsTenant.configure do |config|
+  config.require_tenant = false # true
+end
+```
+
+* `config.require_tenant` when set to true will raise an ActsAsTenant::NoTenant error whenever a query is made without a tenant set.
 
 Note on testing
 ---------------

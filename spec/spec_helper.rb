@@ -6,6 +6,8 @@ require 'action_controller'
 require 'logger'
 require 'database_cleaner'
 
+require 'acts_as_tenant'
+require 'acts_as_tenant/configuration'
 require 'acts_as_tenant/model_extensions'
 require 'acts_as_tenant/controller_extensions'
 
@@ -16,15 +18,7 @@ config = YAML::load(IO.read(File.join(File.dirname(__FILE__), 'database.yml')))
 ActiveRecord::Base.logger = Logger.new(File.join(File.dirname(__FILE__), "debug.log"))
 ActiveRecord::Base.establish_connection(config[ENV['DB'] || 'sqlite'])
 
-# Requires supporting files with custom matchers and macros, etc,
-# in ./support/ and its subdirectories.
-#Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
-
-#RSpec.configure do |config|
-#end
-
 RSpec.configure do |config|
-
   config.before(:suite) do
     DatabaseCleaner.strategy = :transaction
     DatabaseCleaner.clean_with(:truncation)
@@ -36,6 +30,7 @@ RSpec.configure do |config|
 
   config.after(:each) do
     DatabaseCleaner.clean
+    ActsAsTenant.current_tenant = nil
   end
 
 end

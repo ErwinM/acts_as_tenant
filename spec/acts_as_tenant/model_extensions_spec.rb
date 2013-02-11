@@ -10,35 +10,35 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column :name, :string
     t.column :account_id, :integer
   end
-  
+
   create_table :managers, :force => true do |t|
     t.column :name, :string
     t.column :project_id, :integer
     t.column :account_id, :integer
   end
-  
+
   create_table :tasks, :force => true do |t|
     t.column :name, :string
     t.column :account_id, :integer
     t.column :project_id, :integer
     t.column :completed, :boolean
   end
-  
+
   create_table :countries, :force => true do |t|
     t.column :name, :string
   end
-  
+
   create_table :cities, :force => true do |t|
     t.column :name, :string
   end
-  
+
   create_table :sub_tasks, :force => true do |t|
     t.column :name, :string
     t.column :attribute2, :string
     t.column :something_else, :integer
     t.column :account_id, :integer
   end
-  
+
 end
 
 # Setup the models
@@ -50,7 +50,7 @@ class Project < ActiveRecord::Base
   has_one :manager
   has_many :tasks
   acts_as_tenant :account
-  
+
   validates_uniqueness_to_tenant :name
 end
 
@@ -62,7 +62,7 @@ end
 class Task < ActiveRecord::Base
   belongs_to :project
   default_scope :conditions => { :completed => nil }, :order => "name"
-  
+
   acts_as_tenant :account
   validates_uniqueness_of :name
 end
@@ -85,17 +85,11 @@ describe ActsAsTenant do
     before { ActsAsTenant.current_tenant = :foo }
     it { ActsAsTenant.current_tenant == :foo }
   end
-  
+
   describe 'is_scoped_as_tenant should return the correct value' do
     it {Project.respond_to?(:scoped_by_tenant?).should == true}
   end
-  
-  describe 'sets tenant_required' do
-    before { ActsAsTenant.require_tenant }
-    it { ActsAsTenant.tenant_required?.should be_true }
-    after { Thread.current[:tenant_required] = nil }
-  end
-  
+
   describe 'Project.all should be scoped to the current tenant if set' do
     before do
       @account1 = Account.create!(:name => 'foo')
@@ -103,12 +97,11 @@ describe ActsAsTenant do
 
       @project1 = @account1.projects.create!(:name => 'foobar')
       @project2 = @account2.projects.create!(:name => 'baz')
-      
+
       ActsAsTenant.current_tenant= @account1
       @projects = Project.all
-      #debugger
     end
-    
+
     it { @projects.length.should == 1 }
     it { @projects.should == [@project1] }
   end
@@ -120,104 +113,104 @@ describe ActsAsTenant do
 
       @project1 = @account1.projects.create!(:name => 'foobar')
       @project2 = @account2.projects.create!(:name => 'baz')
-      
+
       ActsAsTenant.current_tenant= @account1
       @projects = Project.unscoped.all
     end
-    
+
     it { @projects.length.should == 2 }
   end
-  
+
   describe 'Associations should be correctly scoped by current tenant' do
     before do
       @account = Account.create!(:name => 'foo')
       @project = @account.projects.create!(:name => 'foobar', :account_id => @account.id )
-      # the next line would normally be nearly impossible: a task assigned to a tenant project, 
+      # the next line would normally be nearly impossible: a task assigned to a tenant project,
       # but the task has no tenant assigned
-      @task1 = Task.create!(:name => 'no_tenant', :project => @project) 
-      
+      @task1 = Task.create!(:name => 'no_tenant', :project => @project)
+
       ActsAsTenant.current_tenant = @account
       @task2 = @project.tasks.create!(:name => 'baz')
       @tasks = @project.tasks
     end
-    
+
     it 'should correctly set the tenant on the task created with current_tenant set' do
       @task2.account.should == @account
     end
-    
+
     it 'should filter out the non-tenant task from the project' do
       @tasks.length.should == 1
     end
   end
-  
+
   describe 'When dealing with a user defined default_scope' do
     before do
       @account = Account.create!(:name => 'foo')
       @project1 = Project.create!(:name => 'inaccessible')
       @task1 = Task.create!(:name => 'no_tenant', :project => @project1)
-      
+
       ActsAsTenant.current_tenant = @account
       @project2 = Project.create!(:name => 'accessible')
       @task2 = @project2.tasks.create!(:name => 'bar')
       @task3 = @project2.tasks.create!(:name => 'baz')
       @task4 = @project2.tasks.create!(:name => 'foo')
       @task5 = @project2.tasks.create!(:name => 'foobar', :completed => true )
-      
+
       @tasks= Task.all
     end
-    
+
     it 'should apply both the tenant scope and the user defined default_scope, including :order' do
-      @tasks.length.should == 3 
-      @tasks.should == [@task2, @task3, @task4] 
+      @tasks.length.should == 3
+      @tasks.should == [@task2, @task3, @task4]
     end
   end
-  
+
   describe 'tenant_id should be immutable' do
     before do
       @account = Account.create!(:name => 'foo')
       @project = @account.projects.create!(:name => 'bar')
     end
-    
+
     it { lambda {@project.account_id = @account.id + 1}.should raise_error }
   end
-    
+
   describe 'Associations can only be made with in-scope objects' do
     before do
       @account = Account.create!(:name => 'foo')
       @project1 = Project.create!(:name => 'inaccessible_project', :account_id => @account.id + 1)
-      
+
       ActsAsTenant.current_tenant = @account
       @project2 = Project.create!(:name => 'accessible_project')
       @task = @project2.tasks.create!(:name => 'bar')
     end
-  
+
     it { @task.update_attributes(:project_id => @project1.id).should == false }
   end
-  
+
   describe 'When using validates_uniqueness_to_tenant in a aat model' do
     before do
       @account = Account.create!(:name => 'foo')
       ActsAsTenant.current_tenant = @account
       @project1 = Project.create!(:name => 'bar')
     end
-    
+
     it 'should not be possible to create a duplicate within the same tenant' do
       Project.create(:name => 'bar').valid?.should == false
     end
-    
+
     it 'should be possible to create a duplicate outside the tenant scope' do
       account = Account.create!(:name => 'baz')
       ActsAsTenant.current_tenant = account
       Project.create(:name => 'bar').valid?.should == true
     end
-    
+
     it 'applies additional scopes' do
       subtask1 = SubTask.create!(:name => 'foo', :attribute2 => 'unique_scope')
       SubTask.create(:name => 'foo', :attribute2 => 'another_scope').should be_valid
       SubTask.create(:name => 'foo', :attribute2 => 'unique_scope').should_not be_valid
     end
   end
-  
+
   describe 'When using validates_uniqueness_of in a NON-aat model' do
     before do
       @city1 = City.create!(:name => 'foo')
@@ -226,11 +219,11 @@ describe ActsAsTenant do
       City.create(:name => 'foo').valid?.should == false
     end
   end
-  
+
   describe "It should be possible to use aliased associations" do
     it { SubTask.create(:name => 'foo').valid?.should == true }
   end
-  
+
   describe "It should be possible to create and save an AaT-enabled child without it having a parent" do
       @account = Account.create!(:name => 'baz')
       ActsAsTenant.current_tenant = @account
@@ -249,7 +242,7 @@ describe ActsAsTenant do
     it "should reset current_tenant to the previous tenant once exiting the block" do
       @account1 = Account.create!(:name => 'foo')
       @account2 = Account.create!(:name => 'bar')
-      
+
       ActsAsTenant.current_tenant = @account1
       ActsAsTenant.with_tenant @account2 do
 
@@ -261,12 +254,12 @@ describe ActsAsTenant do
     it "should return the value of the block" do
       @account1 = Account.create!(:name => 'foo')
       @account2 = Account.create!(:name => 'bar')
-      
+
       ActsAsTenant.current_tenant = @account1
       value = ActsAsTenant.with_tenant @account2 do
         "something"
       end
-      
+
       value.should eq "something"
     end
 
@@ -279,36 +272,25 @@ describe ActsAsTenant do
     describe "raises exception if no tenant specified" do
       before do
         @account1 = Account.create!(:name => 'foo')
-        @account2 = Account.create!(:name => 'bar')
-
         @project1 = @account1.projects.create!(:name => 'foobar')
-        @project2 = @account2.projects.create!(:name => 'baz')
-
-        ActsAsTenant.require_tenant
+        ActsAsTenant.configuration.stub(require_tenant: true)
       end
-
+      
       it "should raise an error when no tenant is provided" do
         expect { Project.all }.to raise_error
       end
-      
-      after { Thread.current[:tenant_required] = nil }
     end
   end
-  
-  
-  
+
   context "no tenant required" do
     describe "does not raise exception if no tenant specified" do
       before do
         @account1 = Account.create!(:name => 'foo')
-        @account2 = Account.create!(:name => 'bar')
-
         @project1 = @account1.projects.create!(:name => 'foobar')
-        @project2 = @account2.projects.create!(:name => 'baz')
       end
 
       it "should not raise an error when no tenant is provided" do
-        expect { Project.all }.should_not raise_error
+        expect { Project.all }.to_not raise_error
       end
     end
   end

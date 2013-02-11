@@ -8,9 +8,9 @@ require "active_model"
 
 require "acts_as_tenant"
 require "acts_as_tenant/version"
-require "acts_as_tenant/exceptions"
-require "acts_as_tenant/controller_extensions.rb"
-require "acts_as_tenant/model_extensions.rb"
+require "acts_as_tenant/configuration"
+require "acts_as_tenant/controller_extensions"
+require "acts_as_tenant/model_extensions"
 
 #$LOAD_PATH.shift
 
@@ -19,5 +19,6 @@ if defined?(ActiveRecord::Base)
   ActionController::Base.extend ActsAsTenant::ControllerExtensions
 end
 
- 
+module ActsAsTenant
+end
   
