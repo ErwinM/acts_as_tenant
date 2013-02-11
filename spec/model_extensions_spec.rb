@@ -83,12 +83,11 @@ describe ActsAsTenant do
 
   describe 'Setting the current tenant' do
     before { ActsAsTenant.current_tenant = :foo }
-    debugger
     it { ActsAsTenant.current_tenant == :foo }
   end
   
   describe 'is_scoped_as_tenant should return the correct value' do
-    it {Project.respond_to?(:is_scoped_by_tenant?).should == true}
+    it {Project.respond_to?(:scoped_by_tenant?).should == true}
   end
   
   describe 'sets tenant_required' do
@@ -107,6 +106,7 @@ describe ActsAsTenant do
       
       ActsAsTenant.current_tenant= @account1
       @projects = Project.all
+      #debugger
     end
     
     it { @projects.length.should == 1 }
