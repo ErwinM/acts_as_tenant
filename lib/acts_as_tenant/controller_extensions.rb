@@ -5,17 +5,21 @@ module ActsAsTenant
     # it up in the tenant-model passed to the method (defaults to Account). The method will 
     # look for the subdomain in a column referenced by the second argument (defaults to subdomain).
     def set_current_tenant_by_subdomain(tenant = :account, column = :subdomain )
-      @tenant_class = tenant.to_s.camelcase.constantize
-      @tenant_column = column.to_sym
-
+      self.class_eval do
+        cattr_accessor :tenant_class, :tenant_column
+      end
+      
+      self.tenant_class = tenant.to_s.camelcase.constantize
+      self.tenant_column = column.to_sym
+      
       self.class_eval do
         before_filter :find_tenant_by_subdomain
         helper_method :current_tenant
         
         private
           def find_tenant_by_subdomain
-            ActsAsTenant.current_tenant = @tenant_class.where(@tenant_column => request.subdomains.first).first
-            @current_tenant_instance = ActsAsTenant.current_tenant
+            ActsAsTenant.current_tenant = tenant_class.where(tenant_column => request.subdomains.first).first
+            #@current_tenant_instance = ActsAsTenant.current_tenant
           end
           
           def current_tenant
