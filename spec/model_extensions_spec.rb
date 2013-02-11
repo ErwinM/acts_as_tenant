@@ -83,6 +83,7 @@ describe ActsAsTenant do
 
   describe 'Setting the current tenant' do
     before { ActsAsTenant.current_tenant = :foo }
+    debugger
     it { ActsAsTenant.current_tenant == :foo }
   end
   

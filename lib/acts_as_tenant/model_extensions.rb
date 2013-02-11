@@ -1,42 +1,35 @@
-# ActsAsTenant
-
-
 module ActsAsTenant
-  
-  class << self
-    cattr_accessor :tenant_class
 
-    # This will also work whithin Fibers:
-    # http://devblog.avdi.org/2012/02/02/ruby-thread-locals-are-also-fiber-local/
-    def current_tenant=(tenant)
-      Thread.current[:current_tenant] = tenant
+  # This will also work whithin Fibers:
+  # http://devblog.avdi.org/2012/02/02/ruby-thread-locals-are-also-fiber-local/
+  def self.current_tenant=(tenant)
+    Thread.current[:current_tenant] = tenant
+  end
+
+  def self.current_tenant
+    Thread.current[:current_tenant]
+  end
+
+  # Sets the current_tenant within the given block
+  def self.with_tenant(tenant, &block)
+    if block.nil?
+      raise ArgumentError, "block required"
     end
 
-    def current_tenant
-      Thread.current[:current_tenant]
-    end
+    old_tenant = self.current_tenant
+    self.current_tenant = tenant
 
-    # Sets the current_tenant within the given block
-    def with_tenant(tenant, &block)
-      if block.nil?
-        raise ArgumentError, "block required"
-      end
+    value = block.call
+    self.current_tenant= old_tenant
+    return value
+  end
 
-      old_tenant = self.current_tenant
-      self.current_tenant = tenant
+  def self.tenant_required?
+    Thread.current[:tenant_required]
+  end
 
-      value = block.call
-      self.current_tenant= old_tenant
-      return value
-    end
-
-    def tenant_required?
-      Thread.current[:tenant_required]
-    end
-
-    def require_tenant
-      Thread.current[:tenant_required] = true
-    end
+  def self.require_tenant
+    Thread.current[:tenant_required] = true
   end
   
   module ModelExtensions
@@ -45,18 +38,16 @@ module ActsAsTenant
     # Alias the v_uniqueness_of method so we can scope it to the current tenant when relevant
   
     module ClassMethods
-    
       def acts_as_tenant(association = :account)
+        belongs_to association
         
         # Method that enables checking if a class is scoped by tenant
         def self.is_scoped_by_tenant?
           true
         end
         
-        ActsAsTenant.tenant_class ||= association
-        
-        # Setup the association between the class and the tenant class
-        belongs_to association
+        @tenant_klass ||= association
+       
       
         # get the tenant model and its foreign key
         reflection = reflect_on_association association
@@ -118,7 +109,7 @@ module ActsAsTenant
       
       def validates_uniqueness_to_tenant(fields, args ={})
         raise "[ActsAsTenant] validates_uniqueness_to_tenant: no current tenant" unless respond_to?(:is_scoped_by_tenant?)
-        tenant_id = lambda { "#{ActsAsTenant.tenant_class.to_s.downcase}_id"}.call
+        tenant_id = lambda { "#{@tenant_klass.to_s.downcase}_id"}.call
         if args[:scope]
           args[:scope] = Array(args[:scope]) << tenant_id
         else
