@@ -16,7 +16,7 @@ module ActsAsTenant
   end
 
   class Configuration
-    attr_accessor :require_tenant
+    attr_writer :require_tenant
   
     def require_tenant
       @require_tenant ||= false
