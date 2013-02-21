@@ -3,10 +3,10 @@
 require "active_record"
 require "action_controller"
 require "active_model"
+require "request_store"
 
 #$LOAD_PATH.unshift(File.dirname(__FILE__))
 
-require "acts_as_tenant"
 require "acts_as_tenant/version"
 require "acts_as_tenant/errors"
 require "acts_as_tenant/configuration"

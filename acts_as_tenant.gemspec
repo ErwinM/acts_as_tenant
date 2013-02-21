@@ -18,7 +18,10 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
   
+  #add_runtime_dependency("rails")
+  s.add_runtime_dependency('request_store', '>= 1.0.5')
   s.add_dependency('rails','>= 3.1')
+  #s.add_dependency('request_store', '>= 1.0.5')
 
   s.add_development_dependency('rspec')
   s.add_development_dependency('database_cleaner')

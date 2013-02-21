@@ -14,11 +14,11 @@ module ActsAsTenant
   end
   
   def self.current_tenant=(tenant)
-    Thread.current[:current_tenant] = tenant
+    RequestStore.store[:current_tenant] = tenant
   end
 
   def self.current_tenant
-    Thread.current[:current_tenant]
+    RequestStore.store[:current_tenant]
   end
 
   def self.with_tenant(tenant, &block)
