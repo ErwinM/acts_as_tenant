@@ -50,7 +50,7 @@ module ActsAsTenant
           where({ActsAsTenant.fkey => ActsAsTenant.current_tenant.id}) if ActsAsTenant.current_tenant
         }
 
-        # Add validations the following validations to the receiving model:
+        # Add the following validations to the receiving model:
         # - new instances should have the tenant set
         # - validate that associations belong to the tenant, currently only for belongs_to
         #
