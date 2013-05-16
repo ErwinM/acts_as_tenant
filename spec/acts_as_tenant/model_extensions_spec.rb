@@ -277,7 +277,7 @@ describe ActsAsTenant do
       end
 
       it "should raise an error when no tenant is provided" do
-        expect { Project.load.to_a }.to raise_error
+        expect { Project.all.load }.to raise_error(ActsAsTenant::Errors::NoTenantSet)
       end
     end
   end
