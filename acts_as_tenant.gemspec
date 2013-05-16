@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   
   #add_runtime_dependency("rails")
   s.add_runtime_dependency('request_store', '>= 1.0.5')
-  s.add_dependency('rails','>= 3.1')
+  s.add_dependency('rails','>= 4.0.0.rc1')
   #s.add_dependency('request_store', '>= 1.0.5')
 
   s.add_development_dependency('rspec')

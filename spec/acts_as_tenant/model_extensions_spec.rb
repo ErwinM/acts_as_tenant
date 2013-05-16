@@ -61,7 +61,7 @@ end
 
 class Task < ActiveRecord::Base
   belongs_to :project
-  default_scope :conditions => { :completed => nil }, :order => "name"
+  default_scope -> { where(:completed => nil).order("name") }
 
   acts_as_tenant :account
   validates_uniqueness_of :name
@@ -115,7 +115,7 @@ describe ActsAsTenant do
       @project2 = @account2.projects.create!(:name => 'baz')
 
       ActsAsTenant.current_tenant= @account1
-      @projects = Project.unscoped.all
+      @projects = Project.unscoped.load
     end
 
     it { @projects.length.should == 2 }
@@ -275,9 +275,9 @@ describe ActsAsTenant do
         @project1 = @account1.projects.create!(:name => 'foobar')
         ActsAsTenant.configuration.stub(require_tenant: true)
       end
-      
+
       it "should raise an error when no tenant is provided" do
-        expect { Project.all }.to raise_error
+        expect { Project.all.load }.to raise_error(ActsAsTenant::Errors::NoTenantSet)
       end
     end
   end
