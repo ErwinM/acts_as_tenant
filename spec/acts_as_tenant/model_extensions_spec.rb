@@ -115,7 +115,7 @@ describe ActsAsTenant do
       @project2 = @account2.projects.create!(:name => 'baz')
 
       ActsAsTenant.current_tenant= @account1
-      @projects = Project.unscoped.all
+      @projects = Project.unscoped.load
     end
 
     it { @projects.length.should == 2 }
