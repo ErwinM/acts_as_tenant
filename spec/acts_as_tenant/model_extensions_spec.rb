@@ -115,15 +115,11 @@ describe ActsAsTenant do
       @project2 = @account2.projects.create!(:name => 'baz')
 
       ActsAsTenant.current_tenant = @account1
-      
-      if ActiveRecord::VERSION::MAJOR == 3
-        @projects = Project.unscoped.all
-      else
-        @projects = Project.unscoped.load
-      end
+
+      @projects = Project.unscoped
     end
 
-    it { @projects.length.should == 2 }
+    it { @projects.count.should == 2 }
   end
 
   describe 'Associations should be correctly scoped by current tenant' do
