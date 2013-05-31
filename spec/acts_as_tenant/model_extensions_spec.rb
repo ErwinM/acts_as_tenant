@@ -114,8 +114,13 @@ describe ActsAsTenant do
       @project1 = @account1.projects.create!(:name => 'foobar')
       @project2 = @account2.projects.create!(:name => 'baz')
 
-      ActsAsTenant.current_tenant= @account1
-      @projects = Project.unscoped.load
+      ActsAsTenant.current_tenant = @account1
+      
+      if ActiveRecord::VERSION::MAJOR == 3
+        @projects = Project.unscoped.all
+      else
+        @projects = Project.unscoped.load
+      end
     end
 
     it { @projects.length.should == 2 }
