@@ -55,8 +55,9 @@ module ActsAsTenant
         # - validate that associations belong to the tenant, currently only for belongs_to
         #
         before_validation Proc.new {|m|
-          return unless ActsAsTenant.current_tenant
-          m.send "#{association}_id=".to_sym, ActsAsTenant.current_tenant.id
+          if ActsAsTenant.current_tenant
+            m.send "#{association}_id=".to_sym, ActsAsTenant.current_tenant.id
+          end
         }, :on => :create
     
         reflect_on_all_associations.each do |a|
