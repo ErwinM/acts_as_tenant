@@ -1,3 +1,7 @@
+0.3.1
+-----
+* Added support for Rails 4
+
 0.3.0
 -----
 * You can now raise an exception if a query on a scope model is made without a tenant set. Adding an initializer that sets config.require_tenant to true will accomplish this. See readme for more details.
