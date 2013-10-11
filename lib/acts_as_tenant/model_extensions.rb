@@ -47,7 +47,7 @@ module ActsAsTenant
           if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil?
             raise ActsAsTenant::Errors::NoTenantSet
           end
-          where({ActsAsTenant.fkey => ActsAsTenant.current_tenant.id}) if ActsAsTenant.current_tenant
+          where("#{self.table_name}.#{ActsAsTenant.fkey} = ?", ActsAsTenant.current_tenant.id)  if ActsAsTenant.current_tenant
         }
 
         # Add the following validations to the receiving model:
