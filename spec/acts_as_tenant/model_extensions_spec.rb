@@ -165,13 +165,23 @@ describe ActsAsTenant do
     end
   end
 
-  describe 'tenant_id should be immutable' do
+  describe 'tenant_id should be immutable, if already set' do
     before do
       @account = Account.create!(:name => 'foo')
       @project = @account.projects.create!(:name => 'bar')
     end
 
     it { lambda {@project.account_id = @account.id + 1}.should raise_error }
+  end
+
+  describe 'tenant_id should be mutable, if not already set' do
+    before do
+      @account = Account.create!(:name => 'foo')
+      @project = Project.create!(:name => 'bar')
+    end
+
+    it { @project.account_id.should be_nil }
+    it { lambda { @project.account = @account }.should_not raise_error }
   end
 
   describe 'Associations can only be made with in-scope objects' do
@@ -275,7 +285,7 @@ describe ActsAsTenant do
         @project1 = @account1.projects.create!(:name => 'foobar')
         ActsAsTenant.configuration.stub(require_tenant: true)
       end
-      
+
       it "should raise an error when no tenant is provided" do
         expect { Project.all.load }.to raise_error(ActsAsTenant::Errors::NoTenantSet)
       end
