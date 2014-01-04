@@ -86,9 +86,9 @@ module ActsAsTenant
           super(model)
         end
         
-        define_method "#{ActsAsTenant.tenant_klass.to_s}" do
+        define_method "#{ActsAsTenant.tenant_klass.to_s}" do 
           return ActsAsTenant.current_tenant if send(ActsAsTenant.fkey) == ActsAsTenant.current_tenant.id
-          super(reload)
+          super()
         end
         
         def scoped_by_tenant?
