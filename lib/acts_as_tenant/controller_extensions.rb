@@ -18,7 +18,7 @@ module ActsAsTenant
         
         private
           def find_tenant_by_subdomain
-            ActsAsTenant.current_tenant = tenant_class.where(tenant_column => request.subdomains.first).first
+            ActsAsTenant.current_tenant = tenant_class.where(tenant_column => request.subdomains.last).first
           end
           
           def current_tenant

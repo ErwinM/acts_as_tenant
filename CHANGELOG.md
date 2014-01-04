@@ -1,3 +1,9 @@
+0.3.2
+-----
+* correctly support nested models with has_many :through (thx dexion)
+* Support 'www.subdomain.example.com' (thx wtfiwtz)
+* Support setting `tenant_id` on scoped models if the `tenant_id` is nil (thx Matt Wilson)
+
 0.3.1
 -----
 * Added support for Rails 4
