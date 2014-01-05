@@ -15,7 +15,7 @@ class ApplicationController2 < ActionController::Base
     current_account.name = 'account1'
     set_current_tenant(current_account)
   end
-  
+
 end
 
 # Start testing
@@ -25,7 +25,7 @@ describe ApplicationController2, :type => :controller do
       render :text => "custom called"
     end
   end
-  
+
   it 'Finds the correct tenant using the filter command' do
     get :index
     ActsAsTenant.current_tenant.name.should eq 'account1'

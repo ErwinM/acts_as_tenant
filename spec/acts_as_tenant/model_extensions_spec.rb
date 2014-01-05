@@ -29,15 +29,26 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column :name, :string
   end
 
-  create_table :cities, :force => true do |t|
+  create_table :unscoped_models, :force => true do |t|
     t.column :name, :string
   end
 
-  create_table :sub_tasks, :force => true do |t|
+  create_table :aliased_tasks, :force => true do |t|
     t.column :name, :string
-    t.column :attribute2, :string
-    t.column :something_else, :integer
+    t.column :project_alias_id, :integer
     t.column :account_id, :integer
+  end
+
+  create_table :unique_tasks, :force => true do |t|
+    t.column :name, :string
+    t.column :user_defined_scope, :string
+    t.column :project_id, :integer
+    t.column :account_id, :integer
+  end
+
+  create_table :custom_foreign_key_tasks, :force => true do |t|
+    t.column :name, :string
+    t.column :accountID, :integer
   end
 
 end
@@ -68,20 +79,31 @@ class Task < ActiveRecord::Base
   validates_uniqueness_of :name
 end
 
-class City < ActiveRecord::Base
+class UnscopedModel < ActiveRecord::Base
   validates_uniqueness_of :name
 end
 
-class SubTask < ActiveRecord::Base
-  acts_as_tenant :account
-  belongs_to :something_else, :class_name => "Project"
-  validates_uniqueness_to_tenant :name, scope: :attribute2
+class AliasedTask < ActiveRecord::Base
+  acts_as_tenant(:account)
+  belongs_to :project_alias, :class_name => "Project"
+end
+
+class UniqueTask < ActiveRecord::Base
+  acts_as_tenant(:account)
+  belongs_to :project
+  validates_uniqueness_to_tenant :name, scope: :user_defined_scope
+end
+
+class CustomForeignKeyTask < ActiveRecord::Base
+  acts_as_tenant(:account, :foreign_key => "accountID")
+  validates_uniqueness_to_tenant :name
 end
 
 # Start testing!
 describe ActsAsTenant do
   after { ActsAsTenant.current_tenant = nil }
 
+  # Setting and getting
   describe 'Setting the current tenant' do
     before { ActsAsTenant.current_tenant = :foo }
     it { ActsAsTenant.current_tenant == :foo }
@@ -91,6 +113,36 @@ describe ActsAsTenant do
     it {Project.respond_to?(:scoped_by_tenant?).should == true}
   end
 
+  describe 'tenant_id should be immutable, if already set' do
+    before do
+      @account = Account.create!(:name => 'foo')
+      @project = @account.projects.create!(:name => 'bar')
+    end
+
+    it { lambda {@project.account_id = @account.id + 1}.should raise_error }
+  end
+
+  describe 'tenant_id should be mutable, if not already set' do
+    before do
+      @account = Account.create!(:name => 'foo')
+      @project = Project.create!(:name => 'bar')
+    end
+
+    it { @project.account_id.should be_nil }
+    it { lambda { @project.account = @account }.should_not raise_error }
+  end
+
+  describe 'Handles custom foreign_key on tenant model' do
+    before do
+      @account  = Account.create!(:name => 'foo')
+      ActsAsTenant.current_tenant = @account
+      @custom_foreign_key_task = CustomForeignKeyTask.create!(:name => 'foo')
+    end
+
+    it { @custom_foreign_key_task.account.should == @account }
+  end
+
+  # Scoping models
   describe 'Project.all should be scoped to the current tenant if set' do
     before do
       @account1 = Account.create!(:name => 'foo')
@@ -122,11 +174,12 @@ describe ActsAsTenant do
     it { @projects.count.should == 2 }
   end
 
+  # Associations
   describe 'Associations should be correctly scoped by current tenant' do
     before do
       @account = Account.create!(:name => 'foo')
-      @project = @account.projects.create!(:name => 'foobar', :account_id => @account.id )
-      # the next line would normally be nearly impossible: a task assigned to a tenant project,
+      @project = Project.create!(:name => 'foobar', :account => @account )
+      # the next line should normally be (nearly) impossible: a task assigned to a tenant project,
       # but the task has no tenant assigned
       @task1 = Task.create!(:name => 'no_tenant', :project => @project)
 
@@ -144,6 +197,30 @@ describe ActsAsTenant do
     end
   end
 
+  describe 'Associations can only be made with in-scope objects' do
+    before do
+      @account = Account.create!(:name => 'foo')
+      @project1 = Project.create!(:name => 'inaccessible_project', :account_id => @account.id + 1)
+
+      ActsAsTenant.current_tenant = @account
+      @project2 = Project.create!(:name => 'accessible_project')
+      @task = @project2.tasks.create!(:name => 'bar')
+    end
+
+    it { @task.update_attributes(:project_id => @project1.id).should == false }
+  end
+
+  describe "Create and save an AaT-enabled child without it having a parent" do
+      @account = Account.create!(:name => 'baz')
+      ActsAsTenant.current_tenant = @account
+      Task.create(:name => 'bar').valid?.should == true
+  end
+
+  describe "It should be possible to use aliased associations" do
+    it { AliasedTask.create(:name => 'foo', :project_alias => @project2).valid?.should == true }
+  end
+
+  # Additional default_scopes
   describe 'When dealing with a user defined default_scope' do
     before do
       @account = Account.create!(:name => 'foo')
@@ -166,47 +243,16 @@ describe ActsAsTenant do
     end
   end
 
-  describe 'tenant_id should be immutable, if already set' do
-    before do
-      @account = Account.create!(:name => 'foo')
-      @project = @account.projects.create!(:name => 'bar')
-    end
-
-    it { lambda {@project.account_id = @account.id + 1}.should raise_error }
-  end
-
-  describe 'tenant_id should be mutable, if not already set' do
-    before do
-      @account = Account.create!(:name => 'foo')
-      @project = Project.create!(:name => 'bar')
-    end
-
-    it { @project.account_id.should be_nil }
-    it { lambda { @project.account = @account }.should_not raise_error }
-  end
-
-  describe 'Associations can only be made with in-scope objects' do
-    before do
-      @account = Account.create!(:name => 'foo')
-      @project1 = Project.create!(:name => 'inaccessible_project', :account_id => @account.id + 1)
-
-      ActsAsTenant.current_tenant = @account
-      @project2 = Project.create!(:name => 'accessible_project')
-      @task = @project2.tasks.create!(:name => 'bar')
-    end
-
-    it { @task.update_attributes(:project_id => @project1.id).should == false }
-  end
-
+  # Validates_uniqueness
   describe 'When using validates_uniqueness_to_tenant in a aat model' do
     before do
-      @account = Account.create!(:name => 'foo')
-      ActsAsTenant.current_tenant = @account
-      @project1 = Project.create!(:name => 'bar')
+      account = Account.create!(:name => 'foo')
+      ActsAsTenant.current_tenant = account
+      Project.create!(:name => 'existing_name')
     end
 
     it 'should not be possible to create a duplicate within the same tenant' do
-      Project.create(:name => 'bar').valid?.should == false
+      Project.create(:name => 'existing_name').valid?.should == false
     end
 
     it 'should be possible to create a duplicate outside the tenant scope' do
@@ -214,33 +260,27 @@ describe ActsAsTenant do
       ActsAsTenant.current_tenant = account
       Project.create(:name => 'bar').valid?.should == true
     end
+  end
 
-    it 'applies additional scopes' do
-      subtask1 = SubTask.create!(:name => 'foo', :attribute2 => 'unique_scope')
-      SubTask.create(:name => 'foo', :attribute2 => 'another_scope').should be_valid
-      SubTask.create(:name => 'foo', :attribute2 => 'unique_scope').should_not be_valid
+  describe 'Handles user defined scopes' do
+    before do
+      UniqueTask.create!(:name => 'foo', :user_defined_scope => 'unique_scope')
     end
+
+    it { UniqueTask.create(:name => 'foo', :user_defined_scope => 'another_scope').should be_valid }
+    it { UniqueTask.create(:name => 'foo', :user_defined_scope => 'unique_scope').should_not be_valid }
   end
 
   describe 'When using validates_uniqueness_of in a NON-aat model' do
     before do
-      @city1 = City.create!(:name => 'foo')
+      UnscopedModel.create!(:name => 'foo')
     end
     it 'should not be possible to create duplicates' do
-      City.create(:name => 'foo').valid?.should == false
+      UnscopedModel.create(:name => 'foo').valid?.should == false
     end
   end
 
-  describe "It should be possible to use aliased associations" do
-    it { SubTask.create(:name => 'foo').valid?.should == true }
-  end
-
-  describe "It should be possible to create and save an AaT-enabled child without it having a parent" do
-      @account = Account.create!(:name => 'baz')
-      ActsAsTenant.current_tenant = @account
-      Task.create(:name => 'bar').valid?.should == true
-  end
-
+  # ::with_tenant
   describe "::with_tenant" do
     it "should set current_tenant to the specified tenant inside the block" do
       @account = Account.create!(:name => 'baz')
@@ -279,6 +319,7 @@ describe ActsAsTenant do
     end
   end
 
+  # Tenant required
   context "tenant required" do
     describe "raises exception if no tenant specified" do
       before do
