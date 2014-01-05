@@ -21,14 +21,14 @@ Installation
 acts_as_tenant will only work on Rails 3.1 and up. This is due to changes made to the handling of default_scope, an essential pillar of the gem.
 
 To use it, add it to your Gemfile:
-  
+
     gem 'acts_as_tenant'
-  
+
 Getting started
 ===============
 There are two steps in adding multi-tenancy to your app with acts_as_tenant:
 
-1. setting the current tenant and 
+1. setting the current tenant and
 2. scoping your models.
 
 Setting the current tenant
@@ -48,7 +48,7 @@ This tells acts_as_tenant to use the current subdomain to identify the current t
     class ApplicationController < ActionController::Base
       set_current_tenant_through_filter
       before_filter :your_method_that_finds_the_current_tenant
-      
+
       def your_method_that_finds_the_current_tenant
         current_account = Account.find_it
         set_current_tenant(current_account)
@@ -83,26 +83,26 @@ Scoping your models
     class User < ActiveRecord::Base
       acts_as_tenant(:account)
     end
-  
+
 acts_as_tenant requires each scoped model to have a column in its schema linking it to a tenant. Adding acts_as_tenant to your model declaration will scope that model to the current tenant **BUT ONLY if a current tenant has been set**.
 
 Some examples to illustrate this behavior:
 
     # This manually sets the current tenant for testing purposes. In your app this is handled by the gem.
-    ActsAsTenant.current_tenant = Account.find(3)   
-    
-    # All searches are scoped by the tenant, the following searches will only return objects 
+    ActsAsTenant.current_tenant = Account.find(3)
+
+    # All searches are scoped by the tenant, the following searches will only return objects
     # where account_id == 3
     Project.all =>  # all projects with account_id => 3
     Project.tasks.all #  => all tasks with account_id => 3
-     
+
     # New objects are scoped to the current tenant
     @project = Project.new(:name => 'big project')    # => <#Project id: nil, name: 'big project', :account_id: 3>
-    
+
     # It will not allow the creation of objects outside the current_tenant scope
     @project.account_id = 2
     @project.save                                     # => false
-      
+
     # It will not allow association with objects outside the current tenant scope
     # Assuming the Project with ID: 2 does not belong to Account with ID: 3
     @task = Task.new  # => <#Task id: nil, name: nil, project_id: nil, :account_id: 3>
@@ -114,6 +114,14 @@ Acts_as_tenant uses Rails' default_scope method to scope models. Rails 3.1 chang
 If you need to validate for uniqueness, chances are that you want to scope this validation to a tenant. You can do so by using:
 
     validates_uniqueness_to_tenant :name, :email
+
+All options available to Rails' own `validates_uniqueness_of` are also available to this method.
+
+**Custom foreign_key**
+
+You can explicitely specifiy a foreign_key for AaT to use should the key differ from the default:
+
+    acts_as_tenant(:account, :foreign_key => 'accountID) # by default AaT expects account_id
 
 All options available to Rails' own `validates_uniqueness_of` are also available to this method.
 
@@ -136,7 +144,7 @@ Whenever you set the `current_tenant` in your tests, either through integration 
 
 To Do
 -----
-* Change the tests to Test::Unit so I can easily add some controller tests.
+* ...
 
 Bug reports & suggested improvements
 ------------------------------------
@@ -148,7 +156,7 @@ If you want to contribute, fork the project, code your improvements and make a p
 
 Author & Credits
 ----------------
-acts_as_tenant is written by Erwin Matthijssen.  
+acts_as_tenant is written by Erwin Matthijssen.
 Erwin is currently busy developing [Roll Call](http://www.rollcallapp.com/ "Roll Call App").
 
 This gem was inspired by Ryan Sonnek's [Multitenant](https://github.com/wireframe/multitenant) gem and its use of default_scope.
