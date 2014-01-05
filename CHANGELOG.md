@@ -1,3 +1,7 @@
+0.3.3
+-----
+* Support user defined foreign keys on scoped models
+
 0.3.2
 -----
 * correctly support nested models with has_many :through (thx dexion)
