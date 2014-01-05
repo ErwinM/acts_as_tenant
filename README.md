@@ -123,8 +123,6 @@ You can explicitely specifiy a foreign_key for AaT to use should the key differ 
 
     acts_as_tenant(:account, :foreign_key => 'accountID) # by default AaT expects account_id
 
-All options available to Rails' own `validates_uniqueness_of` are also available to this method.
-
 Configuration options
 ---------------------
 An initializer can be created to control (currently one) option in ActsAsTenant. Defaults
