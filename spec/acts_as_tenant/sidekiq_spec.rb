@@ -55,4 +55,14 @@ describe ActsAsTenant::Sidekiq do
       expect(ActsAsTenant.current_tenant).to be_nil
     end
   end
+
+  describe 'Sidekiq configuration' do
+    describe 'client configuration' do
+      it 'includes ActsAsTenant client' do
+        expect(Sidekiq.client_middleware.exists?(ActsAsTenant::Sidekiq::Client)).to be_true
+      end
+    end
+
+    # unable to test server configuration
+  end
 end
