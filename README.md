@@ -136,6 +136,16 @@ end
 
 * `config.require_tenant` when set to true will raise an ActsAsTenant::NoTenant error whenever a query is made without a tenant set.
 
+Sidekiq support
+---------------
+
+ActsAsTenant supports [Sidekiq](http://sidekiq.org/). A background processing library.
+Add the following code to your `config/initializer/acts_as_tenant.rb`:
+
+```ruby
+require 'acts_as_tenant/sidekiq'
+```
+
 Note on testing
 ---------------
 Whenever you set the `current_tenant` in your tests, either through integration tests or directly by calling `ActsAsTenant.current_tenant = some_tenant`, make sure to clean up the tenant after each test by calling `ActsAsTenant.current_tenant = nil`.
