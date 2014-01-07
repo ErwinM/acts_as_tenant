@@ -1,3 +1,7 @@
+0.3.4
+-----
+* Fix to a bug introduced in 0.3.2
+
 0.3.3
 -----
 * Support user defined foreign keys on scoped models

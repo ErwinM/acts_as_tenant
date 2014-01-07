@@ -174,6 +174,24 @@ describe ActsAsTenant do
     it { @projects.count.should == 2 }
   end
 
+  describe 'Querying the tenant from a scoped model without a tenant set' do
+    before do
+      @project = Project.create!(:name => 'bar')
+    end
+
+    it { @project.account }
+  end
+
+  describe 'Querying the tenant from a scoped model with a tenant set' do
+    before do
+      @account = Account.create!(:name => 'foo')
+      @project = @account.projects.create!(:name => 'foobar')
+      ActsAsTenant.current_tenant= @account1
+    end
+
+    it { @project.account }
+  end
+
   # Associations
   describe 'Associations should be correctly scoped by current tenant' do
     before do
