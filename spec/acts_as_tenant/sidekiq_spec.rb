@@ -2,21 +2,16 @@ require 'spec_helper'
 require 'sidekiq'
 require 'acts_as_tenant/sidekiq'
 
-class Account
-  def id
-    1234
-  end
-end
-
 describe ActsAsTenant::Sidekiq do
   after { ActsAsTenant.current_tenant = nil }
+  let(:account) { Account.new(id: 1234) }
   let(:message) { { 'acts_as_tenant' => { 'class' => 'Account', 'id' => 1234 } } }
 
   describe ActsAsTenant::Sidekiq::Client do
     subject { ActsAsTenant::Sidekiq::Client.new }
 
     it 'saves tenant if present' do
-      ActsAsTenant.current_tenant = Account.new
+      ActsAsTenant.current_tenant = account
 
       msg = {}
       subject.call(nil, msg, nil) { }
@@ -36,7 +31,7 @@ describe ActsAsTenant::Sidekiq do
     subject { ActsAsTenant::Sidekiq::Server.new }
 
     it 'restores tenant if tenant saved' do
-      expect(Account).to receive(:find).with(1234).once { Account.new }
+      expect(Account).to receive(:find).with(1234).once { account }
 
       msg = message
       subject.call(nil, msg, nil) do
