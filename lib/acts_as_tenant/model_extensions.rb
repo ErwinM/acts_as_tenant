@@ -95,7 +95,7 @@ module ActsAsTenant
         end
 
         define_method "#{ActsAsTenant.tenant_klass.to_s}" do
-          return ActsAsTenant.current_tenant if send(fkey) == ActsAsTenant.current_tenant.try(:id)
+          return ActsAsTenant.current_tenant if !ActsAsTenant.current_tenant.nil? && send(fkey) == ActsAsTenant.current_tenant.id
           super()
         end
 
