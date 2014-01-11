@@ -45,13 +45,9 @@ module ActsAsTenant
 
         ActsAsTenant.set_tenant_klass(tenant)
 
-        unless options[:foreign_key].nil?
-          fkey = options[:foreign_key]
-          belongs_to tenant, :foreign_key => fkey
-        else
-          fkey = ActsAsTenant.fkey
-          belongs_to tenant
-        end
+        valid_options = options.slice(:foreign_key, :class_name)
+        fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
+        belongs_to tenant, valid_options
 
         default_scope lambda {
           if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil?
