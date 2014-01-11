@@ -42,7 +42,6 @@ module ActsAsTenant
 
     module ClassMethods
       def acts_as_tenant(tenant = :account, options = {})
-
         ActsAsTenant.set_tenant_klass(tenant)
 
         valid_options = options.slice(:foreign_key, :class_name)
@@ -95,8 +94,10 @@ module ActsAsTenant
           super()
         end
 
-        def scoped_by_tenant?
-          true
+        class << self
+          def scoped_by_tenant?
+            true
+          end
         end
       end
 
