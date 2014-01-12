@@ -44,6 +44,7 @@ module ActsAsTenant
       def acts_as_tenant(tenant = :account, options = {})
         ActsAsTenant.set_tenant_klass(tenant)
 
+        # Create the association
         valid_options = options.slice(:foreign_key, :class_name)
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
         belongs_to tenant, valid_options
@@ -90,8 +91,11 @@ module ActsAsTenant
         end
 
         define_method "#{ActsAsTenant.tenant_klass.to_s}" do
-          return ActsAsTenant.current_tenant if !ActsAsTenant.current_tenant.nil? && send(fkey) == ActsAsTenant.current_tenant.id
-          super()
+          if !ActsAsTenant.current_tenant.nil? && send(fkey) == ActsAsTenant.current_tenant.id
+            return ActsAsTenant.current_tenant
+          else
+            super()
+          end
         end
 
         class << self

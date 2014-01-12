@@ -109,8 +109,12 @@ describe ActsAsTenant do
     it { ActsAsTenant.current_tenant == :foo }
   end
 
-  describe 'is_scoped_as_tenant should return the correct value' do
+  describe 'is_scoped_as_tenant should return the correct value when true' do
     it {Project.respond_to?(:scoped_by_tenant?).should == true}
+  end
+
+  describe 'is_scoped_as_tenant should return the correct value when false' do
+    it {UnscopedModel.respond_to?(:scoped_by_tenant?).should == false}
   end
 
   describe 'tenant_id should be immutable, if already set' do
