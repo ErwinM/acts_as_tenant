@@ -1,3 +1,7 @@
+0.3.5
+-----
+* Fix to degredation introduced after 3.1 that prevented tenant_id from being set during initialization (thx jorgevaldivia)
+
 0.3.4
 -----
 * Fix to a bug introduced in 0.3.2
