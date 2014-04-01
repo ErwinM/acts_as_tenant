@@ -136,6 +136,14 @@ describe ActsAsTenant do
     it { lambda { @project.account = @account }.should_not raise_error }
   end
 
+  describe 'tenant_id should auto populate after initialization' do
+    before do
+      @account = Account.create!(:name => 'foo')
+      ActsAsTenant.current_tenant = @account
+    end
+    it {Project.new.account_id.should == @account.id}
+  end
+
   describe 'Handles custom foreign_key on tenant model' do
     before do
       @account  = Account.create!(:name => 'foo')
