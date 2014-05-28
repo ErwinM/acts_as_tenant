@@ -51,6 +51,16 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column :accountID, :integer
   end
 
+  create_table :businesses, :force => true do |t|
+    t.column :name, :string
+    t.column :account_id, :integer
+  end
+
+  create_table :irregular_inflection_tasks, :force => true do |t|
+    t.column :name, :string
+    t.column :account_id, :integer
+    t.column :business_id, :integer
+  end
 end
 
 # Setup the models
@@ -97,6 +107,16 @@ end
 class CustomForeignKeyTask < ActiveRecord::Base
   acts_as_tenant(:account, :foreign_key => "accountID")
   validates_uniqueness_to_tenant :name
+end
+
+class Business < ActiveRecord::Base
+  has_many :tasks, class_name: 'IrregularInflectionTask'
+  acts_as_tenant :account
+end
+
+class IrregularInflectionTask < ActiveRecord::Base
+  belongs_to :business
+  acts_as_tenant :account
 end
 
 # Start testing!
@@ -228,16 +248,31 @@ describe ActsAsTenant do
   end
 
   describe 'Associations can only be made with in-scope objects' do
-    before do
-      @account = Account.create!(:name => 'foo')
-      @project1 = Project.create!(:name => 'inaccessible_project', :account_id => @account.id + 1)
+    describe 'Regular inflection associations' do
+      before do
+        @account = Account.create!(:name => 'foo')
+        @project1 = Project.create!(:name => 'inaccessible_project', :account_id => @account.id + 1)
 
-      ActsAsTenant.current_tenant = @account
-      @project2 = Project.create!(:name => 'accessible_project')
-      @task = @project2.tasks.create!(:name => 'bar')
+        ActsAsTenant.current_tenant = @account
+        @project2 = Project.create!(:name => 'accessible_project')
+        @task = @project2.tasks.create!(:name => 'bar')
+      end
+
+      it { @task.update_attributes(:project_id => @project1.id).should == false }
     end
 
-    it { @task.update_attributes(:project_id => @project1.id).should == false }
+    describe 'Irregular inflection associations' do
+      before do
+        @account = Account.create!(:name => 'foo')
+        @business1 = Business.create!(:name => 'inaccessible_business', :account_id => @account.id + 1)
+
+        ActsAsTenant.current_tenant = @account
+        @business2 = Business.create!(:name => 'accessible_business')
+        @task = @business2.tasks.create!(:name => 'bar')
+      end
+
+      it { @task.update_attributes(:business_id => @business1.id).should == false }
+    end
   end
 
   describe "Create and save an AaT-enabled child without it having a parent" do
