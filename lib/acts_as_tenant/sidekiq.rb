@@ -1,7 +1,7 @@
 module ActsAsTenant::Sidekiq
   # Get the current tenant and store in the message to be sent to Sidekiq.
   class Client
-    def call(worker_class, msg, queue)
+    def call(worker_class, msg, queue, redis_pool)
       msg['acts_as_tenant'] ||=
         {
             'class' => ActsAsTenant.current_tenant.class.name,

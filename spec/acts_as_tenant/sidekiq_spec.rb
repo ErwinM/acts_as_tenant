@@ -14,7 +14,7 @@ describe ActsAsTenant::Sidekiq do
       ActsAsTenant.current_tenant = account
 
       msg = {}
-      subject.call(nil, msg, nil) { }
+      subject.call(nil, msg, nil, nil) { }
       expect(msg).to eq message
     end
 
@@ -22,7 +22,7 @@ describe ActsAsTenant::Sidekiq do
       expect(ActsAsTenant.current_tenant).to be_nil
 
       msg = {}
-      subject.call(nil, msg, nil) { }
+      subject.call(nil, msg, nil, nil) { }
       expect(msg).not_to eq message
     end
   end
