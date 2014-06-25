@@ -118,23 +118,50 @@ describe ActsAsTenant do
     it {UnscopedModel.respond_to?(:scoped_by_tenant?).should == false}
   end
 
-  describe 'tenant_id should be immutable, if already set' do
-    before do
-      @account = Account.create!(:name => 'foo')
-      @project = @account.projects.create!(:name => 'bar')
+  context "when current tenant is set" do
+    describe 'tenant_id should be immutable, if already set' do
+      before do
+        @account = Account.create!(:name => 'foo')
+        @project = @account.projects.create!(:name => 'bar')
+        ActsAsTenant.current_tenant = @account
+      end
+
+      it { lambda {@project.account_id = @account.id + 1}.should raise_error }
     end
 
-    it { lambda {@project.account_id = @account.id + 1}.should raise_error }
+    describe 'tenant_id should be mutable, if not already set' do
+      before do
+        @account = Account.create!(:name => 'foo')
+        @project = Project.create!(:name => 'bar')
+        ActsAsTenant.current_tenant = @account
+      end
+
+      it { @project.account_id.should be_nil }
+      it { lambda { @project.account = @account }.should_not raise_error }
+    end
   end
 
-  describe 'tenant_id should be mutable, if not already set' do
-    before do
-      @account = Account.create!(:name => 'foo')
-      @project = Project.create!(:name => 'bar')
+  context "when current tenant not set" do
+    describe 'tenant_id should be mutable, if already set' do
+      before do
+        @account = Account.create!(:name => 'foo')
+        @project = @account.projects.create!(:name => 'bar')
+        ActsAsTenant.current_tenant = nil
+      end
+
+      it { lambda {@project.account_id = @account.id + 1}.should_not raise_error }
     end
 
-    it { @project.account_id.should be_nil }
-    it { lambda { @project.account = @account }.should_not raise_error }
+    describe 'tenant_id should be mutable, if not already set' do
+      before do
+        @account = Account.create!(:name => 'foo')
+        @project = Project.create!(:name => 'bar')
+        ActsAsTenant.current_tenant = nil
+      end
+
+      it { @project.account_id.should be_nil }
+      it { lambda { @project.account = @account }.should_not raise_error }
+    end
   end
 
   describe 'tenant_id should auto populate after initialization' do
