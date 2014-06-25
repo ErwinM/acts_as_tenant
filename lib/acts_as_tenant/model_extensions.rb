@@ -68,9 +68,8 @@ module ActsAsTenant
 
         reflect_on_all_associations.each do |a|
           unless a == reflect_on_association(tenant) || a.macro != :belongs_to || a.options[:polymorphic]
-            association_class =  a.options[:class_name].nil? ? a.name.to_s.classify.constantize : a.options[:class_name].constantize
             validates_each a.foreign_key.to_sym do |record, attr, value|
-              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || association_class.where(:id => value).present?
+              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || a.klass.where(:id => value).present?
             end
           end
         end
