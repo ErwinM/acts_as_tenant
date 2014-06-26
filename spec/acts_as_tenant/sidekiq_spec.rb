@@ -54,7 +54,7 @@ describe ActsAsTenant::Sidekiq do
   describe 'Sidekiq configuration' do
     describe 'client configuration' do
       it 'includes ActsAsTenant client' do
-        expect(Sidekiq.client_middleware.exists?(ActsAsTenant::Sidekiq::Client)).to be_true
+        expect(Sidekiq.client_middleware.exists?(ActsAsTenant::Sidekiq::Client)).to eq(true)
       end
     end
 
