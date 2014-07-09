@@ -7,7 +7,7 @@ describe ActsAsTenant::Configuration do
     end
 
     it 'provides defaults' do
-      ActsAsTenant.configuration.require_tenant.should_not be_truthy
+      expect(ActsAsTenant.configuration.require_tenant).not_to be_truthy
     end
   end
 
@@ -21,7 +21,7 @@ describe ActsAsTenant::Configuration do
         config.require_tenant = true
       end
 
-      ActsAsTenant.configuration.require_tenant.should eq(true)
+      expect(ActsAsTenant.configuration.require_tenant).to eq(true)
     end
 
   end

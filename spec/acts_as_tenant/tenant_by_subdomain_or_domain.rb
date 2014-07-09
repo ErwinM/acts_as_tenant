@@ -18,24 +18,24 @@ describe ApplicationController, :type => :controller do
 
   it 'Finds the correct tenant with a example1.com' do
     @request.host = "example1.com"
-    Account.should_receive(:where).with({subdomain: nil}) {[]}
-    Account.should_receive(:where).with({domain: 'example1.com'}) {['account1']}
+    expect(Account).to receive(:where).with({subdomain: nil}) {[]}
+    expect(Account).to receive(:where).with({domain: 'example1.com'}) {['account1']}
     get :index
-    ActsAsTenant.current_tenant.should eq 'account1'
+    expect(ActsAsTenant.current_tenant).to eq 'account1'
   end
 
   it 'Finds the correct tenant with a subdomain.example.com' do
     @request.host = "subdomain.example.com"
-    Account.should_receive(:where).with({subdomain: 'subdomain'}) {['account1']}
+    expect(Account).to receive(:where).with({subdomain: 'subdomain'}) {['account1']}
     get :index
-    ActsAsTenant.current_tenant.should eq "account1"
+    expect(ActsAsTenant.current_tenant).to eq "account1"
   end
 
   it 'Finds the correct tenant with a www.subdomain.example.com' do
     @request.host = "subdomain.example.com"
-    Account.should_receive(:where).with({subdomain: 'subdomain'}) {['account1']}
+    expect(Account).to receive(:where).with({subdomain: 'subdomain'}) {['account1']}
     get :index
-    ActsAsTenant.current_tenant.should eq "account1"
+    expect(ActsAsTenant.current_tenant).to eq "account1"
   end
 
 

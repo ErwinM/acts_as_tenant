@@ -28,6 +28,6 @@ describe ApplicationController2, :type => :controller do
 
   it 'Finds the correct tenant using the filter command' do
     get :index
-    ActsAsTenant.current_tenant.name.should eq 'account1'
+    expect(ActsAsTenant.current_tenant.name).to eq 'account1'
   end
 end

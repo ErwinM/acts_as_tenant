@@ -111,11 +111,11 @@ describe ActsAsTenant do
   end
 
   describe 'is_scoped_as_tenant should return the correct value when true' do
-    it {Project.respond_to?(:scoped_by_tenant?).should == true}
+    it {expect(Project.respond_to?(:scoped_by_tenant?)).to eq(true)}
   end
 
   describe 'is_scoped_as_tenant should return the correct value when false' do
-    it {UnscopedModel.respond_to?(:scoped_by_tenant?).should == false}
+    it {expect(UnscopedModel.respond_to?(:scoped_by_tenant?)).to eq(false)}
   end
 
   describe 'tenant_id should be immutable, if already set' do
@@ -124,7 +124,7 @@ describe ActsAsTenant do
       @project = @account.projects.create!(:name => 'bar')
     end
 
-    it { lambda {@project.account_id = @account.id + 1}.should raise_error }
+    it { expect {@project.account_id = @account.id + 1}.to raise_error }
   end
 
   describe 'tenant_id should be mutable, if not already set' do
@@ -133,8 +133,8 @@ describe ActsAsTenant do
       @project = Project.create!(:name => 'bar')
     end
 
-    it { @project.account_id.should be_nil }
-    it { lambda { @project.account = @account }.should_not raise_error }
+    it { expect(@project.account_id).to be_nil }
+    it { expect { @project.account = @account }.not_to raise_error }
   end
 
   describe 'tenant_id should auto populate after initialization' do
@@ -142,7 +142,7 @@ describe ActsAsTenant do
       @account = Account.create!(:name => 'foo')
       ActsAsTenant.current_tenant = @account
     end
-    it {Project.new.account_id.should == @account.id}
+    it {expect(Project.new.account_id).to eq(@account.id)}
   end
 
   describe 'Handles custom foreign_key on tenant model' do
@@ -152,7 +152,7 @@ describe ActsAsTenant do
       @custom_foreign_key_task = CustomForeignKeyTask.create!(:name => 'foo')
     end
 
-    it { @custom_foreign_key_task.account.should == @account }
+    it { expect(@custom_foreign_key_task.account).to eq(@account) }
   end
 
   # Scoping models
@@ -168,8 +168,8 @@ describe ActsAsTenant do
       @projects = Project.all
     end
 
-    it { @projects.length.should == 1 }
-    it { @projects.should == [@project1] }
+    it { expect(@projects.length).to eq(1) }
+    it { expect(@projects).to eq([@project1]) }
   end
 
   describe 'Project.unscoped.all should return the unscoped value' do
@@ -184,7 +184,7 @@ describe ActsAsTenant do
       @projects = Project.unscoped
     end
 
-    it { @projects.count.should == 2 }
+    it { expect(@projects.count).to eq(2) }
   end
 
   describe 'Querying the tenant from a scoped model without a tenant set' do
@@ -220,11 +220,11 @@ describe ActsAsTenant do
     end
 
     it 'should correctly set the tenant on the task created with current_tenant set' do
-      @task2.account.should == @account
+      expect(@task2.account).to eq(@account)
     end
 
     it 'should filter out the non-tenant task from the project' do
-      @tasks.length.should == 1
+      expect(@tasks.length).to eq(1)
     end
   end
 
@@ -238,17 +238,17 @@ describe ActsAsTenant do
       @task = @project2.tasks.create!(:name => 'bar')
     end
 
-    it { @task.update_attributes(:project_id => @project1.id).should == false }
+    it { expect(@task.update_attributes(:project_id => @project1.id)).to eq(false) }
   end
 
   describe "Create and save an AaT-enabled child without it having a parent" do
       @account = Account.create!(:name => 'baz')
       ActsAsTenant.current_tenant = @account
-      Task.create(:name => 'bar').valid?.should == true
+      it { expect(Task.create(:name => 'bar').valid?).to eq(true) }
   end
 
   describe "It should be possible to use aliased associations" do
-    it { AliasedTask.create(:name => 'foo', :project_alias => @project2).valid?.should == true }
+    it { expect(AliasedTask.create(:name => 'foo', :project_alias => @project2).valid?).to eq(true) }
   end
 
   # Additional default_scopes
@@ -269,8 +269,8 @@ describe ActsAsTenant do
     end
 
     it 'should apply both the tenant scope and the user defined default_scope, including :order' do
-      @tasks.length.should == 3
-      @tasks.should == [@task2, @task3, @task4]
+      expect(@tasks.length).to eq(3)
+      expect(@tasks).to eq([@task2, @task3, @task4])
     end
   end
 
@@ -283,13 +283,13 @@ describe ActsAsTenant do
     end
 
     it 'should not be possible to create a duplicate within the same tenant' do
-      Project.create(:name => 'existing_name').valid?.should == false
+      expect(Project.create(:name => 'existing_name').valid?).to eq(false)
     end
 
     it 'should be possible to create a duplicate outside the tenant scope' do
       account = Account.create!(:name => 'baz')
       ActsAsTenant.current_tenant = account
-      Project.create(:name => 'bar').valid?.should == true
+      expect(Project.create(:name => 'bar').valid?).to eq(true)
     end
   end
 
@@ -298,8 +298,8 @@ describe ActsAsTenant do
       UniqueTask.create!(:name => 'foo', :user_defined_scope => 'unique_scope')
     end
 
-    it { UniqueTask.create(:name => 'foo', :user_defined_scope => 'another_scope').should be_valid }
-    it { UniqueTask.create(:name => 'foo', :user_defined_scope => 'unique_scope').should_not be_valid }
+    it { expect(UniqueTask.create(:name => 'foo', :user_defined_scope => 'another_scope')).to be_valid }
+    it { expect(UniqueTask.create(:name => 'foo', :user_defined_scope => 'unique_scope')).not_to be_valid }
   end
 
   describe 'When using validates_uniqueness_of in a NON-aat model' do
@@ -307,7 +307,7 @@ describe ActsAsTenant do
       UnscopedModel.create!(:name => 'foo')
     end
     it 'should not be possible to create duplicates' do
-      UnscopedModel.create(:name => 'foo').valid?.should == false
+      expect(UnscopedModel.create(:name => 'foo').valid?).to eq(false)
     end
   end
 
@@ -317,7 +317,7 @@ describe ActsAsTenant do
       @account = Account.create!(:name => 'baz')
 
       ActsAsTenant.with_tenant(@account) do
-        ActsAsTenant.current_tenant.should eq(@account)
+        expect(ActsAsTenant.current_tenant).to eq(@account)
       end
     end
 
@@ -330,7 +330,7 @@ describe ActsAsTenant do
 
       end
 
-      ActsAsTenant.current_tenant.should eq(@account1)
+      expect(ActsAsTenant.current_tenant).to eq(@account1)
     end
 
     it "should return the value of the block" do
@@ -342,7 +342,7 @@ describe ActsAsTenant do
         "something"
       end
 
-      value.should eq "something"
+      expect(value).to eq "something"
     end
 
     it "should raise an error when no block is provided" do
@@ -356,7 +356,7 @@ describe ActsAsTenant do
       before do
         @account1 = Account.create!(:name => 'foo')
         @project1 = @account1.projects.create!(:name => 'foobar')
-        ActsAsTenant.configuration.stub(require_tenant: true)
+        allow(ActsAsTenant.configuration).to receive_messages(require_tenant: true)
       end
 
       it "should raise an error when no tenant is provided" do

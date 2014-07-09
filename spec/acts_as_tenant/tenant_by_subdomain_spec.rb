@@ -18,15 +18,15 @@ describe ApplicationController, :type => :controller do
 
   it 'Finds the correct tenant with a subdomain.example.com' do
     @request.host = "account1.example.com"
-    Account.should_receive(:where).with({subdomain: 'account1'}) {['account1']}
+    expect(Account).to receive(:where).with({subdomain: 'account1'}) {['account1']}
     get :index
-    ActsAsTenant.current_tenant.should eq 'account1'
+    expect(ActsAsTenant.current_tenant).to eq 'account1'
   end
 
   it 'Finds the correct tenant with a www.subdomain.example.com' do
     @request.host = "www.account1.example.com"
-    Account.should_receive(:where).with({subdomain: 'account1'}) {['account1']}
+    expect(Account).to receive(:where).with({subdomain: 'account1'}) {['account1']}
     get :index
-    ActsAsTenant.current_tenant.should eq 'account1'
+    expect(ActsAsTenant.current_tenant).to eq 'account1'
   end
 end
