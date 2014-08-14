@@ -1,3 +1,7 @@
+0.3.6
+-----
+* Added method `set_current_tenant_by_subdomain_or_domain` (thx preth00nker)
+
 0.3.5
 -----
 * Fix to degredation introduced after 3.1 that prevented tenant_id from being set during initialization (thx jorgevaldivia)
