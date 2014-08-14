@@ -28,5 +28,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency('database_cleaner')
   s.add_development_dependency('sqlite3')
 
-  s.add_development_dependency('sidekiq', '>= 3.0')
+  s.add_development_dependency('sidekiq', '3.2.1')
 end
