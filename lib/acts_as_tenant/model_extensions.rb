@@ -49,11 +49,15 @@ module ActsAsTenant
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
         belongs_to tenant, valid_options
 
+        include_nulls = options[:include_nulls].nil? ? false : !!options[:include_nulls]
         default_scope lambda {
           if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil?
             raise ActsAsTenant::Errors::NoTenantSet
           end
-          where({"#{self.table_name}.#{fkey}" => ActsAsTenant.current_tenant.id})  if ActsAsTenant.current_tenant
+          if ActsAsTenant.current_tenant
+            ids = include_nulls ? [ActsAsTenant.current_tenant.id, nil] : ActsAsTenant.current_tenant.id
+            where({"#{self.table_name}.#{fkey}" => ids})
+          end
         }
 
         # Add the following validations to the receiving model:

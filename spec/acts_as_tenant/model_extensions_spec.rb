@@ -52,6 +52,11 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column :accountID, :integer
   end
 
+  create_table :shared_tasks, :force => true do |t|
+    t.column :name, :string
+    t.column :account_id, :integer
+  end
+
 end
 
 # Setup the models
@@ -98,6 +103,10 @@ end
 class CustomForeignKeyTask < ActiveRecord::Base
   acts_as_tenant(:account, :foreign_key => "accountID")
   validates_uniqueness_to_tenant :name
+end
+
+class SharedTask < ActiveRecord::Base
+  acts_as_tenant(:account, include_nulls: true)
 end
 
 # Start testing!
@@ -374,6 +383,35 @@ describe ActsAsTenant do
 
       it "should not raise an error when no tenant is provided" do
         expect { Project.all }.to_not raise_error
+      end
+    end
+  end
+
+  context 'include nulls' do
+    describe 'when true' do
+      before do
+        @account1 = Account.create!(:name => 'foo')
+        @account2 = Account.create!(:name => 'wat')
+        @taskA = SharedTask.create!(name: 'Common')
+        @task1 = ActsAsTenant.with_tenant(@account1){SharedTask.create!(name: 'Tenanted1')}
+        @task2 = ActsAsTenant.with_tenant(@account2){SharedTask.create!(name: 'Tenanted2')}
+      end
+
+      it 'should return objects for nil tenant' do
+        expect(SharedTask.count).to eq(3)
+        expect(SharedTask.all).to eq [@taskA, @task1, @task2]
+      end
+
+      it 'should return objects for tenant1' do
+        ActsAsTenant.current_tenant = @account1
+        expect(SharedTask.count).to eq(2)
+        expect(SharedTask.all).to eq [@taskA, @task1]
+      end
+
+      it 'should return objects for tenant2' do
+        ActsAsTenant.current_tenant = @account2
+        expect(SharedTask.count).to eq(2)
+        expect(SharedTask.all).to eq [@taskA, @task2]
       end
     end
   end
