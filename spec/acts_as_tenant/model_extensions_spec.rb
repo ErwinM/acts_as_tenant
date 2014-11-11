@@ -52,6 +52,12 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column :accountID, :integer
   end
 
+  create_table :comments, :force => true do |t|
+    t.column :commentable_id, :integer
+    t.column :commentable_type, :string
+    t.column :account_id, :integer
+  end
+
 end
 
 # Setup the models
@@ -98,6 +104,12 @@ end
 class CustomForeignKeyTask < ActiveRecord::Base
   acts_as_tenant(:account, :foreign_key => "accountID")
   validates_uniqueness_to_tenant :name
+end
+
+class Comment < ActiveRecord::Base
+  belongs_to :commentable, polymorphic: true
+  belongs_to :task, -> { where(comments: { commentable_type: 'Task'  })  }, foreign_key: 'commentable_id'
+  acts_as_tenant :account
 end
 
 # Start testing!
@@ -249,6 +261,17 @@ describe ActsAsTenant do
 
   describe "It should be possible to use aliased associations" do
     it { expect(AliasedTask.create(:name => 'foo', :project_alias => @project2).valid?).to eq(true) }
+  end
+
+  describe "It should be possible to use associations with foreign_key from polymorphic" do
+    before do
+      @account = Account.create!(name: 'foo')
+      ActsAsTenant.current_tenant = @account
+      @project = Project.create!(name: 'project', account: @account)
+      @comment = Comment.new commentable: @project, account: @account
+    end
+
+    it { expect(@comment.save!).to eq(true) }
   end
 
   # Additional default_scopes
