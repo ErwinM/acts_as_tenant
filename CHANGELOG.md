@@ -1,3 +1,12 @@
+0.3.7
+-----
+* Fix for proper handling of polymorphic associations (thx sol1dus)
+* Fix fefault scope to generate correct sql when using database prefix (thx IgorDobryn)
+* Added ability to specify a custom Primary Key (thx matiasdim)
+* Sidekiq 3.2.2+ no longer supports Ruby 1.9. Locking Sidekiq in gemspec at 3.2.1.
+* Update RSPEC to 3.0. Convert all specs (thx petergoldstein)
+* support sidekiq 3 interface (thx davekaro)
+
 0.3.6
 -----
 * Added method `set_current_tenant_by_subdomain_or_domain` (thx preth00nker)
