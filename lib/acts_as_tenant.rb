@@ -1,8 +1,3 @@
-#RAILS_3 = ::ActiveRecord::VERSION::MAJOR >= 3
-
-require "active_record"
-require "action_controller"
-require "active_model"
 require "request_store"
 
 #$LOAD_PATH.unshift(File.dirname(__FILE__))
@@ -17,6 +12,9 @@ require "acts_as_tenant/model_extensions"
 
 if defined?(ActiveRecord::Base)
   ActiveRecord::Base.send(:include, ActsAsTenant::ModelExtensions)
+end
+
+if defined?(ActionController::Base)
   ActionController::Base.extend ActsAsTenant::ControllerExtensions
 end
 
