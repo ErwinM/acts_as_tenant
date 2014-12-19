@@ -83,24 +83,26 @@ module ActsAsTenant
         # - Rewrite the accessors to make tenant immutable
         # - Add an override to prevent unnecessary db hits
         # - Add a helper method to verify if a model has been scoped by AaT
-        #
-        define_method "#{fkey}=" do |integer|
-          raise ActsAsTenant::Errors::TenantIsImmutable unless new_record? || send(fkey).nil?
-          write_attribute("#{fkey}", integer)
-        end
+        to_include = Module.new do
+          define_method "#{fkey}=" do |integer|
+            raise ActsAsTenant::Errors::TenantIsImmutable unless new_record? || send(fkey).nil?
+            write_attribute("#{fkey}", integer)
+          end
 
-        define_method "#{ActsAsTenant.tenant_klass.to_s}=" do |model|
-          raise ActsAsTenant::Errors::TenantIsImmutable unless new_record? || send(fkey).nil?
-          super(model)
-        end
+          define_method "#{ActsAsTenant.tenant_klass.to_s}=" do |model|
+            raise ActsAsTenant::Errors::TenantIsImmutable unless new_record? || send(fkey).nil?
+            super(model)
+          end
 
-        define_method "#{ActsAsTenant.tenant_klass.to_s}" do
-          if !ActsAsTenant.current_tenant.nil? && send(fkey) == ActsAsTenant.current_tenant.id
-            return ActsAsTenant.current_tenant
-          else
-            super()
+          define_method "#{ActsAsTenant.tenant_klass.to_s}" do
+            if !ActsAsTenant.current_tenant.nil? && send(fkey) == ActsAsTenant.current_tenant.id
+              return ActsAsTenant.current_tenant
+            else
+              super()
+            end
           end
         end
+        include to_include
 
         class << self
           def scoped_by_tenant?
