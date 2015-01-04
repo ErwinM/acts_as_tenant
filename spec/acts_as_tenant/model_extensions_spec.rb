@@ -406,6 +406,10 @@ describe ActsAsTenant do
       @account = Account.create!
     end
 
+    after(:each) do
+      ActsAsTenant.default_tenant = nil
+    end
+
     it "provides current_tenant" do
       ActsAsTenant.default_tenant = @account
       expect(ActsAsTenant.current_tenant).to eq(@account)
