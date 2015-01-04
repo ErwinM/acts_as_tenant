@@ -18,7 +18,11 @@ module ActsAsTenant
   end
 
   def self.current_tenant
-    RequestStore.store[:current_tenant]
+    RequestStore.store[:current_tenant] || self.default_tenant
+  end
+
+  class << self
+    attr_accessor :default_tenant
   end
 
   def self.with_tenant(tenant, &block)

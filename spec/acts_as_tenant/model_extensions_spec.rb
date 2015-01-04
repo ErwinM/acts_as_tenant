@@ -400,4 +400,44 @@ describe ActsAsTenant do
       end
     end
   end
+
+  describe "ActsAsTenant.default_tenant=" do
+    before(:each) do
+      @account = Account.create!
+    end
+
+    it "provides current_tenant" do
+      ActsAsTenant.default_tenant = @account
+      expect(ActsAsTenant.current_tenant).to eq(@account)
+    end
+
+    it "can be overridden by assignment" do
+      ActsAsTenant.default_tenant = @account
+      @account2 = Account.create!
+      ActsAsTenant.current_tenant = @account2
+      expect(ActsAsTenant.current_tenant).not_to eq(@account)
+    end
+
+    it "can be overridden by with_tenant" do
+      ActsAsTenant.default_tenant = @account
+      @account2 = Account.create!
+      ActsAsTenant.with_tenant @account2 do
+        expect(ActsAsTenant.current_tenant).to eq(@account2)
+      end
+      expect(ActsAsTenant.current_tenant).to eq(@account)
+    end
+
+    it "doesn't override existing current_tenant" do
+      @account2 = Account.create!
+      ActsAsTenant.current_tenant = @account2
+      ActsAsTenant.default_tenant = @account
+      expect(ActsAsTenant.current_tenant).to eq(@account2)
+    end
+
+    it "survives request resets" do
+      ActsAsTenant.default_tenant = @account
+      RequestStore.clear!
+      expect(ActsAsTenant.current_tenant).to eq(@account)
+    end
+  end
 end
