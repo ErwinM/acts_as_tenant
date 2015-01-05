@@ -149,9 +149,21 @@ Add the following code to your `config/initializer/acts_as_tenant.rb`:
 require 'acts_as_tenant/sidekiq'
 ```
 
-Note on testing
+Testing
 ---------------
-Whenever you set the `current_tenant` in your tests, either through integration tests or directly by calling `ActsAsTenant.current_tenant = some_tenant`, make sure to clean up the tenant after each test by calling `ActsAsTenant.current_tenant = nil`.
+
+If you set the `current_tenant` in your tests, make sure to clean up the tenant after each test by calling `ActsAsTenant.current_tenant = nil`. If you are manually setting the `current_tenant` in integration tests, please be aware that the value will not survive across multiple requests, even if they take place within the same test.
+
+If you'd like to set a default tenant that will survive across multiple requests, assign a value to `default_tenant`. This can later be overridden by using any of the standard methods for specifying a different tenant. You can add a before hook with something like this to your tests:
+
+```ruby
+# Make the default tenant globally available to the tests
+$default_account = Account.create!
+# Specify this account as the current tenant unless overridden
+ActsAsTenant.default_tenant = $default_account
+# Stub out the method setting a tenant in a controller hook
+allow_any_instance_of(ApplicationController).to receive(:set_current_tenant)
+```
 
 To Do
 -----
