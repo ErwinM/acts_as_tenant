@@ -9,15 +9,15 @@ Mongoid.load!(File.join(File.dirname(__FILE__), "/mongoid.yml"), :test)
 
 RSpec.configure do |config|
   config.before(:suite) do
-    DatabaseCleaner.strategy = :truncation
-    DatabaseCleaner.clean_with(:truncation)
+    DatabaseCleaner[:mongoid].strategy = :truncation
+    DatabaseCleaner[:mongoid].clean_with(:truncation)
   end
 
   config.before(:each) do
-    DatabaseCleaner.start
+    DatabaseCleaner[:mongoid].start
   end
 
   config.after(:each) do
-    DatabaseCleaner.clean
+    DatabaseCleaner[:mongoid].clean
   end
 end
