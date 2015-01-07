@@ -228,6 +228,8 @@ describe ActsAsTenant do
 
       ActsAsTenant.current_tenant = @account
       @task2 = @project.tasks.create!(:name => 'baz')
+
+      @project.reload
     end
 
     it 'should correctly set the tenant on the task created with current_tenant set' do
