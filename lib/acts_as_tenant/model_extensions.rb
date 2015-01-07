@@ -94,12 +94,12 @@ module ActsAsTenant
         # - Add a helper method to verify if a model has been scoped by AaT
         to_include = Module.new do
           define_method "#{fkey}=" do |integer|
-            raise ActsAsTenant::Errors::TenantIsImmutable unless new_record? || send(fkey).nil?
+            raise ActsAsTenant::Errors::TenantIsImmutable unless new_record? || send(fkey).nil? || send(fkey) == integer
             write_attribute("#{fkey}", integer)
           end
 
           define_method "#{ActsAsTenant.tenant_klass.to_s}=" do |model|
-            raise ActsAsTenant::Errors::TenantIsImmutable unless new_record? || send(fkey).nil?
+            raise ActsAsTenant::Errors::TenantIsImmutable unless new_record? || send(fkey).nil? || send(fkey) == integer
             super(model)
           end
 
