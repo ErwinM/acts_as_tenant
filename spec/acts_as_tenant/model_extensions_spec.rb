@@ -253,9 +253,11 @@ describe ActsAsTenant do
   end
 
   describe "Create and save an AaT-enabled child without it having a parent" do
+    before do
       @account = Account.create!(:name => 'baz')
       ActsAsTenant.current_tenant = @account
-      it { expect(Task.create(:name => 'bar').valid?).to eq(true) }
+    end
+    it { expect(Task.create(:name => 'bar').valid?).to eq(true) }
   end
 
   describe "It should be possible to use aliased associations" do
