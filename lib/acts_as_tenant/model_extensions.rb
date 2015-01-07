@@ -78,7 +78,12 @@ module ActsAsTenant
           unless a == reflect_on_association(tenant) || polymorphic_foreign_keys.include?(a.foreign_key)
             association_class =  a.options[:class_name].nil? ? a.name.to_s.classify.constantize : a.options[:class_name].constantize
             validates_each a.foreign_key.to_sym do |record, attr, value|
-              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || association_class.where(association_class.primary_key.to_sym => value).present?
+              primary_key = if association_class.respond_to?(:primary_key)
+                              association_class.primary_key
+                            else
+                              a.primary_key
+                            end.to_sym
+              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || association_class.where(primary_key => value).exists?
             end
           end
         end
