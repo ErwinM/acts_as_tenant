@@ -228,7 +228,6 @@ describe ActsAsTenant do
 
       ActsAsTenant.current_tenant = @account
       @task2 = @project.tasks.create!(:name => 'baz')
-      @tasks = @project.tasks
     end
 
     it 'should correctly set the tenant on the task created with current_tenant set' do
@@ -236,16 +235,16 @@ describe ActsAsTenant do
     end
 
     it 'should filter out the non-tenant task from the project' do
-      expect(@tasks.length).to eq(1)
+      expect(@project.tasks.length).to eq(1)
     end
   end
 
   describe 'Associations can only be made with in-scope objects' do
     before do
       @account = Account.create!(:name => 'foo')
-      @project1 = Project.create!(:name => 'inaccessible_project', :account_id => @account.id + 1)
-
+      @project1 = Project.create!(:name => 'inaccessible_project', :account => Account.create!)
       ActsAsTenant.current_tenant = @account
+
       @project2 = Project.create!(:name => 'accessible_project')
       @task = @project2.tasks.create!(:name => 'bar')
     end
