@@ -1,3 +1,7 @@
+0.3.8
+-----
+* Added Mongoid compatibility [thx iangreenlead]
+
 0.3.7
 -----
 * Fix for proper handling of polymorphic associations (thx sol1dus)
