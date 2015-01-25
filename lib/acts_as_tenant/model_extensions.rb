@@ -53,7 +53,11 @@ module ActsAsTenant
           if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil?
             raise ActsAsTenant::Errors::NoTenantSet
           end
-          where(fkey.to_sym => ActsAsTenant.current_tenant.id) if ActsAsTenant.current_tenant
+          if ActsAsTenant.current_tenant
+            where(fkey.to_sym => ActsAsTenant.current_tenant.id)
+          else
+            all
+          end
         }
 
         # Add the following validations to the receiving model:
@@ -66,15 +70,20 @@ module ActsAsTenant
           end
         }, :on => :create
 
-        polymorphic_foreign_keys = reflect_on_all_associations.select do |a|
+        polymorphic_foreign_keys = reflect_on_all_associations(:belongs_to).select do |a|
           a.options[:polymorphic]
         end.map { |a| a.foreign_key }
 
-        reflect_on_all_associations.each do |a|
-          unless a == reflect_on_association(tenant) || a.macro != :belongs_to || polymorphic_foreign_keys.include?(a.foreign_key)
+        reflect_on_all_associations(:belongs_to).each do |a|
+          unless a == reflect_on_association(tenant) || polymorphic_foreign_keys.include?(a.foreign_key)
             association_class =  a.options[:class_name].nil? ? a.name.to_s.classify.constantize : a.options[:class_name].constantize
             validates_each a.foreign_key.to_sym do |record, attr, value|
-              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || association_class.where(association_class.primary_key.to_sym => value).present?
+              primary_key = if association_class.respond_to?(:primary_key)
+                              association_class.primary_key
+                            else
+                              a.primary_key
+                            end.to_sym
+              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || association_class.where(primary_key => value).exists?
             end
           end
         end
@@ -83,24 +92,26 @@ module ActsAsTenant
         # - Rewrite the accessors to make tenant immutable
         # - Add an override to prevent unnecessary db hits
         # - Add a helper method to verify if a model has been scoped by AaT
-        #
-        define_method "#{fkey}=" do |integer|
-          raise ActsAsTenant::Errors::TenantIsImmutable unless new_record? || send(fkey).nil?
-          write_attribute("#{fkey}", integer)
-        end
+        to_include = Module.new do
+          define_method "#{fkey}=" do |integer|
+            raise ActsAsTenant::Errors::TenantIsImmutable unless new_record? || send(fkey).nil? || send(fkey) == integer
+            write_attribute("#{fkey}", integer)
+          end
 
-        define_method "#{ActsAsTenant.tenant_klass.to_s}=" do |model|
-          raise ActsAsTenant::Errors::TenantIsImmutable unless new_record? || send(fkey).nil?
-          super(model)
-        end
+          define_method "#{ActsAsTenant.tenant_klass.to_s}=" do |model|
+            raise ActsAsTenant::Errors::TenantIsImmutable unless new_record? || send(fkey).nil? || send(fkey) == integer
+            super(model)
+          end
 
-        define_method "#{ActsAsTenant.tenant_klass.to_s}" do
-          if !ActsAsTenant.current_tenant.nil? && send(fkey) == ActsAsTenant.current_tenant.id
-            return ActsAsTenant.current_tenant
-          else
-            super()
+          define_method "#{ActsAsTenant.tenant_klass.to_s}" do
+            if !ActsAsTenant.current_tenant.nil? && send(fkey) == ActsAsTenant.current_tenant.id
+              return ActsAsTenant.current_tenant
+            else
+              super()
+            end
           end
         end
+        include to_include
 
         class << self
           def scoped_by_tenant?

@@ -1,0 +1,4 @@
+language: ruby
+services:
+  - mongodb
+script: bundle exec rake spec:all
