@@ -19,9 +19,11 @@ describe ActsAsTenant::Configuration do
     it 'stores config' do
       ActsAsTenant.configure do |config|
         config.require_tenant = true
+        config.allow_fallback = true
       end
 
       expect(ActsAsTenant.configuration.require_tenant).to eq(true)
+      expect(ActsAsTenant.configuration.allow_fallback).to eq(true)
     end
 
   end
