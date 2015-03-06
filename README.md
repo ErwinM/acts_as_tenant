@@ -128,16 +128,18 @@ You can explicitely specifiy a foreign_key for AaT to use should the key differ 
 
 Configuration options
 ---------------------
-An initializer can be created to control (currently one) option in ActsAsTenant. Defaults
+An initializer can be created to control options in ActsAsTenant. Defaults
 are shown below with sample overrides following. In `config/initializer/acts_as_tenant.rb`:
 
 ```ruby
 ActsAsTenant.configure do |config|
   config.require_tenant = false # true
+  config.allow_fallback = false # true
 end
 ```
 
 * `config.require_tenant` when set to true will raise an ActsAsTenant::NoTenant error whenever a query is made without a tenant set.
+* `config.allow_falllback` when set to true will make it so queries return models associated with `current_tenant` and models with no tenant specified at all
 
 Sidekiq support
 ---------------
