@@ -54,7 +54,9 @@ module ActsAsTenant
             raise ActsAsTenant::Errors::NoTenantSet
           end
           if ActsAsTenant.current_tenant
-            where(fkey.to_sym => ActsAsTenant.current_tenant.id)
+            tenant_ids = [ActsAsTenant.current_tenant.id]
+            tenant_ids.push nil if ActsAsTenant.configuration.allow_fallback
+            where(fkey.to_sym => tenant_ids)
           else
             all
           end
