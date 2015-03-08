@@ -18,11 +18,13 @@ In addition, acts_as_tenant:
 
 Installation
 ------------
-acts_as_tenant will only work on Rails 3.1 and up. This is due to changes made to the handling of default_scope, an essential pillar of the gem.
+acts_as_tenant will only work on Rails 3.1 and up. This is due to changes made to the handling of `default_scope`, an essential pillar of the gem.
 
 To use it, add it to your Gemfile:
 
-    gem 'acts_as_tenant'
+```ruby
+gem 'acts_as_tenant'
+```
 
 Getting started
 ===============
@@ -33,98 +35,117 @@ There are two steps in adding multi-tenancy to your app with acts_as_tenant:
 
 Setting the current tenant
 --------------------------
-There are three ways to set the current tenant: (1) by using the subdomain to lookup the current tenant, (2) by setting  the current tenant in the controller, and
-(3) by setting the current tenant for a block.
+There are three ways to set the current tenant:
 
-**Use the subdomain to lookup the current tenant**
+1. by using the subdomain to lookup the current tenant,
+2. by setting  the current tenant in the controller, and
+3. by setting the current tenant for a block.
 
-    class ApplicationController < ActionController::Base
-      set_current_tenant_by_subdomain(:account, :subdomain)
-    end
+### Use the subdomain to lookup the current tenant ###
+
+```ruby
+class ApplicationController < ActionController::Base
+  set_current_tenant_by_subdomain(:account, :subdomain)
+end
+```
 
 This tells acts_as_tenant to use the current subdomain to identify the current tenant. In addition, it tells acts_as_tenant that tenants are represented by the Account model and this model has a column named 'subdomain' which can be used to lookup the Account using the actual subdomain. If ommitted, the parameters will default to the values used above.
 
-Alternatively, you could locate the tenant using the method set_current_tenant_by_subdomain_or_domain( :account, :subdomain,  :domain ) which will try to match a record first by subdomain. in case it fails, by domain.
+Alternatively, you could locate the tenant using the method `set_current_tenant_by_subdomain_or_domain( :account, :subdomain,  :domain )` which will try to match a record first by subdomain. in case it fails, by domain.
 
-**Setting the current tenant in a controller, manually**
+### Setting the current tenant in a controller, manually ###
 
-    class ApplicationController < ActionController::Base
-      set_current_tenant_through_filter
-      before_filter :your_method_that_finds_the_current_tenant
+```ruby
+class ApplicationController < ActionController::Base
+  set_current_tenant_through_filter
+  before_filter :your_method_that_finds_the_current_tenant
 
-      def your_method_that_finds_the_current_tenant
-        current_account = Account.find_it
-        set_current_tenant(current_account)
-      end
-    end
-Setting the current_tenant yourself, requires you to declare `set_current_tenant_through_filter` at the top of your application_controller to tell acts_as_tenant that you are going to use a before_filter to setup the current tenant. Next you should actually setup that before_filter to fetch the current tenant and pass it to `acts_as_tenant` by using `set_current_tenant(current_tenant)` in the before_filter.
+  def your_method_that_finds_the_current_tenant
+    current_account = Account.find_it
+    set_current_tenant(current_account)
+  end
+end
+```
+
+Setting the `current_tenant` yourself, requires you to declare `set_current_tenant_through_filter` at the top of your application_controller to tell acts_as_tenant that you are going to use a before_filter to setup the current tenant. Next you should actually setup that before_filter to fetch the current tenant and pass it to `acts_as_tenant` by using `set_current_tenant(current_tenant)` in the before_filter.
 
 
-**Setting the current tenant for a block**
+### Setting the current tenant for a block ###
 
-    ActsAsTenant.with_tenant(current_account) do
-      # Current tenant is set for all code in this block
-    end
+```ruby
+ActsAsTenant.with_tenant(current_account) do
+  # Current tenant is set for all code in this block
+end
+```
 
 This approach is useful when running background processes for a specified tenant. For example, by putting this in your worker's run method,
 any code in this block will be scoped to the current tenant. All methods that set the current tenant are thread safe.
 
-**note:** If the current tenant is not set by one of these methods, Acts_as_tenant will be unable to apply the proper scope to your models. So make sure you use one of the two methods to tell acts_as_tenant about the current tenant.
+**Note:** If the current tenant is not set by one of these methods, Acts_as_tenant will be unable to apply the proper scope to your models. So make sure you use one of the two methods to tell acts_as_tenant about the current tenant.
 
-**Require tenant to be set always**
+### Require tenant to be set always ###
 
 If you want to require the tenant to be set at all times, you can configure acts_as_tenant to raise an error when a query is made without a tenant available. See below under configuarion options.
 
 Scoping your models
 -------------------
-    class Addaccounttousers < ActiveRecord::Migration
-      def up
-        add_column :users, :account_id, :integer
-      end
-    end
 
-    class User < ActiveRecord::Base
-      acts_as_tenant(:account)
-    end
+```ruby
+class Addaccounttousers < ActiveRecord::Migration
+  def up
+    add_column :users, :account_id, :integer
+  end
+end
 
-acts_as_tenant requires each scoped model to have a column in its schema linking it to a tenant. Adding acts_as_tenant to your model declaration will scope that model to the current tenant **BUT ONLY if a current tenant has been set**.
+class User < ActiveRecord::Base
+  acts_as_tenant(:account)
+end
+```
+
+`acts_as_tenant` requires each scoped model to have a column in its schema linking it to a tenant. Adding `acts_as_tenant` to your model declaration will scope that model to the current tenant **BUT ONLY if a current tenant has been set**.
 
 Some examples to illustrate this behavior:
 
-    # This manually sets the current tenant for testing purposes. In your app this is handled by the gem.
-    ActsAsTenant.current_tenant = Account.find(3)
+```ruby
+# This manually sets the current tenant for testing purposes. In your app this is handled by the gem.
+ActsAsTenant.current_tenant = Account.find(3)
 
-    # All searches are scoped by the tenant, the following searches will only return objects
-    # where account_id == 3
-    Project.all =>  # all projects with account_id => 3
-    Project.tasks.all #  => all tasks with account_id => 3
+# All searches are scoped by the tenant, the following searches will only return objects
+# where account_id == 3
+Project.all =>  # all projects with account_id => 3
+Project.tasks.all #  => all tasks with account_id => 3
 
-    # New objects are scoped to the current tenant
-    @project = Project.new(:name => 'big project')    # => <#Project id: nil, name: 'big project', :account_id: 3>
+# New objects are scoped to the current tenant
+@project = Project.new(:name => 'big project')    # => <#Project id: nil, name: 'big project', :account_id: 3>
 
-    # It will not allow the creation of objects outside the current_tenant scope
-    @project.account_id = 2
-    @project.save                                     # => false
+# It will not allow the creation of objects outside the current_tenant scope
+@project.account_id = 2
+@project.save                                     # => false
 
-    # It will not allow association with objects outside the current tenant scope
-    # Assuming the Project with ID: 2 does not belong to Account with ID: 3
-    @task = Task.new  # => <#Task id: nil, name: nil, project_id: nil, :account_id: 3>
+# It will not allow association with objects outside the current tenant scope
+# Assuming the Project with ID: 2 does not belong to Account with ID: 3
+@task = Task.new  # => <#Task id: nil, name: nil, project_id: nil, :account_id: 3>
+```
 
-Acts_as_tenant uses Rails' default_scope method to scope models. Rails 3.1 changed the way default_scope works in a good way. A user defined default_scope should integrate seamlessly with the one added by acts_as_tenant.
+Acts_as_tenant uses Rails' `default_scope` method to scope models. Rails 3.1 changed the way `default_scope` works in a good way. A user defined `default_scope` should integrate seamlessly with the one added by `acts_as_tenant`.
 
-**Validating attribute uniqueness**
+### Validating attribute uniqueness ###
 
 If you need to validate for uniqueness, chances are that you want to scope this validation to a tenant. You can do so by using:
 
-    validates_uniqueness_to_tenant :name, :email
+```ruby
+validates_uniqueness_to_tenant :name, :email
+```
 
 All options available to Rails' own `validates_uniqueness_of` are also available to this method.
 
-**Custom foreign_key**
+### Custom foreign_key ###
 
 You can explicitely specifiy a foreign_key for AaT to use should the key differ from the default:
 
-    acts_as_tenant(:account, :foreign_key => 'accountID) # by default AaT expects account_id
+```ruby
+acts_as_tenant(:account, :foreign_key => 'accountID) # by default AaT expects account_id
+```
 
 Configuration options
 ---------------------
