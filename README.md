@@ -77,9 +77,10 @@ If you want to require the tenant to be set at all times, you can configure acts
 
 Scoping your models
 -------------------
-    class Addaccounttousers < ActiveRecord::Migration
+    class AddAccountToUsers < ActiveRecord::Migration
       def up
         add_column :users, :account_id, :integer
+        add_index  :users, :account_id
       end
     end
 
