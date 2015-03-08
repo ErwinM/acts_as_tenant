@@ -77,16 +77,19 @@ If you want to require the tenant to be set at all times, you can configure acts
 
 Scoping your models
 -------------------
-    class AddAccountToUsers < ActiveRecord::Migration
-      def up
-        add_column :users, :account_id, :integer
-        add_index  :users, :account_id
-      end
-    end
 
-    class User < ActiveRecord::Base
-      acts_as_tenant(:account)
-    end
+```ruby
+class AddAccountToUsers < ActiveRecord::Migration
+  def up
+    add_column :users, :account_id, :integer
+    add_index  :users, :account_id
+  end
+end
+
+class User < ActiveRecord::Base
+  acts_as_tenant(:account)
+end
+```
 
 acts_as_tenant requires each scoped model to have a column in its schema linking it to a tenant. Adding acts_as_tenant to your model declaration will scope that model to the current tenant **BUT ONLY if a current tenant has been set**.
 
