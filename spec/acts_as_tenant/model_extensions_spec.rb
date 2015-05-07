@@ -37,6 +37,15 @@ describe ActsAsTenant do
     it { expect { @project.account = @account }.not_to raise_error }
   end
 
+  describe 'tenant_id provided as a string should not treated as a different tenant_id if it`s the same' do
+    before do
+      @account = Account.create!(:name => 'foo')
+      @project = @account.projects.create!(:name => 'bar')
+    end
+
+    it { expect {@project.account_id = @account.id.to_s }.not_to raise_error }
+  end
+
   describe 'tenant_id should auto populate after initialization' do
     before do
       @account = Account.create!(:name => 'foo')
