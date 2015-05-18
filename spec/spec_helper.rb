@@ -2,6 +2,7 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 $orm = ENV["ORM"] || "active_record"
+require 'yaml'
 require "#{$orm}_helper"
 
 require 'rspec/rails'
