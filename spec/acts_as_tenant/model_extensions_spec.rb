@@ -27,6 +27,24 @@ describe ActsAsTenant do
     it { expect {@project.account_id = @account.id + 1}.to raise_error }
   end
 
+  describe 'setting tenant_id to the same value should not error' do
+    before do
+      @account = Account.create!(:name => 'foo')
+      @project = @account.projects.create!(:name => 'bar')
+    end
+
+    it { expect {@project.account_id = @account.id}.not_to raise_error }
+  end
+
+  describe 'setting tenant_id to a string with same to_i value should not error' do
+    before do
+      @account = Account.create!(:name => 'foo')
+      @project = @account.projects.create!(:name => 'bar')
+    end
+
+    it { expect {@project.account_id = @account.id.to_s}.not_to raise_error }
+  end
+
   describe 'tenant_id should be mutable, if not already set' do
     before do
       @account = Account.create!(:name => 'foo')
