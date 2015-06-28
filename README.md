@@ -91,9 +91,10 @@ Scoping your models
 -------------------
 
 ```ruby
-class Addaccounttousers < ActiveRecord::Migration
+class AddAccountToUsers < ActiveRecord::Migration
   def up
     add_column :users, :account_id, :integer
+    add_index  :users, :account_id
   end
 end
 
