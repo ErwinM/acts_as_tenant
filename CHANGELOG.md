@@ -1,6 +1,12 @@
+0.3.9
+-----
+* Added ability to configure a default tenant for testing purposes. (thx iangreenleaf)
+* AaT will now accept a string for a tenant_id (thx calebthompson)
+* Improvements to readme (thx stgeneral)
+
 0.3.8
 -----
-* Added Mongoid compatibility [thx iangreenlead]
+* Added Mongoid compatibility [thx iangreenleaf]
 
 0.3.7
 -----
