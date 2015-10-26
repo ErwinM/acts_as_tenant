@@ -1,3 +1,8 @@
+Master
+------
+* (Sub)domain lookup is no case insensitive
+* Added ability to use inverse_of (thx lowjoel)
+
 0.3.9
 -----
 * Added ability to configure a default tenant for testing purposes. (thx iangreenleaf)

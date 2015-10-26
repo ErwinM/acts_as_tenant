@@ -18,7 +18,6 @@ describe ApplicationController, :type => :controller do
 
   it 'Finds the correct tenant with a example1.com' do
     @request.host = "example1.com"
-    expect(Account).to receive(:where).with({subdomain: nil}) {[]}
     expect(Account).to receive(:where).with({domain: 'example1.com'}) {['account1']}
     get :index
     expect(ActsAsTenant.current_tenant).to eq 'account1'
@@ -38,5 +37,10 @@ describe ApplicationController, :type => :controller do
     expect(ActsAsTenant.current_tenant).to eq "account1"
   end
 
-
+  it 'Ignores case when finding tenant by subdomain' do
+    @request.host = "SubDomain.example.com"
+    expect(Account).to receive(:where).with({subdomain: 'subdomain'}) {['account1']}
+    get :index
+    expect(ActsAsTenant.current_tenant).to eq "account1"
+  end
 end
