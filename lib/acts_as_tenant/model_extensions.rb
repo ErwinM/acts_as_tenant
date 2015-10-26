@@ -49,7 +49,7 @@ module ActsAsTenant
         ActsAsTenant.set_tenant_klass(tenant)
 
         # Create the association
-        valid_options = options.slice(:foreign_key, :class_name)
+        valid_options = options.slice(:foreign_key, :class_name, :inverse_of)
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
         belongs_to tenant, valid_options
 
