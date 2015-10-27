@@ -58,7 +58,18 @@ module ActsAsTenant
             raise ActsAsTenant::Errors::NoTenantSet
           end
           if ActsAsTenant.current_tenant
-            where(fkey.to_sym => ActsAsTenant.current_tenant.id)
+            if const_defined? "Mongoid"
+              if ActsAsTenant.configuration.allow_fallback
+                self.in(fkey.to_sym => [ActsAsTenant.current_tenant.id, nil])
+              else
+                where(fkey.to_sym => ActsAsTenant.current_tenant.id)
+              end
+            else
+              keys = [ActsAsTenant.current_tenant.id]
+              keys.push nil if ActsAsTenant.configuration.allow_fallback
+
+              where(fkey.to_sym => keys)
+            end
           else
             all
           end

@@ -81,6 +81,7 @@ describe ActsAsTenant do
 
       @project1 = @account1.projects.create!(:name => 'foobar')
       @project2 = @account2.projects.create!(:name => 'baz')
+      @project3 = Project.create(:name => 'bizz')
 
       ActsAsTenant.current_tenant= @account1
       @projects = Project.all
@@ -88,6 +89,33 @@ describe ActsAsTenant do
 
     it { expect(@projects.length).to eq(1) }
     it { expect(@projects).to eq([@project1]) }
+  end
+
+  describe 'with allow_fallback set, Project.all should be scoped to the current tenant or resources with no tenant specified if current tenant is set' do
+    before do
+      ActsAsTenant.configure do |config|
+        config.allow_fallback = true
+      end
+
+      @account1 = Account.create!(:name => 'foo')
+      @account2 = Account.create!(:name => 'bar')
+
+      @project1 = @account1.projects.create!(:name => 'foobar')
+      @project2 = @account2.projects.create!(:name => 'baz')
+      @project3 = Project.create(:name => 'bizz')
+
+      ActsAsTenant.current_tenant= @account1
+      @projects = Project.all
+    end
+
+    after do
+      ActsAsTenant.configure do |config|
+        config.allow_fallback = false
+      end
+    end
+
+    it { expect(@projects.length).to eq(2) }
+    it { expect(@projects).to match_array([@project1, @project3]) }
   end
 
   describe 'Project.unscoped.all should return the unscoped value' do

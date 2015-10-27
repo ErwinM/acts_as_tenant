@@ -16,11 +16,14 @@ module ActsAsTenant
   end
 
   class Configuration
-    attr_writer :require_tenant
-  
+    attr_writer :require_tenant, :allow_fallback
+
     def require_tenant
       @require_tenant ||= false
     end
-  
+
+    def allow_fallback
+      @allow_fallback ||= false
+    end
   end
 end
