@@ -21,6 +21,18 @@ module ActsAsTenant
     RequestStore.store[:current_tenant] || self.default_tenant
   end
 
+  def self.unscoped=(unscoped)
+    RequestStore.store[:acts_as_tenant_unscoped] = unscoped
+  end
+
+  def self.unscoped
+    RequestStore.store[:acts_as_tenant_unscoped]
+  end
+
+  def self.unscoped?
+    !!unscoped
+  end
+
   class << self
     attr_accessor :default_tenant
   end
@@ -39,6 +51,24 @@ module ActsAsTenant
     self.current_tenant = old_tenant
   end
 
+  def self.without_tenant(&block)
+    if block.nil?
+      raise ArgumentError, "block required"
+    end
+
+    old_tenant = current_tenant
+    old_unscoped = unscoped
+
+    self.current_tenant = nil
+    self.unscoped = true
+    value = block.call
+    return value
+
+  ensure
+    self.current_tenant = old_tenant
+    self.unscoped = old_unscoped
+  end
+
   module ModelExtensions
     def self.included(base)
       base.extend(ClassMethods)
@@ -54,7 +84,7 @@ module ActsAsTenant
         belongs_to tenant, valid_options
 
         default_scope lambda {
-          if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil?
+          if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
             raise ActsAsTenant::Errors::NoTenantSet
           end
           if ActsAsTenant.current_tenant

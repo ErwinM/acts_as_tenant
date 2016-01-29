@@ -83,6 +83,15 @@ any code in this block will be scoped to the current tenant. All methods that se
 
 **Note:** If the current tenant is not set by one of these methods, Acts_as_tenant will be unable to apply the proper scope to your models. So make sure you use one of the two methods to tell acts_as_tenant about the current tenant.
 
+### Disabling tenant checking for a block ###
+
+```ruby
+ActsAsTenant.without_tenant do
+  # Tenant checking is disabled for all code in this block
+end
+```
+This is useful in shared routes such as admin panels or internal dashboards when `require_tenant` option is enabled throughout the app.
+
 ### Require tenant to be set always ###
 
 If you want to require the tenant to be set at all times, you can configure acts_as_tenant to raise an error when a query is made without a tenant available. See below under configuarion options.
