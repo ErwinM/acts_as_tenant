@@ -151,7 +151,7 @@ acts_as_tenant(:account, :foreign_key => 'accountID) # by default AaT expects ac
 Configuration options
 ---------------------
 An initializer can be created to control (currently one) option in ActsAsTenant. Defaults
-are shown below with sample overrides following. In `config/initializer/acts_as_tenant.rb`:
+are shown below with sample overrides following. In `config/initializers/acts_as_tenant.rb`:
 
 ```ruby
 ActsAsTenant.configure do |config|
@@ -165,7 +165,7 @@ Sidekiq support
 ---------------
 
 ActsAsTenant supports [Sidekiq](http://sidekiq.org/). A background processing library.
-Add the following code to your `config/initializer/acts_as_tenant.rb`:
+Add the following code to your `config/initializers/acts_as_tenant.rb`:
 
 ```ruby
 require 'acts_as_tenant/sidekiq'

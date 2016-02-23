@@ -1,4 +1,6 @@
 language: ruby
 services:
   - mongodb
+before_install:
+  - gem update bundler
 script: bundle exec rake spec:all
