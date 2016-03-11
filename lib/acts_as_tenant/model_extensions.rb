@@ -87,7 +87,7 @@ module ActsAsTenant
                             else
                               a.primary_key
                             end.to_sym
-              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || association_class.where(primary_key => value).exists?
+              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || association_class.where(primary_key => value).any?
             end
           end
         end

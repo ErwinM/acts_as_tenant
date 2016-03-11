@@ -2,6 +2,8 @@ Master
 ------
 * (Sub)domain lookup is no case insensitive
 * Added ability to use inverse_of (thx lowjoel)
+* Allow for validation that associations belong to the tenant to reflect on
+associations which return an Array from `where` (thx ludamillion)
 
 0.3.9
 -----
