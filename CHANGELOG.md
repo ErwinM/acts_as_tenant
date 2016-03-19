@@ -2,6 +2,7 @@ Master
 ------
 * (Sub)domain lookup is no case insensitive
 * Added ability to use inverse_of (thx lowjoel)
+* Added ability to disable tenant checking for a block (thx duboff)
 
 0.3.9
 -----

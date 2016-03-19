@@ -282,17 +282,55 @@ describe ActsAsTenant do
     end
   end
 
-  # Tenant required
-  context "tenant required" do
-    describe "raises exception if no tenant specified" do
-      before do
-        @account1 = Account.create!(:name => 'foo')
-        @project1 = @account1.projects.create!(:name => 'foobar')
-        allow(ActsAsTenant.configuration).to receive_messages(require_tenant: true)
+  describe "::without_tenant" do
+    it "should set current_tenant to nil inside the block" do
+      ActsAsTenant.without_tenant do
+        expect(ActsAsTenant.current_tenant).to be_nil
+      end
+    end
+
+    it "should reset current_tenant to the previous tenant once exiting the block" do
+      @account1 = Account.create!(:name => 'foo')
+
+      ActsAsTenant.current_tenant = @account1
+      ActsAsTenant.without_tenant do
       end
 
+      expect(ActsAsTenant.current_tenant).to eq(@account1)
+    end
+
+    it "should return the value of the block" do
+      value = ActsAsTenant.without_tenant do
+        "something"
+      end
+
+      expect(value).to eq "something"
+    end
+
+    it "should raise an error when no block is provided" do
+      expect { ActsAsTenant.without_tenant }.to raise_error(ArgumentError, /block required/)
+    end
+  end
+
+  # Tenant required
+  context "tenant required" do
+    before do
+      @account1 = Account.create!(:name => 'foo')
+      @project1 = @account1.projects.create!(:name => 'foobar')
+      allow(ActsAsTenant.configuration).to receive_messages(require_tenant: true)
+    end
+
+    describe "raises exception if no tenant specified" do
       it "should raise an error when no tenant is provided" do
-        expect { Project.all.load }.to raise_error(ActsAsTenant::Errors::NoTenantSet)
+        expect { Project.all }.to raise_error(ActsAsTenant::Errors::NoTenantSet)
+      end
+    end
+
+    describe "does not raise exception when run in unscoped mode" do
+      it "should not raise an error when no tenant is provided" do
+        expect do
+          ActsAsTenant.without_tenant { Project.all }
+        end.to_not raise_error
       end
     end
   end
