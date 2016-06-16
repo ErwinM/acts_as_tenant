@@ -49,6 +49,14 @@ describe ActsAsTenant::Sidekiq do
       end
       expect(ActsAsTenant.current_tenant).to be_nil
     end
+
+    it 'clears current_tenant after job is finished' do
+      allow(Account).to receive(:find).with(1234) { account }
+      ActsAsTenant.current_tenant = account
+      msg = message
+      subject.call(nil, msg, nil) {}
+      expect(ActsAsTenant.current_tenant).to be_nil
+    end
   end
 
   describe 'Sidekiq configuration' do

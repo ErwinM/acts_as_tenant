@@ -23,6 +23,8 @@ module ActsAsTenant::Sidekiq
       else
         yield
       end
+    ensure
+      RequestStore.clear!
     end
   end
 end
