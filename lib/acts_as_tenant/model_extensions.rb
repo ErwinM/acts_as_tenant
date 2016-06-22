@@ -129,13 +129,15 @@ module ActsAsTenant
         to_include = Module.new do
           define_method "#{fkey}=" do |integer|
             write_attribute("#{fkey}", integer)
-            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil?
+            # if the ignore_tenant_changes option is present and true we'll avoid the exception because maybe an admin is making the update
+            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil? && !options[:ignore_tenant_changes]
             integer
           end
 
           define_method "#{ActsAsTenant.tenant_klass.to_s}=" do |model|
             super(model)
-            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil?
+            # if the ignore_tenant_changes option is present and true we'll avoid the exception because maybe an admin is making the update
+            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil? && !options[:ignore_tenant_changes]
             model
           end
 
