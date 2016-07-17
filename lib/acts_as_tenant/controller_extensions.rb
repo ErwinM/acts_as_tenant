@@ -13,7 +13,7 @@ module ActsAsTenant
       self.tenant_column = column.to_sym
 
       self.class_eval do
-        before_filter :find_tenant_by_subdomain
+        before_action :find_tenant_by_subdomain
         helper_method :current_tenant
 
         private
@@ -42,7 +42,7 @@ module ActsAsTenant
       self.tenant_second_column = second_column.to_sym
 
       self.class_eval do
-        before_filter :find_tenant_by_subdomain_or_domain
+        before_action :find_tenant_by_subdomain_or_domain
         helper_method :current_tenant
 
         private
@@ -62,7 +62,7 @@ module ActsAsTenant
 
 
     # This method sets up a method that allows manual setting of the current_tenant. This method should
-    # be used in a before_filter. In addition, a helper is setup that returns the current_tenant
+    # be used in a before_action. In addition, a helper is setup that returns the current_tenant
     def set_current_tenant_through_filter
       self.class_eval do
         helper_method :current_tenant

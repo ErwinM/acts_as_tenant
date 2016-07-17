@@ -58,7 +58,7 @@ Alternatively, you could locate the tenant using the method `set_current_tenant_
 ```ruby
 class ApplicationController < ActionController::Base
   set_current_tenant_through_filter
-  before_filter :your_method_that_finds_the_current_tenant
+  before_action :your_method_that_finds_the_current_tenant
 
   def your_method_that_finds_the_current_tenant
     current_account = Account.find_it
@@ -67,7 +67,7 @@ class ApplicationController < ActionController::Base
 end
 ```
 
-Setting the `current_tenant` yourself, requires you to declare `set_current_tenant_through_filter` at the top of your application_controller to tell acts_as_tenant that you are going to use a before_filter to setup the current tenant. Next you should actually setup that before_filter to fetch the current tenant and pass it to `acts_as_tenant` by using `set_current_tenant(current_tenant)` in the before_filter.
+Setting the `current_tenant` yourself, requires you to declare `set_current_tenant_through_filter` at the top of your application_controller to tell acts_as_tenant that you are going to use a before_action to setup the current tenant. Next you should actually setup that before_action to fetch the current tenant and pass it to `acts_as_tenant` by using `set_current_tenant(current_tenant)` in the before_action.
 
 
 ### Setting the current tenant for a block ###
