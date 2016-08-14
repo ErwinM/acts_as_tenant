@@ -1,3 +1,8 @@
+MASTER
+------
+* Removed (stale, no longer working) MongoDB support; moved code to separate branch
+
+
 0.4.0
 ------
 * (Sub)domain lookup is no longer case insensitive

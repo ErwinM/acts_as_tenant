@@ -1,6 +1,0 @@
-test:
-  sessions:
-    default:
-      database: acts_as_tenant_test
-      hosts:
-        - localhost:27017

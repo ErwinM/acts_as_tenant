@@ -1,5 +1,5 @@
 require 'spec_helper'
-require "#{$orm}_models"
+require 'active_record_models'
 
 describe ActsAsTenant do
   after { ActsAsTenant.current_tenant = nil }

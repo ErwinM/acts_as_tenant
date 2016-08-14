@@ -1,8 +1,7 @@
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
-$orm = ENV["ORM"] || "active_record"
-require "#{$orm}_helper"
+require "active_record_helper"
 
 require 'rspec/rails'
 require 'acts_as_tenant'
@@ -11,7 +10,7 @@ RSpec.configure do |config|
   config.after(:each) do
     ActsAsTenant.current_tenant = nil
   end
-  
+
   config.infer_base_class_for_anonymous_controllers = true
 end
 
