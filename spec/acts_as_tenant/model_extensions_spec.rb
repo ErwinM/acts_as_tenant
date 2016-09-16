@@ -123,6 +123,20 @@ describe ActsAsTenant do
     it { @project.account }
   end
 
+  describe 'A tenant model with global records' do
+    before do
+      @account = Account.create!(:name => 'foo')
+      @project1 = GlobalProject.create!(:name => 'foobar global')
+      @project2 = GlobalProject.create!(:name => 'unaccessible project', :account => Account.create!)
+      ActsAsTenant.current_tenant = @account
+      @project3 = GlobalProject.create!(:name => 'foobar')
+    end
+
+    it 'should return two projects' do
+      expect(GlobalProject.all.count).to eq(2)
+    end
+  end
+
   # Associations
   describe 'Associations should be correctly scoped by current tenant' do
     before do

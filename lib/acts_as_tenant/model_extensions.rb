@@ -88,7 +88,9 @@ module ActsAsTenant
             raise ActsAsTenant::Errors::NoTenantSet
           end
           if ActsAsTenant.current_tenant
-            where(fkey.to_sym => ActsAsTenant.current_tenant.id)
+            keys = [ActsAsTenant.current_tenant.id]
+            keys.push(nil) if options[:has_global_records]
+            where(fkey.to_sym => keys)
           else
             Rails::VERSION::MAJOR < 4 ? scoped : all
           end
