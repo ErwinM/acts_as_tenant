@@ -1,5 +1,6 @@
 module ActsAsTenant
   @@tenant_klass = nil
+  @@models_with_global_records = []
 
   def self.set_tenant_klass(klass)
     @@tenant_klass = klass
@@ -7,6 +8,14 @@ module ActsAsTenant
 
   def self.tenant_klass
     @@tenant_klass
+  end
+
+  def self.models_with_global_records
+    @@models_with_global_records
+  end
+
+  def self.add_global_record_model model
+    @@models_with_global_records.push(model)
   end
 
   def self.fkey
@@ -77,6 +86,8 @@ module ActsAsTenant
     module ClassMethods
       def acts_as_tenant(tenant = :account, options = {})
         ActsAsTenant.set_tenant_klass(tenant)
+
+        ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
 
         # Create the association
         valid_options = options.slice(:foreign_key, :class_name, :inverse_of)
@@ -169,6 +180,16 @@ module ActsAsTenant
         end
 
         validates_uniqueness_of(fields, args)
+
+        if ActsAsTenant.models_with_global_records.include?(self)
+          validate do |instance|
+            Array(fields).each do |field|
+              unless self.class.where(fkey.to_sym => [nil, instance[fkey]], field.to_sym => instance[field]).empty?
+                errors.add(field, 'has already been taken') 
+              end
+            end
+          end
+        end
       end
     end
   end
