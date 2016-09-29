@@ -184,8 +184,18 @@ module ActsAsTenant
         if ActsAsTenant.models_with_global_records.include?(self)
           validate do |instance|
             Array(fields).each do |field|
-              unless self.class.where(fkey.to_sym => [nil, instance[fkey]], field.to_sym => instance[field]).empty?
-                errors.add(field, 'has already been taken') 
+              if instance.new_record?
+                unless self.class.where(fkey.to_sym => [nil, instance[fkey]],
+                                        field.to_sym => instance[field]).empty?
+                  errors.add(field, 'has already been taken') 
+                end
+              else
+                unless self.class.where(fkey.to_sym => [nil, instance[fkey]],
+                                        field.to_sym => instance[field])
+                                 .where.not(:id => instance.id).empty?
+                  errors.add(field, 'has already been taken') 
+                end
+
               end
             end
           end

@@ -140,6 +140,7 @@ describe ActsAsTenant do
       expect(GlobalProject.new(:name => 'foobar').valid?).to be(false)
       expect(GlobalProject.new(:name => 'foobar new').valid?).to be(true)
       expect(GlobalProject.new(:name => 'foobar global').valid?).to be(false)
+      expect(@project1.valid?).to be(true)
     end
 
     it 'should add the model to ActsAsTenant.models_with_global_records' do
