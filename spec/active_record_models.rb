@@ -107,3 +107,10 @@ class Comment < ActiveRecord::Base
   belongs_to :task, -> { where(comments: { commentable_type: 'Task'  })  }, foreign_key: 'commentable_id'
   acts_as_tenant :account
 end
+
+class GlobalProject < ActiveRecord::Base
+  self.table_name = 'projects'
+
+  acts_as_tenant :account, has_global_records: true
+  validates_uniqueness_to_tenant :name
+end
