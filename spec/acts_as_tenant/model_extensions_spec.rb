@@ -24,7 +24,7 @@ describe ActsAsTenant do
       @project = @account.projects.create!(:name => 'bar')
     end
 
-    it { expect {@project.account_id = @account.id + 1}.to raise_error }
+    it { expect {@project.account_id = @account.id + 1}.to raise_error(ActsAsTenant::Errors::TenantIsImmutable) }
   end
 
   describe 'setting tenant_id to the same value should not error' do
