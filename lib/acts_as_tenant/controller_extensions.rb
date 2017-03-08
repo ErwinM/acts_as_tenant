@@ -14,7 +14,7 @@ module ActsAsTenant
 
       self.class_eval do
         before_filter :find_tenant_by_subdomain
-        helper_method :current_tenant
+        helper_method :current_tenant if respond_to?(:helper_method)
 
         private
           def find_tenant_by_subdomain
@@ -43,7 +43,7 @@ module ActsAsTenant
 
       self.class_eval do
         before_filter :find_tenant_by_subdomain_or_domain
-        helper_method :current_tenant
+        helper_method :current_tenant if respond_to?(:helper_method)
 
         private
           def find_tenant_by_subdomain_or_domain
@@ -65,7 +65,7 @@ module ActsAsTenant
     # be used in a before_filter. In addition, a helper is setup that returns the current_tenant
     def set_current_tenant_through_filter
       self.class_eval do
-        helper_method :current_tenant
+        helper_method :current_tenant if respond_to?(:helper_method)
 
         private
           def set_current_tenant(current_tenant_object)
