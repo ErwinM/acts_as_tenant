@@ -18,6 +18,10 @@ if defined?(ActionController::Base)
   ActionController::Base.extend ActsAsTenant::ControllerExtensions
 end
 
+if defined?(ActionController::API)
+  ActionController::API.extend ActsAsTenant::ControllerExtensions
+end
+
 module ActsAsTenant
 end
   
