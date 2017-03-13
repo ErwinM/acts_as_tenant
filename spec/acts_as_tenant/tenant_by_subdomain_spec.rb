@@ -12,7 +12,7 @@ end
 describe ApplicationController, :type => :controller do
   controller do
     def index
-      render :text => "custom called"
+      render :plain => "custom called"
     end
   end
 
