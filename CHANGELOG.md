@@ -1,7 +1,7 @@
-MASTER
+0.4.1
 ------
 * Removed (stale, no longer working) MongoDB support; moved code to separate branch
-
+* Added without_tenant option (see readme, thx duboff)
 
 0.4.0
 ------
