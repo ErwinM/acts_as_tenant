@@ -38,6 +38,6 @@ Sidekiq.configure_server do |config|
     chain.add ActsAsTenant::Sidekiq::Client
   end
   config.server_middleware do |chain|
-    chain.insert_before Sidekiq::Middleware::Server::RetryJobs, ActsAsTenant::Sidekiq::Server
+    chain.add ActsAsTenant::Sidekiq::Server 
   end
 end
