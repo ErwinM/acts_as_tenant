@@ -14,7 +14,7 @@ module ActsAsTenant
 
       self.class_eval do
 
-        before_filter :find_tenant_by_subdomain
+        before_action :find_tenant_by_subdomain
         helper_method :current_tenant if respond_to?(:helper_method)
 
 
@@ -45,7 +45,7 @@ module ActsAsTenant
 
       self.class_eval do
 
-        before_filter :find_tenant_by_subdomain_or_domain
+        before_action :find_tenant_by_subdomain_or_domain
         helper_method :current_tenant if respond_to?(:helper_method)
 
 

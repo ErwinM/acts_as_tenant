@@ -1,3 +1,5 @@
+* Replace all `before_filter` with `before_action` for Rails 5.1 compatibility
+
 0.4.1
 ------
 * Removed (stale, no longer working) MongoDB support; moved code to separate branch
