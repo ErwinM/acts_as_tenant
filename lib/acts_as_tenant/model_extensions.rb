@@ -22,6 +22,10 @@ module ActsAsTenant
     "#{@@tenant_klass.to_s}_id"
   end
 
+  def self.polymorphic_type
+    "#{@@tenant_klass.to_s}_type"
+  end
+
   def self.current_tenant=(tenant)
     RequestStore.store[:current_tenant] = tenant
   end
@@ -92,6 +96,7 @@ module ActsAsTenant
         # Create the association
         valid_options = options.slice(:foreign_key, :class_name, :inverse_of)
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
+        polymorphic_type = valid_options[:foreign_type] || ActsAsTenant.polymorphic_type
         belongs_to tenant, valid_options
 
         default_scope lambda {
@@ -101,11 +106,18 @@ module ActsAsTenant
           if ActsAsTenant.current_tenant
             keys = [ActsAsTenant.current_tenant.id]
             keys.push(nil) if options[:has_global_records]
-            where(fkey.to_sym => keys)
+
+            query_criteria = { fkey.to_sym => keys }
+            query_criteria.merge!({ polymorphic_type.to_sym => ActsAsTenant.current_tenant.class.to_s }) if options[:polymorphic]
+            where(query_criteria)
           else
             Rails::VERSION::MAJOR < 4 ? scoped : all
           end
         }
+
+        polymorphic_foreign_keys = reflect_on_all_associations(:belongs_to).select do |a|
+          a.options[:polymorphic]
+        end.map { |a| a.foreign_key }
 
         # Add the following validations to the receiving model:
         # - new instances should have the tenant set
@@ -113,13 +125,14 @@ module ActsAsTenant
         #
         before_validation Proc.new {|m|
           if ActsAsTenant.current_tenant
-            m.send "#{fkey}=".to_sym, ActsAsTenant.current_tenant.id
+            if options[:polymorphic]
+              m.send("#{fkey}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send("#{fkey}").nil?
+              m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send("#{polymorphic_type}").nil?
+            else
+              m.send "#{fkey}=".to_sym, ActsAsTenant.current_tenant.id
+            end
           end
         }, :on => :create
-
-        polymorphic_foreign_keys = reflect_on_all_associations(:belongs_to).select do |a|
-          a.options[:polymorphic]
-        end.map { |a| a.foreign_key }
 
         reflect_on_all_associations(:belongs_to).each do |a|
           unless a == reflect_on_association(tenant) || polymorphic_foreign_keys.include?(a.foreign_key)

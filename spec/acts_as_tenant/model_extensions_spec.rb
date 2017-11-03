@@ -199,14 +199,46 @@ describe ActsAsTenant do
   end
 
   describe "It should be possible to use associations with foreign_key from polymorphic" do
-    before do
-      @account = Account.create!(name: 'foo')
-      ActsAsTenant.current_tenant = @account
-      @project = Project.create!(name: 'project', account: @account)
-      @comment = Comment.new commentable: @project, account: @account
+    context 'tenanted objects have a polymorphic association' do
+      before do
+        @account = Account.create!(name: 'foo')
+        ActsAsTenant.current_tenant = @account
+        @project = Project.create!(name: 'project', account: @account)
+        @comment = Comment.new commentable: @project, account: @account
+      end
+
+      it { expect(@comment.save!).to eq(true) }
     end
 
-    it { expect(@comment.save!).to eq(true) }
+    context 'tenant is polymorphic' do
+      before do
+        @account = Account.create!(name: 'foo')
+        @project = Project.create!(name: 'polymorphic project')
+        ActsAsTenant.current_tenant = @project
+        @comment = PolymorphicTenantComment.new(account: @account)
+      end
+
+      it 'populates commentable_type with the current tenant' do
+        expect(@comment.polymorphic_tenant_commentable_id).to eql(@project.id)
+        expect(@comment.polymorphic_tenant_commentable_type).to eql(@project.class.to_s)
+      end
+
+      context 'with another type of tenant, same id' do
+        before do
+          @comment.save!
+          @article = Article.create!(id: @project.id, title: 'article title')
+          @comment_on_article = @article.polymorphic_tenant_comments.create!
+        end
+
+        it 'correctly scopes to the current tenant type' do
+          expect(@comment_on_article).to be_persisted
+          expect(@comment).to be_persisted
+          expect(PolymorphicTenantComment.count).to eql(1)
+          expect(PolymorphicTenantComment.all.first.attributes).to eql(@comment.attributes)
+        end
+      end
+
+    end
   end
 
   # Additional default_scopes
