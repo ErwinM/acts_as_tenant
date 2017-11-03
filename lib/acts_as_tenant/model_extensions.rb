@@ -115,10 +115,6 @@ module ActsAsTenant
           end
         }
 
-        polymorphic_foreign_keys = reflect_on_all_associations(:belongs_to).select do |a|
-          a.options[:polymorphic]
-        end.map { |a| a.foreign_key }
-
         # Add the following validations to the receiving model:
         # - new instances should have the tenant set
         # - validate that associations belong to the tenant, currently only for belongs_to
@@ -133,6 +129,10 @@ module ActsAsTenant
             end
           end
         }, :on => :create
+
+        polymorphic_foreign_keys = reflect_on_all_associations(:belongs_to).select do |a|
+          a.options[:polymorphic]
+        end.map { |a| a.foreign_key }
 
         reflect_on_all_associations(:belongs_to).each do |a|
           unless a == reflect_on_association(tenant) || polymorphic_foreign_keys.include?(a.foreign_key)
