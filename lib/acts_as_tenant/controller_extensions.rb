@@ -4,7 +4,12 @@ module ActsAsTenant
     # this method allows setting the current_tenant by reading the subdomain and looking
     # it up in the tenant-model passed to the method. The method will look for the subdomain
     # in a column referenced by the second argument.
-    def set_current_tenant_by_subdomain(tenant = :account, column = :subdomain )
+    # 
+    # This method handles the following subdomain scenarios
+    # - `subdomain.example.com`
+    # - `www.subdomain.example.com`
+    # - `asdf.adsf.subdomain.example.com`
+    def set_current_tenant_by_last_subdomain(tenant = :account, column = :subdomain )
       self.class_eval do
         cattr_accessor :tenant_class, :tenant_column
       end
@@ -31,9 +36,52 @@ module ActsAsTenant
       end
     end
 
+    alias set_current_tenant_by_subdomain set_current_tenant_by_last_subdomain
+
+    # this method allows setting the current_tenant by reading the subdomain and looking
+    # it up in the tenant-model passed to the method. The method will look for the subdomain
+    # in a column referenced by the second argument.
+    # 
+    # This method handles the following subdomain scenarios
+    # - `subdomain.example.com`
+    # - `subdomain.asdf.example.com`
+    # - `subdomain.example.co.uk`
+    def set_current_tenant_by_first_subdomain(tenant = :account, column = :subdomain )
+      self.class_eval do
+        cattr_accessor :tenant_class, :tenant_column
+      end
+
+      self.tenant_class = tenant.to_s.camelcase.constantize
+      self.tenant_column = column.to_sym
+
+      self.class_eval do
+
+        before_filter :find_tenant_by_subdomain
+        helper_method :current_tenant if respond_to?(:helper_method)
+
+
+        private
+          def find_tenant_by_subdomain
+            if request.subdomains.last
+              ActsAsTenant.current_tenant = tenant_class.where(tenant_column => request.subdomains.first.downcase).first
+            end
+          end
+
+          def current_tenant
+            ActsAsTenant.current_tenant
+          end
+      end
+    end
+
     # 01/27/2014 Christian Yerena / @preth00nker
     # this method adds the possibility of use the domain as a possible second argument to find
     # the current_tenant.
+    # 
+    # This method handles the following domain and subdomain scenarios
+    # - `subdomain.example.com`
+    # - `www.subdomain.example.com`
+    # - `asdf.adsf.subdomain.example.com`
+    # - `tenant-subdomain.com`
     def set_current_tenant_by_subdomain_or_domain(tenant = :account, primary_column = :subdomain, second_column = :domain )
       self.class_eval do
         cattr_accessor :tenant_class, :tenant_primary_column, :tenant_second_column
