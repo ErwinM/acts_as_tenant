@@ -3,7 +3,7 @@ Acts As Tenant
 
 [![Build Status](https://travis-ci.org/ErwinM/acts_as_tenant.svg)](https://travis-ci.org/ErwinM/acts_as_tenant)
 
-**Note**: acts_as_tenant was introduced in this [blog post](docs/blog_post.md).
+**Note**: acts_as_tenant was introduced in this [blog post](https://github.com/ErwinM/acts_as_tenant/blob/master/docs/blog_post.md).
 
 This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to our Rails app through a shared database strategy, that integrates (near) seamless with Rails.
 
