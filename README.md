@@ -213,7 +213,6 @@ If you want to contribute, fork the project, code your improvements and make a p
 Author & Credits
 ----------------
 acts_as_tenant is written by Erwin Matthijssen.
-Erwin is currently busy developing [Roll Call](http://www.rollcallapp.com/ "Roll Call App").
 
 This gem was inspired by Ryan Sonnek's [Multitenant](https://github.com/wireframe/multitenant) gem and its use of default_scope.
 
