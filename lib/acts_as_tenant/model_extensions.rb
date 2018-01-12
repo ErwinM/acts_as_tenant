@@ -90,7 +90,7 @@ module ActsAsTenant
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
 
         # Create the association
-        valid_options = options.slice(:foreign_key, :class_name, :inverse_of)
+        valid_options = options.slice(:foreign_key, :class_name, :inverse_of, :optional)
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
         belongs_to tenant, valid_options
 
