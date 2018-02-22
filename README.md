@@ -168,7 +168,7 @@ ActsAsTenant.configure do |config|
 end
 ```
 
-* `config.require_tenant` when set to true will raise an ActsAsTenant::NoTenant error whenever a query is made without a tenant set.
+* `config.require_tenant` when set to true will raise an `ActsAsTenant::Errors::NoTenantSet` error whenever a query is made from a model that `acts_as_tenant` without a tenant set.
 
 Sidekiq support
 ---------------
