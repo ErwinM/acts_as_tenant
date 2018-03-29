@@ -1,3 +1,7 @@
+0.4.3
+-----
+* allow 'optional' relations
+* Sidekiq fixes
 * Replace all `before_filter` with `before_action` for Rails 5.1 compatibility
 
 0.4.1
