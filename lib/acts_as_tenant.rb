@@ -15,13 +15,16 @@ if defined?(ActiveRecord::Base)
 end
 
 if defined?(ActionController::Base)
-  ActionController::Base.extend ActsAsTenant::ControllerExtensions
+  ActiveSupport.on_load(:action_controller) do
+    ActionController::Base.extend ActsAsTenant::ControllerExtensions
+  end
 end
 
 if defined?(ActionController::API)
-  ActionController::API.extend ActsAsTenant::ControllerExtensions
+  ActiveSupport.on_load(:action_controller) do
+    ActionController::API.extend ActsAsTenant::ControllerExtensions
+  end
 end
 
 module ActsAsTenant
 end
-  
