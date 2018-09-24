@@ -49,9 +49,19 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column :accountID, :integer
   end
 
+  create_table :articles, :force => true do |t|
+    t.column :title, :string
+  end
+
   create_table :comments, :force => true do |t|
     t.column :commentable_id, :integer
     t.column :commentable_type, :string
+    t.column :account_id, :integer
+  end
+
+  create_table :polymorphic_tenant_comments, :force => true do |t|
+    t.column :polymorphic_tenant_commentable_id, :integer
+    t.column :polymorphic_tenant_commentable_type, :string
     t.column :account_id, :integer
   end
 
@@ -64,6 +74,7 @@ end
 class Project < ActiveRecord::Base
   has_one :manager
   has_many :tasks
+  has_many :polymorphic_tenant_comments, as: :polymorphic_tenant_commentable
   acts_as_tenant :account
 
   validates_uniqueness_to_tenant :name
@@ -106,6 +117,16 @@ class Comment < ActiveRecord::Base
   belongs_to :commentable, polymorphic: true
   belongs_to :task, -> { where(comments: { commentable_type: 'Task'  })  }, foreign_key: 'commentable_id'
   acts_as_tenant :account
+end
+
+class Article < ActiveRecord::Base
+  has_many :polymorphic_tenant_comments, as: :polymorphic_tenant_commentable
+end
+
+class PolymorphicTenantComment < ActiveRecord::Base
+  belongs_to :polymorphic_tenant_commentable, polymorphic: true
+  belongs_to :account
+  acts_as_tenant :polymorphic_tenant_commentable, polymorphic: true
 end
 
 class GlobalProject < ActiveRecord::Base
