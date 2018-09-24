@@ -10,18 +10,13 @@ require "acts_as_tenant/model_extensions"
 
 #$LOAD_PATH.shift
 
-if defined?(ActiveRecord::Base)
-  ActiveRecord::Base.send(:include, ActsAsTenant::ModelExtensions)
+ActiveSupport.on_load(:active_record) do |base|
+  base.include ActsAsTenant::ModelExtensions
 end
 
-if defined?(ActionController::Base)
-  ActionController::Base.extend ActsAsTenant::ControllerExtensions
-end
-
-if defined?(ActionController::API)
-  ActionController::API.extend ActsAsTenant::ControllerExtensions
+ActiveSupport.on_load(:action_controller) do |base|
+  base.extend ActsAsTenant::ControllerExtensions
 end
 
 module ActsAsTenant
 end
-  
