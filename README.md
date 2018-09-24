@@ -94,7 +94,7 @@ This is useful in shared routes such as admin panels or internal dashboards when
 
 ### Require tenant to be set always ###
 
-If you want to require the tenant to be set at all times, you can configure acts_as_tenant to raise an error when a query is made without a tenant available. See below under configuarion options.
+If you want to require the tenant to be set at all times, you can configure acts_as_tenant to raise an error when a query is made without a tenant available. See below under configuration options.
 
 Scoping your models
 -------------------
