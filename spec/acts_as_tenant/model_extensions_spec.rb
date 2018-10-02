@@ -347,6 +347,18 @@ describe ActsAsTenant do
       end
     end
 
+    it "should set current_tenant to nil even if default_tenant is set" do
+      begin
+        old_default_tenant = ActsAsTenant.default_tenant
+        ActsAsTenant.default_tenant = Account.create!(name: 'foo')
+        ActsAsTenant.without_tenant do
+          expect(ActsAsTenant.current_tenant).to be_nil
+        end
+      ensure
+        ActsAsTenant.default_tenant = old_default_tenant
+      end
+    end
+
     it "should reset current_tenant to the previous tenant once exiting the block" do
       @account1 = Account.create!(:name => 'foo')
 
