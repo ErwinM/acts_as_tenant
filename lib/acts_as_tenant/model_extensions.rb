@@ -47,24 +47,16 @@ module ActsAsTenant
   end
 
   class << self
-    #attr_accessor :default_tenant
-    #
     def default_tenant=(tenant)
       @default_tenant = tenant
     end
 
     def default_tenant
-      if unscoped
-        nil
-      else
-        @default_tenant
-      end
+      @default_tenant unless unscoped
     end
   end
 
-
   def self.with_tenant(tenant, &block)
-
     if block.nil?
       raise ArgumentError, "block required"
     end
