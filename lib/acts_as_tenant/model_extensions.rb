@@ -1,14 +1,5 @@
 module ActsAsTenant
-  @@tenant_klasses = []
   @@models_with_global_records = []
-
-  def self.add_tenant_klass(klass)
-    @@tenant_klasses.push(klass)
-  end
-
-  def self.tenant_klasses
-    @@tenant_klasses
-  end
 
   def self.models_with_global_records
     @@models_with_global_records
@@ -16,16 +7,6 @@ module ActsAsTenant
 
   def self.add_global_record_model model
     @@models_with_global_records.push(model)
-  end
-
-  def self.fkeys
-    @@tenant_klasses.keys.map { |klass| "#{klass.to_s}_id" }
-  end
-
-  def self.polymorphic_type_for_current_tenant
-    raise ActsAsTenant::NoTenantSet unless current_tenant
-
-    "#{klass_for_current_tenant}_type".to_sym
   end
 
   def self.current_tenant=(tenant)
@@ -48,18 +29,11 @@ module ActsAsTenant
     !!unscoped
   end
 
-  # def self.foreign_key_for_current_tenant
-  #   raise ActsAsTenant::NoTenantSet unless current_tenant
-  #
-  #   options = @@tenant_klasses[klass_for_current_tenant]
-  #   options[:foreign_key] || "#{klass_for_current_tenant}_id".to_sym
-  # end
-  #
-  # def self.klass_for_current_tenant
-  #   raise ActsAsTenant::NoTenantSet unless current_tenant
-  #
-  #   current_tenant.class.name.demodulize.downcase.to_sym
-  # end
+  def self.klass_for_current_tenant
+    raise ActsAsTenant::Errors::NoTenantSet unless current_tenant
+
+    current_tenant.class.name.demodulize.downcase.to_sym
+  end
 
   class << self
     def default_tenant=(tenant)
@@ -113,23 +87,24 @@ module ActsAsTenant
 
     module ClassMethods
       def acts_as_tenant(tenant = :account, options = {})
-        ActsAsTenant.add_tenant_klass(tenant, options)
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
 
         # Create the association
         valid_options = options.slice(:foreign_key, :class_name, :inverse_of, :optional)
+        fkey = valid_options[:foreign_key] || "#{tenant}_id".to_sym
+        polymorphic_type = valid_options[:foreign_type] || "#{tenant}_type"
         belongs_to tenant, valid_options
 
         default_scope lambda {
           if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
             raise ActsAsTenant::Errors::NoTenantSet
           end
-          if ActsAsTenant.current_tenant
+          if ActsAsTenant.current_tenant && ActsAsTenant.klass_for_current_tenant == tenant
             keys = [ActsAsTenant.current_tenant.id]
             keys.push(nil) if options[:has_global_records]
 
-            query_criteria = { ActsAsTenant.foreign_key_for_current_tenant => keys }
-            query_criteria.merge!({ ActsAsTenant.polymorphic_type_for_current_tenant => ActsAsTenant.current_tenant.class.to_s }) if ActsAsTenant.current_tenant_is_polymorphic
+            query_criteria = { fkey.to_sym => keys }
+            query_criteria.merge!({ polymorphic_type.to_sym => ActsAsTenant.current_tenant.class.to_s }) if options[:polymorphic]
             where(query_criteria)
           else
             Rails::VERSION::MAJOR < 4 ? scoped : all
@@ -142,11 +117,11 @@ module ActsAsTenant
         #
         before_validation Proc.new {|m|
           if ActsAsTenant.current_tenant
-            if ActsAsTenant.current_tenant_is_polymorphic
-              m.send("#{ActsAsTenant.foreign_key_for_current_tenant}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send("#{ActsAsTenant.foreign_key_for_current_tenant}").nil?
-              m.send("#{ActsAsTenant.polymorphic_type_for_current_tenant}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send("#{ActsAsTenant.polymorphic_type_for_current_tenant}").nil?
+            if options[:polymorphic]
+              m.send("#{fkey}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send("#{fkey}").nil?
+              m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send("#{polymorphic_type}").nil?
             else
-              m.send "#{ActsAsTenant.foreign_key_for_current_tenant}=".to_sym, ActsAsTenant.current_tenant.id
+              m.send "#{fkey}=".to_sym, ActsAsTenant.current_tenant.id
             end
           end
         }, :on => :create
@@ -173,8 +148,6 @@ module ActsAsTenant
         # - Rewrite the accessors to make tenant immutable
         # - Add an override to prevent unnecessary db hits
         # - Add a helper method to verify if a model has been scoped by AaT
-        fkey = options[:foreign_key] || "#{tenant}_id"
-
         to_include = Module.new do
           define_method "#{fkey}=" do |integer|
             write_attribute("#{fkey}", integer)
@@ -184,13 +157,12 @@ module ActsAsTenant
 
           define_method "#{tenant.to_s}=" do |model|
             super(model)
-            fkey = "#{tenant.to_s}_id"
             raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil?
             model
           end
 
           define_method "#{tenant.to_s}" do
-            if !ActsAsTenant.current_tenant.nil? && send(ActsAsTenant.foreign_key_for_current_tenant) == ActsAsTenant.current_tenant.id
+            if !ActsAsTenant.current_tenant.nil? && send(fkey) == ActsAsTenant.current_tenant.id && ActsAsTenant.klass_for_current_tenant == tenant
               return ActsAsTenant.current_tenant
             else
               super()
@@ -208,11 +180,8 @@ module ActsAsTenant
 
       def validates_uniqueness_to_tenant(fields, args = {})
         raise ActsAsTenant::Errors::ModelNotScopedByTenant unless respond_to?(:scoped_by_tenant?)
-
-        association = reflect_on_association(args[:tenant] || :account)
-        raise 'Tenant must be specified' unless association
-
-        fkey = association.foreign_key
+        tenant = args[:tenant] || :account
+        fkey = reflect_on_association(tenant).foreign_key
         if args[:scope]
           args[:scope] = Array(args[:scope]) << fkey
         else

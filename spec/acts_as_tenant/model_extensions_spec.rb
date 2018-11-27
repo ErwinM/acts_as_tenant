@@ -215,7 +215,7 @@ describe ActsAsTenant do
         @account = Account.create!(name: 'foo')
         @project = Project.create!(name: 'polymorphic project')
         ActsAsTenant.current_tenant = @project
-        @comment = PolymorphicTenantComment.new(account: @account)
+        @comment = PolymorphicTenantComment.create!(account: @account)
       end
 
       it 'populates commentable_type with the current tenant' do
