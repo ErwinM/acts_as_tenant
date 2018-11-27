@@ -99,7 +99,7 @@ module ActsAsTenant
           if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
             raise ActsAsTenant::Errors::NoTenantSet
           end
-          if ActsAsTenant.current_tenant && ActsAsTenant.klass_for_current_tenant == tenant
+          if ActsAsTenant.current_tenant && (ActsAsTenant.klass_for_current_tenant == tenant || options[:polymorphic])
             keys = [ActsAsTenant.current_tenant.id]
             keys.push(nil) if options[:has_global_records]
 
