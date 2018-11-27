@@ -136,8 +136,8 @@ module ActsAsTenant
         before_validation Proc.new {|m|
           if ActsAsTenant.current_tenant
             if options[:polymorphic]
-              m.send("#{fkey}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send("#{fkey}").nil?
-              m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send("#{polymorphic_type}").nil?
+              m.send("#{fkey}=".to_sym, ActsAsTenant.current_tenant.id)
+              m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_tenant.class.to_s)
             else
               m.send "#{fkey}=".to_sym, ActsAsTenant.current_tenant.id
             end
@@ -214,13 +214,13 @@ module ActsAsTenant
               if instance.new_record?
                 unless self.class.where(fkey.to_sym => [nil, instance[fkey]],
                                         field.to_sym => instance[field]).empty?
-                  errors.add(field, 'has already been taken') 
+                  errors.add(field, 'has already been taken')
                 end
               else
                 unless self.class.where(fkey.to_sym => [nil, instance[fkey]],
                                         field.to_sym => instance[field])
                                  .where.not(:id => instance.id).empty?
-                  errors.add(field, 'has already been taken') 
+                  errors.add(field, 'has already been taken')
                 end
 
               end
