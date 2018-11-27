@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
 require "acts_as_tenant/version"
+require 'byebug'
 
 Gem::Specification.new do |s|
   s.name        = "acts_as_tenant"
