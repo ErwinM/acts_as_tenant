@@ -215,7 +215,7 @@ describe ActsAsTenant do
         @account = Account.create!(name: 'foo')
         @project = Project.create!(name: 'polymorphic project')
         ActsAsTenant.current_tenant = @project
-        @comment = PolymorphicTenantComment.new(account: @account)
+        @comment = PolymorphicTenantComment.create!(account: @account)
       end
 
       it 'populates commentable_type with the current tenant' do
@@ -461,6 +461,100 @@ describe ActsAsTenant do
       ActsAsTenant.default_tenant = @account
       RequestStore.clear!
       expect(ActsAsTenant.current_tenant).to eq(@account)
+    end
+  end
+
+  describe 'overlapping tenants' do
+    before(:each) do
+      ActsAsTenant.without_tenant do
+        @account1 = Account.create!
+        @account2 = Account.create!
+        @project1 = Project.create!(name: 'Project1')
+        @project2 = Project.create!(name: 'Project2')
+      end
+
+      ActsAsTenant.with_tenant(@account1) do
+        @manager1 = Manager.create!(name: 'Manager1')
+      end
+
+      ActsAsTenant.with_tenant(@project1) do
+        @manager2 = Manager.create!(account: @account1, name: 'Manager2')
+        @manager1.update!(project_id: @project1.id)
+      end
+
+      ActsAsTenant.with_tenant(@project2) do
+        @manager3 = Manager.create!(account: @account1, name: 'Manager3')
+      end
+    end
+
+    context 'when current tenant is the first tenant defined for this model' do
+      it 'correctly scopes to the first tenant' do
+        expect(ActsAsTenant.with_tenant(@account1) { Manager.count }).to eq(3)
+        expect(ActsAsTenant.with_tenant(@account2) { Manager.count }).to eq(0)
+      end
+    end
+
+    context 'when current tenant is the second tenant defined for this model' do
+      it 'correctly scopes to the second tenant' do
+        expect(ActsAsTenant.with_tenant(@project1) { Manager.count }).to eq(2)
+        expect(ActsAsTenant.with_tenant(@project2) { Manager.count }).to eq(1)
+
+        expect(ActsAsTenant.with_tenant(@project1) { Manager.first }).to eq(@manager1)
+        expect(ActsAsTenant.with_tenant(@project1) { Manager.second }).to eq(@manager2)
+        expect(ActsAsTenant.with_tenant(@project2) { Manager.first }).to eq(@manager3)
+      end
+    end
+
+    context 'when creating a new model' do
+      before do
+        ActsAsTenant.current_tenant = @project1
+        @manager4 = Manager.create!(account: @account1, name: 'Manager4')
+        @manager5 = Manager.create!(name: 'Manager5')
+      end
+
+      it 'scopes it to overlapping tenants' do
+        expect(ActsAsTenant.with_tenant(@project1) { Manager.find_by(id: @manager4.id)}).not_to be_nil
+        expect(ActsAsTenant.with_tenant(@project2) { Manager.find_by(id: @manager4.id)}).to be_nil
+        expect(ActsAsTenant.with_tenant(@account1) { Manager.find_by(id: @manager4.id)}).not_to be_nil
+
+        expect(ActsAsTenant.with_tenant(@project1) { Manager.find_by(id: @manager5.id)}).not_to be_nil
+        expect(ActsAsTenant.with_tenant(@account1) { Manager.find_by(id: @manager5.id)}).to be_nil
+      end
+    end
+
+    context 'when trying to overwrite tenant on existing model' do
+      it 'should raise an error' do
+        expect { @manager1.update!(project_id: @project2.id) }.to raise_error ActsAsTenant::Errors::TenantIsImmutable
+        expect { @manager1.update!(account_id: @account2.id) }.to raise_error ActsAsTenant::Errors::TenantIsImmutable
+        expect { @manager1.update!(project_id: @account1.id) }.not_to raise_error
+        expect { @manager1.update!(project_id: @project1.id) }.not_to raise_error
+        expect {
+          ActsAsTenant.without_tenant { @manager1.update!(project_id: @project2.id) }
+        }.to raise_error ActsAsTenant::Errors::TenantIsImmutable
+        expect {
+          ActsAsTenant.with_tenant(@project2) { @manager1.update!(project_id: @project2.id) }
+        }.to raise_error ActsAsTenant::Errors::TenantIsImmutable
+      end
+    end
+
+    context 'when validating uniqueness to tenant' do
+      it 'only enforces uniqueness to the given tenant' do
+        expect(
+          ActsAsTenant.without_tenant { @manager2.update(name: 'Manager1') }
+        ).to eq(false)
+
+        expect(
+          ActsAsTenant.without_tenant { Manager.create(project: @project1, name: 'Manager1').valid? }
+        ).to eq(false)
+
+        expect(
+          ActsAsTenant.without_tenant { Manager.create(account: @account1, name: 'Manager1').valid? }
+        ).to eq(true)
+
+        expect(
+          ActsAsTenant.without_tenant { Manager.create(project: @project2, name: 'Manager1').valid? }
+        ).to eq(true)
+      end
     end
   end
 end
