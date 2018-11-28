@@ -5,7 +5,6 @@ require "active_record_helper"
 
 require 'rspec/rails'
 require 'acts_as_tenant'
-require 'byebug'
 
 RSpec.configure do |config|
   config.after(:each) do

@@ -120,7 +120,7 @@ module ActsAsTenant
             if options[:polymorphic]
               m.send("#{fkey}=".to_sym, ActsAsTenant.current_tenant.id)
               m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_tenant.class.to_s)
-            else
+            elsif ActsAsTenant.klass_for_current_tenant == tenant
               m.send "#{fkey}=".to_sym, ActsAsTenant.current_tenant.id
             end
           end
@@ -204,7 +204,6 @@ module ActsAsTenant
                                  .where.not(:id => instance.id).empty?
                   errors.add(field, 'has already been taken')
                 end
-
               end
             end
           end
