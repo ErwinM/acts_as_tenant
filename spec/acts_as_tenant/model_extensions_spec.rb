@@ -524,15 +524,15 @@ describe ActsAsTenant do
 
     context 'when trying to overwrite tenant on existing model' do
       it 'should raise an error' do
-        expect { @manager1.update!(project_id: @project2.id) }.to raise_error ActsAsTenant::Errors::TenantIsImmutable
-        expect { @manager1.update!(account_id: @account2.id) }.to raise_error ActsAsTenant::Errors::TenantIsImmutable
-        expect { @manager1.update!(project_id: @account1.id) }.not_to raise_error
-        expect { @manager1.update!(project_id: @project1.id) }.not_to raise_error
+        expect { @manager1.reload.update!(project_id: @project2.id) }.to raise_error ActsAsTenant::Errors::TenantIsImmutable
+        expect { @manager1.reload.update!(account_id: @account2.id) }.to raise_error ActsAsTenant::Errors::TenantIsImmutable
+        expect { @manager1.reload.update!(account_id: @account1.id) }.not_to raise_error
+        expect { @manager1.reload.update!(project_id: @project1.id) }.not_to raise_error
         expect {
-          ActsAsTenant.without_tenant { @manager1.update!(project_id: @project2.id) }
+          ActsAsTenant.without_tenant { @manager1.reload.update!(project_id: @project2.id) }
         }.to raise_error ActsAsTenant::Errors::TenantIsImmutable
         expect {
-          ActsAsTenant.with_tenant(@project2) { @manager1.update!(project_id: @project2.id) }
+          ActsAsTenant.with_tenant(@project2) { @manager1.reload.update!(project_id: @project2.id) }
         }.to raise_error ActsAsTenant::Errors::TenantIsImmutable
       end
     end
@@ -540,7 +540,7 @@ describe ActsAsTenant do
     context 'when validating uniqueness to tenant' do
       it 'only enforces uniqueness to the given tenant' do
         expect(
-          ActsAsTenant.without_tenant { @manager2.update(name: 'Manager1') }
+          ActsAsTenant.without_tenant { @manager2.reload.update(name: 'Manager1') }
         ).to eq(false)
 
         expect(

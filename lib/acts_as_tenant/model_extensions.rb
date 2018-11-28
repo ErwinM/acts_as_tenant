@@ -92,7 +92,7 @@ module ActsAsTenant
         # Create the association
         valid_options = options.slice(:foreign_key, :class_name, :inverse_of, :optional)
         fkey = valid_options[:foreign_key] || "#{tenant}_id".to_sym
-        polymorphic_type = valid_options[:foreign_type] || "#{tenant}_type"
+        polymorphic_type = options[:foreign_type] || "#{tenant}_type"
         belongs_to tenant, valid_options
 
         default_scope lambda {
