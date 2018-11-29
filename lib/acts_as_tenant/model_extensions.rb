@@ -90,9 +90,9 @@ module ActsAsTenant
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
 
         # Create the association
-        valid_options = options.slice(:foreign_key, :class_name, :inverse_of, :optional)
+        valid_options = options.slice(:foreign_key, :class_name, :inverse_of, :optional, :foreign_type)
         fkey = valid_options[:foreign_key] || "#{tenant}_id".to_sym
-        polymorphic_type = options[:foreign_type] || "#{tenant}_type"
+        polymorphic_type = valid_options[:foreign_type] || "#{tenant}_type"
         belongs_to tenant, valid_options
 
         default_scope lambda {
