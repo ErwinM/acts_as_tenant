@@ -29,7 +29,7 @@ module ActsAsTenant
     !!unscoped
   end
 
-  def self.klass_for_current_tenant
+  def self.current_tenant_klass
     raise ActsAsTenant::Errors::NoTenantSet unless current_tenant
 
     current_tenant.class.name.demodulize.downcase.to_sym
@@ -99,7 +99,7 @@ module ActsAsTenant
           if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
             raise ActsAsTenant::Errors::NoTenantSet
           end
-          if ActsAsTenant.current_tenant && (ActsAsTenant.klass_for_current_tenant == tenant || options[:polymorphic])
+          if ActsAsTenant.current_tenant && (ActsAsTenant.current_tenant_klass == tenant || options[:polymorphic])
             keys = [ActsAsTenant.current_tenant.id]
             keys.push(nil) if options[:has_global_records]
 
@@ -120,7 +120,7 @@ module ActsAsTenant
             if options[:polymorphic]
               m.send("#{fkey}=".to_sym, ActsAsTenant.current_tenant.id)
               m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_tenant.class.to_s)
-            elsif ActsAsTenant.klass_for_current_tenant == tenant
+            elsif ActsAsTenant.current_tenant_klass == tenant
               m.send "#{fkey}=".to_sym, ActsAsTenant.current_tenant.id
             end
           end
@@ -162,7 +162,7 @@ module ActsAsTenant
           end
 
           define_method "#{tenant.to_s}" do
-            if !ActsAsTenant.current_tenant.nil? && send(fkey) == ActsAsTenant.current_tenant.id && ActsAsTenant.klass_for_current_tenant == tenant
+            if !ActsAsTenant.current_tenant.nil? && send(fkey) == ActsAsTenant.current_tenant.id && ActsAsTenant.current_tenant_klass == tenant
               return ActsAsTenant.current_tenant
             else
               super()

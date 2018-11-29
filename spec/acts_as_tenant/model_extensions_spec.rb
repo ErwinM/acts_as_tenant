@@ -556,5 +556,38 @@ describe ActsAsTenant do
         ).to eq(true)
       end
     end
+
+    context 'when accessing the belongs_to association for current tenant' do
+      before(:each) do
+        ActsAsTenant.without_tenant do
+          @account3 = Account.create!
+          @project3 = Project.create!(name: 'Project3')
+          @manager6 = Manager.create!(account: @account3, project: @project3)
+        end
+
+        @account3.name = 'Unsaved Account Name'
+        @project3.name = 'Unsaved Project Name'
+      end
+
+      it 'returns current_tenant' do
+        expect(
+          ActsAsTenant.with_tenant(@account3) { Manager.find(@manager6.id).account.name }
+        ).to eq('Unsaved Account Name')
+
+        expect(
+          ActsAsTenant.with_tenant(@project3) { Manager.find(@manager6.id).project.name }
+        ).to eq('Unsaved Project Name')
+      end
+
+      it 'hits the db if the association is not current tenant' do
+        expect(
+          ActsAsTenant.with_tenant(@project3) { Manager.find(@manager6.id).account.name }
+        ).to be_nil
+
+        expect(
+          ActsAsTenant.with_tenant(@account3) { Manager.find(@manager6.id).project }
+        ).to be_nil
+      end
+    end
   end
 end
