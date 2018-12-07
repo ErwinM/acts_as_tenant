@@ -125,7 +125,7 @@ module ActsAsTenant
             query_criteria.merge!({ polymorphic_type.to_sym => ActsAsTenant.current_tenant.class.to_s }) if options[:polymorphic]
             where(query_criteria)
           else
-            Rails::VERSION::MAJOR < 4 ? scoped : all
+            ActiveRecord::VERSION::MAJOR < 4 ? scoped : all
           end
         }
 
