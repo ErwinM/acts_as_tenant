@@ -81,8 +81,10 @@ class Project < ActiveRecord::Base
 end
 
 class Manager < ActiveRecord::Base
-  belongs_to :project
   acts_as_tenant :account
+  acts_as_tenant :project
+
+  validates_uniqueness_to_tenant :name, tenant: :project
 end
 
 class Task < ActiveRecord::Base
