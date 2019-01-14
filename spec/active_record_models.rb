@@ -113,6 +113,12 @@ class CustomForeignKeyTask < ActiveRecord::Base
   validates_uniqueness_to_tenant :name
 end
 
+class CustomPrimaryKeyTask < ActiveRecord::Base
+  self.table_name = 'projects'
+  acts_as_tenant(:account, :foreign_key => "name", :primary_key => "name")
+  validates_presence_of :name
+end
+
 class Comment < ActiveRecord::Base
   belongs_to :commentable, polymorphic: true
   belongs_to :task, -> { where(comments: { commentable_type: 'Task'  })  }, foreign_key: 'commentable_id'
