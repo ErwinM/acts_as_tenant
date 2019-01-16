@@ -73,6 +73,18 @@ describe ActsAsTenant do
     it { expect(@custom_foreign_key_task.account).to eq(@account) }
   end
 
+  describe 'Handles custom primary_key on tenant model' do
+    before do
+      @account = Account.create!(:name => 'foo')
+      CustomPrimaryKeyTask.create!(name: 'bar')
+      ActsAsTenant.current_tenant = @account
+      @custom_primary_key_task = CustomPrimaryKeyTask.create!
+    end
+
+    it { expect(@custom_primary_key_task.account).to eq(@account) }
+    it { expect(CustomPrimaryKeyTask.count).to eq(1) }
+  end
+
   # Scoping models
   describe 'Project.all should be scoped to the current tenant if set' do
     before do
