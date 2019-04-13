@@ -35,7 +35,7 @@ module ActsAsTenant
   end
 
   def self.current_tenant
-    RequestStore.store[:current_tenant] || self.default_tenant
+    RequestStore.store[:current_tenant] || test_tenant || default_tenant
   end
 
   def self.unscoped=(unscoped)
@@ -51,6 +51,8 @@ module ActsAsTenant
   end
 
   class << self
+    attr_accessor :test_tenant
+
     def default_tenant=(tenant)
       @default_tenant = tenant
     end
@@ -212,13 +214,13 @@ module ActsAsTenant
               if instance.new_record?
                 unless self.class.where(fkey.to_sym => [nil, instance[fkey]],
                                         field.to_sym => instance[field]).empty?
-                  errors.add(field, 'has already been taken') 
+                  errors.add(field, 'has already been taken')
                 end
               else
                 unless self.class.where(fkey.to_sym => [nil, instance[fkey]],
                                         field.to_sym => instance[field])
                                  .where.not(:id => instance.id).empty?
-                  errors.add(field, 'has already been taken') 
+                  errors.add(field, 'has already been taken')
                 end
 
               end

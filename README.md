@@ -183,20 +183,42 @@ require 'acts_as_tenant/sidekiq'
 Testing
 ---------------
 
-If you set the `current_tenant` in your tests, make sure to clean up the tenant after each test by calling `ActsAsTenant.current_tenant = nil`. If you are manually setting the `current_tenant` in integration tests, please be aware that the value will not survive across multiple requests, even if they take place within the same test.
+If you set the `current_tenant` in your tests, make sure to clean up the tenant after each test by calling `ActsAsTenant.current_tenant = nil`. Integration tests are more difficult: manually setting the `current_tenant` value will not survive across multiple requests, even if they take place within the same test. This can result in undesired boilerplate to set the desired tenant. Moreover, the efficacy of the test can be compromised because the set `current_tenant` value will carry over into the request-response cycle.
 
-If you'd like to set a default tenant that will survive across multiple requests, assign a value to `default_tenant`. You might use a before hook like this:
+To address this issue, ActsAsTenant provides for a `test_tenant` value that can be set to allow for setup and post-request expectation testing. It should be used in conjunction with middleware that clears out this value while an integration test is processing. A typical Rails and RSpec setup might look like:
 
 ```ruby
-# Make the default tenant globally available to the tests
-$default_account = Account.create!
-# Specify this account as the current tenant unless overridden
-ActsAsTenant.default_tenant = $default_account
-# Stub out the method setting a tenant in a controller hook
-allow_any_instance_of(ApplicationController).to receive(:set_current_tenant)
+# test.rb
+require_dependency 'acts_as_tenant/test_tenant_middleware'
+
+Rails.application.configure do
+  config.middleware.use ActsAsTenant::TestTenantMiddleware
+end
 ```
 
-This can later be overridden by using any of the standard methods for specifying a different tenant. If you don't want this setting to apply to all of your tests, remember to clear it when you're finished by setting `ActsAsTenant.default_tenant = nil`.
+```ruby
+# spec_helper.rb
+config.before(:suite) do
+  # Make the default tenant globally available to the tests
+  $default_account = Account.create!
+end
+
+config.before(:each) do
+  if example.metadata[:type] == :request
+    # Set the `test_tenant` value for integration tests
+    ActsAsTenant.test_tenant = $default_account
+  else
+    # Otherwise just use current_tenant
+    ActsAsTenant.current_tenant = $default_account
+  end
+end
+
+config.after(:each) do
+  # Clear any tenancy that might have been set
+  ActsAsTenant.current_tenant = nil
+  ActsAsTenant.test_tenant = nil
+end
+```
 
 To Do
 -----
