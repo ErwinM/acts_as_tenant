@@ -210,6 +210,10 @@ If you have found a bug or want to suggest an improvement, please use our issue 
 
 If you want to contribute, fork the project, code your improvements and make a pull request on [Github](http://github.com/ErwinM/acts_as_tenant/). When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
 
+Help maintain this gem
+----------------------
+I myself, do not work with RoR much anymore. As a result, I only check this repo a few time a year. If  wants to help me maintain this gem on a more regular basis, shoot me a message!
+
 Author & Credits
 ----------------
 acts_as_tenant is written by Erwin Matthijssen.
