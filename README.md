@@ -157,6 +157,14 @@ You can explicitely specifiy a foreign_key for AaT to use should the key differ 
 acts_as_tenant(:account, :foreign_key => 'accountID) # by default AaT expects account_id
 ```
 
+### Custom primary_key ###
+
+You can also explicitely specifiy a primary_key for AaT to use should the key differ from the default:
+
+```ruby
+acts_as_tenant(:account, :primary_key => 'primaryID') # by default AaT expects id
+```
+
 Configuration options
 ---------------------
 An initializer can be created to control (currently one) option in ActsAsTenant. Defaults
