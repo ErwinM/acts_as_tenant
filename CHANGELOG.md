@@ -1,3 +1,10 @@
+0.4.4
+-----
+* Implement support for polymorphic tenant
+* Ability to use acts_as_tenant with only ActiveRecord (no Rails)
+* Allow setting of custom primary key
+* Bug fixes
+
 0.4.3
 -----
 * allow 'optional' relations
