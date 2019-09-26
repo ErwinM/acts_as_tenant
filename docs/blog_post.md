@@ -35,7 +35,7 @@ What does adding these two methods accomplish:
 	<li>it validates the uniqueness of `:name` to the current tenant,</li>
 	<li>it implements a bunch of safeguards preventing all kinds of nastiness from exposing other tenants data (mainly form-injection attacks).</li>
 </ol>
-<p>Ofcourse, all the above assumes `acts_as_tenant` actually knows who the current tenant is. Two strategies are implemented to help with this.</p>
+<p>Of course, all the above assumes `acts_as_tenant` actually knows who the current tenant is. Two strategies are implemented to help with this.</p>
 <p><strong>Using the subdomain to workout the current tenant</strong></p>
 
 ```ruby
