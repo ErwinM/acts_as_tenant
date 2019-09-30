@@ -1,6 +1,7 @@
 module ActsAsTenant
   @@tenant_klass = nil
   @@models_with_global_records = []
+  @@mutable_tenant = false
 
   def self.set_tenant_klass(klass)
     @@tenant_klass = klass
@@ -50,6 +51,14 @@ module ActsAsTenant
     !!unscoped
   end
 
+  def self.mutable_tenant!(toggle)
+    @@mutable_tenant = toggle
+  end
+
+  def self.mutable_tenant?
+    @@mutable_tenant === true
+  end
+
   class << self
     attr_accessor :test_tenant
 
@@ -94,6 +103,13 @@ module ActsAsTenant
     self.unscoped = old_unscoped
   end
 
+  def self.without_tenant!(&block)
+    ActsAsTenant.mutable_tenant!(true)
+    self.without_tenant(&block)
+  ensure
+    ActsAsTenant.mutable_tenant!(false)
+  end
+
   module ModelExtensions
     def self.included(base)
       base.extend(ClassMethods)
@@ -102,6 +118,7 @@ module ActsAsTenant
     module ClassMethods
       def acts_as_tenant(tenant = :account, options = {})
         ActsAsTenant.set_tenant_klass(tenant)
+        ActsAsTenant.mutable_tenant!(false)
 
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
 
@@ -168,13 +185,13 @@ module ActsAsTenant
         to_include = Module.new do
           define_method "#{fkey}=" do |integer|
             write_attribute("#{fkey}", integer)
-            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil?
+            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil? && !ActsAsTenant.mutable_tenant?
             integer
           end
 
           define_method "#{ActsAsTenant.tenant_klass.to_s}=" do |model|
             super(model)
-            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil?
+            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil? && !ActsAsTenant.mutable_tenant?
             model
           end
 
