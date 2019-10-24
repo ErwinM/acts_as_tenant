@@ -135,8 +135,8 @@ module ActsAsTenant
         before_validation Proc.new {|m|
           if ActsAsTenant.current_tenant
             if options[:polymorphic]
-              m.send("#{fkey}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send("#{fkey}").nil?
-              m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send("#{polymorphic_type}").nil?
+              m.send("#{fkey}=".to_sym, ActsAsTenant.current_tenant.id)
+              m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_tenant.class.to_s)
             else
               m.send "#{fkey}=".to_sym, ActsAsTenant.current_tenant.send(pkey)
             end

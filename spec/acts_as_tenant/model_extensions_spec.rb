@@ -239,14 +239,16 @@ describe ActsAsTenant do
         before do
           @comment.save!
           @article = Article.create!(id: @project.id, title: 'article title')
-          @comment_on_article = @article.polymorphic_tenant_comments.create!
+          ActsAsTenant.with_tenant(@article) do
+            @comment_on_article = @article.polymorphic_tenant_comments.create!
+          end
         end
 
         it 'correctly scopes to the current tenant type' do
           expect(@comment_on_article).to be_persisted
           expect(@comment).to be_persisted
           expect(PolymorphicTenantComment.count).to eql(1)
-          expect(PolymorphicTenantComment.all.first.attributes).to eql(@comment.attributes)
+          expect(PolymorphicTenantComment.first.attributes).to eql(@comment.attributes)
         end
       end
 
