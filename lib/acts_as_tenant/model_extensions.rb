@@ -23,7 +23,7 @@ module ActsAsTenant
   end
 
   def self.pkey
-    :id
+    ActsAsTenant.configuration.pkey
   end
 
   def self.polymorphic_type

@@ -16,10 +16,14 @@ module ActsAsTenant
   end
 
   class Configuration
-    attr_writer :require_tenant
+    attr_writer :require_tenant, :pkey
   
     def require_tenant
       @require_tenant ||= false
+    end
+    
+    def pkey
+      @pkey ||= :id
     end
   
   end
