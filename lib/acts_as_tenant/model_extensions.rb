@@ -198,7 +198,6 @@ module ActsAsTenant
       def validates_uniqueness_to_tenant(fields, args ={})
         raise ActsAsTenant::Errors::ModelNotScopedByTenant unless respond_to?(:scoped_by_tenant?)
         fkey = reflect_on_association(ActsAsTenant.tenant_klass).foreign_key
-        pkey = reflect_on_association(ActsAsTenant.tenant_klass).active_record_primary_key
         #tenant_id = lambda { "#{ActsAsTenant.fkey}"}.call
         if args[:scope]
           args[:scope] = Array(args[:scope]) << fkey
