@@ -242,7 +242,7 @@ If you want to contribute, fork the project, code your improvements and make a p
 
 Help maintain this gem
 ----------------------
-I myself, do not work with RoR much anymore. As a result, I only check this repo a few time a year. If  wants to help me maintain this gem on a more regular basis, shoot me a message!
+I myself, do not work with RoR much anymore. As a result, I only check this repo a few times a year. If anyone wants to help me maintain this gem on a more regular basis, shoot me a message!
 
 Author & Credits
 ----------------
