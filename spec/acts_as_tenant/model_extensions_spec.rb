@@ -195,7 +195,7 @@ describe ActsAsTenant do
       @task = @project2.tasks.create!(:name => 'bar')
     end
 
-    it { expect(@task.update_attributes(:project_id => @project1.id)).to eq(false) }
+    it { expect(@task.update(:project_id => @project1.id)).to eq(false) }
   end
 
   describe "Create and save an AaT-enabled child without it having a parent" do
