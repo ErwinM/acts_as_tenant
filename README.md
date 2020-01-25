@@ -151,15 +151,15 @@ All options available to Rails' own `validates_uniqueness_of` are also available
 
 ### Custom foreign_key ###
 
-You can explicitely specifiy a foreign_key for AaT to use should the key differ from the default:
+You can explicitly specifiy a foreign_key for AaT to use should the key differ from the default:
 
 ```ruby
-acts_as_tenant(:account, :foreign_key => 'accountID) # by default AaT expects account_id
+acts_as_tenant(:account, :foreign_key => 'accountID') # by default AaT expects account_id
 ```
 
 ### Custom primary_key ###
 
-You can also explicitely specifiy a primary_key for AaT to use should the key differ from the default:
+You can also explicitly specifiy a primary_key for AaT to use should the key differ from the default:
 
 ```ruby
 acts_as_tenant(:account, :primary_key => 'primaryID') # by default AaT expects id
