@@ -5,6 +5,7 @@ module ActsAsTenant
     class_methods do
       def acts_as_tenant(tenant = :account, **options)
         ActsAsTenant.set_tenant_klass(tenant)
+        ActsAsTenant.mutable_tenant!(false)
 
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
 
@@ -13,7 +14,7 @@ module ActsAsTenant
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
         pkey = valid_options[:primary_key] || ActsAsTenant.pkey
         polymorphic_type = valid_options[:foreign_type] || ActsAsTenant.polymorphic_type
-        belongs_to tenant, **valid_options
+        belongs_to tenant, valid_options
 
         default_scope lambda {
           if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
@@ -78,7 +79,7 @@ module ActsAsTenant
 
           define_method "#{ActsAsTenant.tenant_klass}=" do |model|
             super(model)
-            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil?
+            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil? && !ActsAsTenant.mutable_tenant?
             model
           end
         }
