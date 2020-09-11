@@ -100,7 +100,7 @@ module ActsAsTenant
     end
 
     module ClassMethods
-      def acts_as_tenant(tenant = :account, options = {})
+      def acts_as_tenant(tenant = :account, **options)
         ActsAsTenant.set_tenant_klass(tenant)
 
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
