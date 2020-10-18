@@ -206,12 +206,12 @@ end
 
 ```ruby
 # spec_helper.rb
-config.before(:suite) do
+config.before(:suite) do |example|
   # Make the default tenant globally available to the tests
   $default_account = Account.create!
 end
 
-config.before(:each) do
+config.before(:each) do |example|
   if example.metadata[:type] == :request
     # Set the `test_tenant` value for integration tests
     ActsAsTenant.test_tenant = $default_account
