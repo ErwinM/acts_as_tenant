@@ -11,8 +11,6 @@ Gem::Specification.new do |s|
   s.summary     = %q{Add multi-tenancy to Rails applications using a shared db strategy}
   s.description = %q{Integrates multi-tenancy into a Rails application in a convenient and out-of-your way manner}
 
-  s.rubyforge_project = "acts_as_tenant"
-
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
