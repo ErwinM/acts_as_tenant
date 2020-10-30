@@ -3,6 +3,7 @@ ActiveRecord::Schema.define(:version => 1) do
     t.column :name, :string
     t.column :subdomain, :string
     t.column :domain, :string
+    t.column :projects_count, :integer, :default => 0
   end
 
   create_table :projects, :force => true do |t|
@@ -117,6 +118,11 @@ class CustomPrimaryKeyTask < ActiveRecord::Base
   self.table_name = 'projects'
   acts_as_tenant(:account, :foreign_key => "name", :primary_key => "name")
   validates_presence_of :name
+end
+
+class CustomCounterCacheTask < ActiveRecord::Base
+  self.table_name = 'projects'
+  acts_as_tenant(:account, :counter_cache => 'projects_count')
 end
 
 class Comment < ActiveRecord::Base
