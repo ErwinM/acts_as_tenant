@@ -69,6 +69,35 @@ end
 
 Setting the `current_tenant` yourself, requires you to declare `set_current_tenant_through_filter` at the top of your application_controller to tell acts_as_tenant that you are going to use a before_action to setup the current tenant. Next you should actually setup that before_action to fetch the current tenant and pass it to `acts_as_tenant` by using `set_current_tenant(current_tenant)` in the before_action.
 
+If you are setting the tenant in a specific controller (except `application_controller`), it has to be included **ON TOP** of the file.
+
+Good. In this case the scope works correctly:
+
+```
+class MembersController < ActionController::Base
+  set_current_tenant_through_filter
+  before_action :set_tenant
+  def set_tenant
+    set_current_tenant(current_user.account)
+  end
+
+  before_action :set_member, only: [:show, :edit, :update, :destroy]
+end
+```
+
+Bad. in this case the scope **does not work**:
+
+```
+class MembersController < ActionController::Base
+  before_action :set_member, only: [:show, :edit, :update, :destroy]
+
+  set_current_tenant_through_filter
+  before_action :set_tenant
+  def set_tenant
+    set_current_tenant(current_user.account)
+  end
+end
+```
 
 ### Setting the current tenant for a block ###
 
