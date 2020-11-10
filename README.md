@@ -23,7 +23,7 @@ acts_as_tenant will only work on Rails 3.1 and up. This is due to changes made t
 To use it, add it to your Gemfile:
 
 ```ruby
-gem 'acts_as_tenant'
+gem 'acts_as_tenant', github: 'excid3/acts_as_tenant'
 ```
 
 Getting started
