@@ -1,7 +1,7 @@
 Acts As Tenant
 ==============
 
-[![Build Status](https://travis-ci.org/ErwinM/acts_as_tenant.svg)](https://travis-ci.org/ErwinM/acts_as_tenant)
+[![Build Status](https://github.com/excid3/acts_as_tenant/workflows/Tests/badge.svg)](https://github.com/excid3/acts_as_tenant/actions)
 
 **Note**: acts_as_tenant was introduced in this [blog post](https://github.com/ErwinM/acts_as_tenant/blob/master/docs/blog_post.md).
 
