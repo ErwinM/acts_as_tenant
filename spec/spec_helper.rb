@@ -1,4 +1,4 @@
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 require "active_record_helper"
@@ -8,11 +8,10 @@ module Rollcall
   class Application < Rails::Application; end
 end
 
-Rollcall::Application.config.secret_token = '1234567890123456789012345678901234567890'
-Rollcall::Application.config.secret_key_base = '1234567890123456789012345678901234567890'
+Rollcall::Application.config.secret_key_base = "1234567890123456789012345678901234567890"
 
-require 'rspec/rails'
-require 'acts_as_tenant'
+require "rspec/rails"
+require "acts_as_tenant"
 
 RSpec.configure do |config|
   config.after(:each) do
