@@ -5,5 +5,3 @@ Gemfile.lock
 pkg/*
 spec/*.sqlite3
 spec/*.log
-
-/vendor
