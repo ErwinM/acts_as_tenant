@@ -3,7 +3,7 @@ Acts As Tenant
 
 [![Build Status](https://github.com/excid3/acts_as_tenant/workflows/Tests/badge.svg)](https://github.com/excid3/acts_as_tenant/actions)
 
-**Note**: acts_as_tenant was introduced in this [blog post](https://github.com/ErwinM/acts_as_tenant/blob/master/docs/blog_post.md).
+**Note**: acts_as_tenant was introduced in this [blog post](https://github.com/excid3/acts_as_tenant/blob/master/docs/blog_post.md).
 
 This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to our Rails app through a shared database strategy, that integrates (near) seamless with Rails.
 
@@ -228,25 +228,28 @@ config.after(:each) do
 end
 ```
 
-To Do
------
-* ...
-
 Bug reports & suggested improvements
 ------------------------------------
 If you have found a bug or want to suggest an improvement, please use our issue tracked at:
 
-[github.com/ErwinM/acts_as_tenant/issues](http://github.com/ErwinM/acts_as_tenant/issues)
+[github.com/excid3/acts_as_tenant/issues](http://github.com/excid3/acts_as_tenant/issues)
 
-If you want to contribute, fork the project, code your improvements and make a pull request on [Github](http://github.com/ErwinM/acts_as_tenant/). When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
+If you want to contribute, fork the project, code your improvements and make a pull request on [Github](http://github.com/excid3/acts_as_tenant/). When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
 
-Help maintain this gem
-----------------------
-I myself, do not work with RoR much anymore. As a result, I only check this repo a few times a year. If anyone wants to help me maintain this gem on a more regular basis, shoot me a message!
+Contributing to this gem
+------------------------
+
+We use the Appraisal gem to run tests against supported versions of Rails to test for compatibility against them all. StandardRb also helps keep code formatted cleanly.
+
+1. Fork the repo
+2. Make changes
+3. Run test suite with `bundle exec appraisal`
+4. Run `bundle exec standardrb` to standardize code formatting
+5. Submit a PR
 
 Author & Credits
 ----------------
-acts_as_tenant is written by Erwin Matthijssen.
+acts_as_tenant is written by Erwin Matthijssen & Chris Oliver.
 
 This gem was inspired by Ryan Sonnek's [Multitenant](https://github.com/wireframe/multitenant) gem and its use of default_scope.
 
