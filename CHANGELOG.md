@@ -1,3 +1,10 @@
+0.4.6
+-----
+* Drop support for Rails 5.1 or earlier
+* Add tests for Rails 5.2, 6.0, and Rails master
+* Use standardrb
+* Refactor controller extensions into modules
+
 0.4.4
 -----
 * Implement support for polymorphic tenant

@@ -1,9 +1,9 @@
 Acts As Tenant
 ==============
 
-[![Build Status](https://travis-ci.org/ErwinM/acts_as_tenant.svg)](https://travis-ci.org/ErwinM/acts_as_tenant)
+[![Build Status](https://github.com/excid3/acts_as_tenant/workflows/Tests/badge.svg)](https://github.com/excid3/acts_as_tenant/actions)
 
-**Note**: acts_as_tenant was introduced in this [blog post](https://github.com/ErwinM/acts_as_tenant/blob/master/docs/blog_post.md).
+**Note**: acts_as_tenant was introduced in this [blog post](https://github.com/excid3/acts_as_tenant/blob/master/docs/blog_post.md).
 
 This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to our Rails app through a shared database strategy, that integrates (near) seamless with Rails.
 
@@ -23,7 +23,7 @@ acts_as_tenant will only work on Rails 3.1 and up. This is due to changes made t
 To use it, add it to your Gemfile:
 
 ```ruby
-gem 'acts_as_tenant'
+gem 'acts_as_tenant', github: 'excid3/acts_as_tenant'
 ```
 
 Getting started
@@ -180,7 +180,7 @@ All options available to Rails' own `validates_uniqueness_of` are also available
 
 ### Custom foreign_key ###
 
-You can explicitely specifiy a foreign_key for AaT to use should the key differ from the default:
+You can explicitly specifiy a foreign_key for AaT to use should the key differ from the default:
 
 ```ruby
 acts_as_tenant(:account, :foreign_key => 'accountID) # by default AaT expects account_id
@@ -188,7 +188,7 @@ acts_as_tenant(:account, :foreign_key => 'accountID) # by default AaT expects ac
 
 ### Custom primary_key ###
 
-You can also explicitely specifiy a primary_key for AaT to use should the key differ from the default:
+You can also explicitly specifiy a primary_key for AaT to use should the key differ from the default:
 
 ```ruby
 acts_as_tenant(:account, :primary_key => 'primaryID') # by default AaT expects id
@@ -235,7 +235,7 @@ end
 
 ```ruby
 # spec_helper.rb
-config.before(:suite) do
+config.before(:suite) do |example|
   # Make the default tenant globally available to the tests
   $default_account = Account.create!
 end
@@ -257,25 +257,28 @@ config.after(:each) do
 end
 ```
 
-To Do
------
-* ...
-
 Bug reports & suggested improvements
 ------------------------------------
 If you have found a bug or want to suggest an improvement, please use our issue tracked at:
 
-[github.com/ErwinM/acts_as_tenant/issues](http://github.com/ErwinM/acts_as_tenant/issues)
+[github.com/excid3/acts_as_tenant/issues](http://github.com/excid3/acts_as_tenant/issues)
 
-If you want to contribute, fork the project, code your improvements and make a pull request on [Github](http://github.com/ErwinM/acts_as_tenant/). When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
+If you want to contribute, fork the project, code your improvements and make a pull request on [Github](http://github.com/excid3/acts_as_tenant/). When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
 
-Help maintain this gem
-----------------------
-I myself, do not work with RoR much anymore. As a result, I only check this repo a few times a year. If anyone wants to help me maintain this gem on a more regular basis, shoot me a message!
+Contributing to this gem
+------------------------
+
+We use the Appraisal gem to run tests against supported versions of Rails to test for compatibility against them all. StandardRb also helps keep code formatted cleanly.
+
+1. Fork the repo
+2. Make changes
+3. Run test suite with `bundle exec appraisal`
+4. Run `bundle exec standardrb` to standardize code formatting
+5. Submit a PR
 
 Author & Credits
 ----------------
-acts_as_tenant is written by Erwin Matthijssen.
+acts_as_tenant is written by Erwin Matthijssen & Chris Oliver.
 
 This gem was inspired by Ryan Sonnek's [Multitenant](https://github.com/wireframe/multitenant) gem and its use of default_scope.
 
