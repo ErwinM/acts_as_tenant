@@ -32,7 +32,7 @@ jobs:
           gem update --system
           gem install bundler
           bundle install --path vendor/bundle --jobs 4 --retry 3
-          appraisal install
+          bundle exec appraisal install
 
       - name: StandardRb check
         run: bundle exec standardrb
@@ -41,4 +41,4 @@ jobs:
         env:
           RAILS_ENV: test
         run: |
-          appraisal rake
+          bundle exec appraisal rake
