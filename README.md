@@ -23,7 +23,7 @@ acts_as_tenant will only work on Rails 3.1 and up. This is due to changes made t
 To use it, add it to your Gemfile:
 
 ```ruby
-gem 'acts_as_tenant'
+gem 'acts_as_tenant', github: 'excid3/acts_as_tenant'
 ```
 
 Getting started
@@ -206,12 +206,12 @@ end
 
 ```ruby
 # spec_helper.rb
-config.before(:suite) do
+config.before(:suite) do |example|
   # Make the default tenant globally available to the tests
   $default_account = Account.create!
 end
 
-config.before(:each) do
+config.before(:each) do |example|
   if example.metadata[:type] == :request
     # Set the `test_tenant` value for integration tests
     ActsAsTenant.test_tenant = $default_account
