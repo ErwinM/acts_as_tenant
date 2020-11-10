@@ -85,6 +85,20 @@ describe ActsAsTenant do
     it { expect(CustomPrimaryKeyTask.count).to eq(1) }
   end
 
+  describe 'Handles counter_cache on tenant model' do
+    before do
+      @account = Account.create!(:name => 'foo')
+      ActsAsTenant.current_tenant = @account
+      @project = CustomCounterCacheTask.create!(:name => 'bar')
+    end
+
+    it 'should correctly increment and decrement the tenants column' do
+      expect(@account.reload.projects_count).to eq(1)
+      @project.destroy
+      expect(@account.reload.projects_count).to eq(0)
+    end
+  end
+
   # Scoping models
   describe "Project.all should be scoped to the current tenant if set" do
     before do

@@ -102,7 +102,7 @@ module ActsAsTenant
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
 
         # Create the association
-        valid_options = options.slice(:foreign_key, :class_name, :inverse_of, :optional, :primary_key)
+        valid_options = options.slice(:foreign_key, :class_name, :inverse_of, :optional, :primary_key, :counter_cache)
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
         pkey = valid_options[:primary_key] || ActsAsTenant.pkey
         polymorphic_type = valid_options[:foreign_type] || ActsAsTenant.polymorphic_type
