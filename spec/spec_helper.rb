@@ -1,24 +1,18 @@
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
-$LOAD_PATH.unshift(File.dirname(__FILE__))
+# Configure Rails Environment
+ENV["RAILS_ENV"] = "test"
 
-require "rails/all"
-
-# Setup a test app
-module Rollcall
-  class Application < Rails::Application; end
-end
-
-Rollcall::Application.config.secret_key_base = "1234567890123456789012345678901234567890"
+require_relative "../spec/dummy/config/environment"
+ActiveRecord::Migrator.migrations_paths = [File.expand_path("../spec/dummy/db/migrate", __dir__)]
+ActiveRecord::Migration.maintain_test_schema!
 
 require "rspec/rails"
-require "acts_as_tenant"
-require "active_record_helper"
-require "active_record_models"
 
 RSpec.configure do |config|
   config.after(:each) do
     ActsAsTenant.current_tenant = nil
   end
 
+  config.fixture_path = "spec/fixtures"
+  config.use_transactional_fixtures = true
   config.infer_base_class_for_anonymous_controllers = true
 end

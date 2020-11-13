@@ -1,0 +1,13 @@
+global:
+  name: "global"
+
+global2:
+  name: "global 2"
+
+global_foo:
+  account: foo
+  name: "global foo"
+
+global_bar:
+  account: bar
+  name: "global bar"

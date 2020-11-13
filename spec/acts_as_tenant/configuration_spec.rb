@@ -1,27 +1,17 @@
 require "spec_helper"
 
 describe ActsAsTenant::Configuration do
-  describe "no configuration given" do
-    before do
-      ActsAsTenant.configure
-    end
+  after { ActsAsTenant.configure }
 
-    it "provides defaults" do
-      expect(ActsAsTenant.configuration.require_tenant).not_to be_truthy
-    end
+  it "provides defaults" do
+    expect(ActsAsTenant.configuration.require_tenant).not_to be_truthy
   end
 
-  describe "with config block" do
-    after do
-      ActsAsTenant.configure
+  it "stores config" do
+    ActsAsTenant.configure do |config|
+      config.require_tenant = true
     end
 
-    it "stores config" do
-      ActsAsTenant.configure do |config|
-        config.require_tenant = true
-      end
-
-      expect(ActsAsTenant.configuration.require_tenant).to eq(true)
-    end
+    expect(ActsAsTenant.configuration.require_tenant).to eq(true)
   end
 end

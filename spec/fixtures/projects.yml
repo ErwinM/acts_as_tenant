@@ -1,0 +1,10 @@
+without_account:
+  name: without_account
+
+foo:
+  account: foo
+  name: foo
+
+bar:
+  account: bar
+  name: bar

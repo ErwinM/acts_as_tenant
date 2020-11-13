@@ -23,14 +23,16 @@ class TestReceiver
 end
 
 describe ActsAsTenant::TestTenantMiddleware do
+  fixtures :accounts
+
   after { ActsAsTenant.current_tenant = nil }
   subject { request.get("/some/path") }
 
   let(:middleware) { described_class.new(app) }
   let(:request) { Rack::MockRequest.new(middleware) }
 
-  let!(:account1) { Account.create }
-  let!(:account2) { Account.create }
+  let!(:account1) { accounts(:foo) }
+  let!(:account2) { accounts(:bar) }
 
   context "when test_tenant is nil before processing" do
     before { ActsAsTenant.test_tenant = nil }

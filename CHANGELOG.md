@@ -1,6 +1,7 @@
 Unreleased
 ----------
 
+* Refactor test suite and use dummy Rails app - @excid3
 * Remove tenant getter override. Fixes caching issues with association. - @bernardeli
 
 0.4.6
