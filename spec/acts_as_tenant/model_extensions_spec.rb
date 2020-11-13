@@ -211,19 +211,20 @@ describe ActsAsTenant do
   # Additional default_scopes
   it "should apply both the tenant scope and the user defined default_scope, including :order" do
     project1 = Project.create!(name: "inaccessible")
-    task1 = Task.create!(name: "no_tenant", project: project1)
+    Task.create!(name: "no_tenant", project: project1)
 
     ActsAsTenant.current_tenant = account
     project2 = Project.create!(name: "accessible")
-    task2 = project2.tasks.create!(name: "bar")
-    task3 = project2.tasks.create!(name: "baz")
-    task4 = project2.tasks.create!(name: "foo")
-    task5 = project2.tasks.create!(name: "foobar", completed: true)
+
+    incomplete_tasks = %w[foo bar baz].map { |name|
+      project2.tasks.create!(name: name)
+    }
+
+    project2.tasks.create!(name: "foobar", completed: true)
 
     tasks = Task.all
-
-    expect(tasks.length).to eq(3)
-    expect(tasks).to eq([task2, task3, task4])
+    expect(tasks.length).to eq(incomplete_tasks.length)
+    expect(tasks).to eq(incomplete_tasks)
   end
 
   # Validates_uniqueness
