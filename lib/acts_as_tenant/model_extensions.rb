@@ -173,14 +173,6 @@ module ActsAsTenant
             raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil?
             model
           end
-
-          define_method ActsAsTenant.tenant_klass.to_s do
-            if !ActsAsTenant.current_tenant.nil? && send(fkey) == ActsAsTenant.current_tenant.send(pkey)
-              return ActsAsTenant.current_tenant
-            else
-              super()
-            end
-          end
         }
         include to_include
 

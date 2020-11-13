@@ -1,5 +1,4 @@
 require "spec_helper"
-require "active_record_models"
 
 describe ActsAsTenant do
   after { ActsAsTenant.current_tenant = nil }
@@ -7,7 +6,7 @@ describe ActsAsTenant do
   # Setting and getting
   describe "Setting the current tenant" do
     before { ActsAsTenant.current_tenant = :foo }
-    it { ActsAsTenant.current_tenant == :foo }
+    it { expect(ActsAsTenant.current_tenant).to eq(:foo) }
   end
 
   describe "is_scoped_as_tenant should return the correct value when true" do
@@ -96,6 +95,22 @@ describe ActsAsTenant do
       expect(@account.reload.projects_count).to eq(1)
       @project.destroy
       expect(@account.reload.projects_count).to eq(0)
+    end
+  end
+
+  describe "Handles tenant model updates" do
+    before do
+      @account = Account.create!(name: "foo")
+      @project = @account.projects.create!(name: "bar")
+    end
+
+    it "should fetch tenant object through belongs_to to avoid accessing stale tenant object if that was updated" do
+      # Sets current tenant in a way that it does not share the same memory reference of `@account`.
+      ActsAsTenant.current_tenant = Account.find_by(name: "foo")
+
+      expect(@project.account.name).to eq("foo")
+      @account.update!(name: "Acme")
+      expect(@project.account.name).to eq("Acme")
     end
   end
 

@@ -1,7 +1,8 @@
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
-require "active_record_helper"
+require "rails/all"
+require "rspec/rails"
 
 # Setup a test app
 module Rollcall
@@ -10,8 +11,9 @@ end
 
 Rollcall::Application.config.secret_key_base = "1234567890123456789012345678901234567890"
 
-require "rspec/rails"
 require "acts_as_tenant"
+require "active_record_helper"
+require "active_record_models"
 
 RSpec.configure do |config|
   config.after(:each) do

@@ -50,6 +50,10 @@ ActiveRecord::Schema.define(version: 1) do
     t.column :accountID, :integer
   end
 
+  create_table :custom_primary_key_tasks, force: true do |t|
+    t.column :name, :string
+  end
+
   create_table :articles, force: true do |t|
     t.column :title, :string
   end
@@ -114,7 +118,6 @@ class CustomForeignKeyTask < ActiveRecord::Base
 end
 
 class CustomPrimaryKeyTask < ActiveRecord::Base
-  self.table_name = "projects"
   acts_as_tenant(:account, foreign_key: "name", primary_key: "name")
   validates_presence_of :name
 end

@@ -1,6 +1,5 @@
 require "spec_helper"
 require "acts_as_tenant/test_tenant_middleware"
-require "active_record_models"
 
 class TestRackApp1
   def call(_env)

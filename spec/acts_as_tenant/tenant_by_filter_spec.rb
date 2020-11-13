@@ -1,18 +1,12 @@
 require "spec_helper"
 
-# Setup test specific ApplicationController
-class Account
-  attr_accessor :name
-end
-
 class ApplicationController2 < ActionController::Base
   include Rails.application.routes.url_helpers
   set_current_tenant_through_filter
   before_action :your_method_that_finds_the_current_tenant
 
   def your_method_that_finds_the_current_tenant
-    current_account = Account.new
-    current_account.name = "account1"
+    current_account = Account.new(name: "account1")
     set_current_tenant(current_account)
   end
 end
