@@ -1,3 +1,8 @@
+Unreleased
+----------
+
+* Remove tenant getter override. Fixes caching issues with association. - @bernardeli
+
 0.4.6
 -----
 * Drop support for Rails 5.1 or earlier
