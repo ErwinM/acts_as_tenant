@@ -215,16 +215,15 @@ describe ActsAsTenant do
 
     ActsAsTenant.current_tenant = account
     project2 = Project.create!(name: "accessible")
-
-    incomplete_tasks = %w[foo bar baz].map { |name|
-      project2.tasks.create!(name: name)
-    }
-
+    task2 = project2.tasks.create!(name: "bar")
+    task3 = project2.tasks.create!(name: "baz")
+    task4 = project2.tasks.create!(name: "foo")
     project2.tasks.create!(name: "foobar", completed: true)
 
     tasks = Task.all
-    expect(tasks.length).to eq(incomplete_tasks.length)
-    expect(tasks).to eq(incomplete_tasks)
+
+    expect(tasks.length).to eq(3)
+    expect(tasks).to eq([task2, task3, task4])
   end
 
   # Validates_uniqueness
