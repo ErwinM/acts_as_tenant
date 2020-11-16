@@ -24,8 +24,8 @@ end
 
 describe ActsAsTenant::TestTenantMiddleware do
   fixtures :accounts
+  after { ActsAsTenant.test_tenant = nil }
 
-  after { ActsAsTenant.current_tenant = nil }
   subject { request.get("/some/path") }
 
   let(:middleware) { described_class.new(app) }
@@ -35,8 +35,6 @@ describe ActsAsTenant::TestTenantMiddleware do
   let!(:account2) { accounts(:bar) }
 
   context "when test_tenant is nil before processing" do
-    before { ActsAsTenant.test_tenant = nil }
-
     context "that switches tenancies" do
       let(:app) { TestRackApp1.new }
 

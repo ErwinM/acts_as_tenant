@@ -6,11 +6,12 @@ class ApplicationController < ActionController::Base
 end
 
 describe ApplicationController, type: :controller do
-  let!(:account) { Account.create!(subdomain: "account1") }
+  let!(:account) { Account.create!(subdomain: "account1", name: "account1") }
 
   controller do
     def index
-      render plain: "custom called"
+      # Exercise current_tenant helper method
+      render plain: current_tenant.name
     end
   end
 
@@ -18,11 +19,13 @@ describe ApplicationController, type: :controller do
     @request.host = "account1.example.com"
     get :index
     expect(ActsAsTenant.current_tenant).to eq account
+    expect(response.body).to eq("account1")
   end
 
   it "Finds the correct tenant with a www.subdomain.example.com" do
     @request.host = "www.account1.example.com"
     get :index
     expect(ActsAsTenant.current_tenant).to eq account
+    expect(response.body).to eq("account1")
   end
 end

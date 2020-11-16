@@ -3,8 +3,6 @@ require "sidekiq"
 require "acts_as_tenant/sidekiq"
 
 describe ActsAsTenant::Sidekiq do
-  after { ActsAsTenant.current_tenant = nil }
-
   let(:account) { Account.new(id: 1234) }
   let(:message) { {"acts_as_tenant" => {"class" => "Account", "id" => 1234}} }
 

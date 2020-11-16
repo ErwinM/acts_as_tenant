@@ -15,12 +15,14 @@ end
 describe ApplicationController2, type: :controller do
   controller do
     def index
-      render plain: "custom called"
+      # Exercise current_tenant helper method
+      render plain: current_tenant.name
     end
   end
 
   it "Finds the correct tenant using the filter command" do
     get :index
     expect(ActsAsTenant.current_tenant.name).to eq "account1"
+    expect(response.body).to eq "account1"
   end
 end

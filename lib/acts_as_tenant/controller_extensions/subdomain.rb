@@ -6,7 +6,6 @@ module ActsAsTenant
       included do
         cattr_accessor :tenant_class, :tenant_column
         before_action :find_tenant_by_subdomain
-        helper_method :current_tenant if respond_to?(:helper_method)
       end
 
       private

@@ -1,10 +1,6 @@
 require "spec_helper"
 
 describe ActsAsTenant do
-  fixtures :all
-
-  after { ActsAsTenant.current_tenant = nil }
-
   let(:account) { accounts(:foo) }
 
   it "can set the current tenant" do

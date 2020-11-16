@@ -4,10 +4,6 @@ module ActsAsTenant
     autoload :Subdomain, "acts_as_tenant/controller_extensions/subdomain"
     autoload :SubdomainOrDomain, "acts_as_tenant/controller_extensions/subdomain_or_domain"
 
-    def current_tenant
-      ActsAsTenant.current_tenant
-    end
-
     # this method allows setting the current_tenant by reading the subdomain and looking
     # it up in the tenant-model passed to the method. The method will look for the subdomain
     # in a column referenced by the second argument.
