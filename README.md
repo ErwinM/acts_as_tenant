@@ -1,9 +1,7 @@
 Acts As Tenant
 ==============
 
-[![Build Status](https://github.com/excid3/acts_as_tenant/workflows/Tests/badge.svg)](https://github.com/excid3/acts_as_tenant/actions)
-
-**Note**: acts_as_tenant was introduced in this [blog post](https://github.com/excid3/acts_as_tenant/blob/master/docs/blog_post.md).
+[![Build Status](https://github.com/ErwinM/acts_as_tenant/workflows/Tests/badge.svg)](https://github.com/ErwinM/acts_as_tenant/actions)
 
 This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to our Rails app through a shared database strategy, that integrates (near) seamless with Rails.
 
@@ -16,6 +14,8 @@ In addition, acts_as_tenant:
 * adds a method to validate uniqueness to a tenant, `validates_uniqueness_to_tenant`
 * sets up a helper method containing the current tenant
 
+**Note**: acts_as_tenant was introduced in this [blog post](https://github.com/ErwinM/acts_as_tenant/blob/master/docs/blog_post.md).
+
 Installation
 ------------
 acts_as_tenant will only work on Rails 3.1 and up. This is due to changes made to the handling of `default_scope`, an essential pillar of the gem.
@@ -23,7 +23,7 @@ acts_as_tenant will only work on Rails 3.1 and up. This is due to changes made t
 To use it, add it to your Gemfile:
 
 ```ruby
-gem 'acts_as_tenant', github: 'excid3/acts_as_tenant'
+gem 'acts_as_tenant'
 ```
 
 Getting started
@@ -260,9 +260,9 @@ Bug reports & suggested improvements
 ------------------------------------
 If you have found a bug or want to suggest an improvement, please use our issue tracked at:
 
-[github.com/excid3/acts_as_tenant/issues](http://github.com/excid3/acts_as_tenant/issues)
+[github.com/ErwinM/acts_as_tenant/issues](http://github.com/ErwinM/acts_as_tenant/issues)
 
-If you want to contribute, fork the project, code your improvements and make a pull request on [Github](http://github.com/excid3/acts_as_tenant/). When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
+If you want to contribute, fork the project, code your improvements and make a pull request on [Github](http://github.com/ErwinM/acts_as_tenant/). When doing so, please don't forget to add tests. If your contribution is fixing a bug it would be perfect if you could also submit a failing test, illustrating the issue.
 
 Contributing to this gem
 ------------------------
