@@ -1,6 +1,7 @@
 Unreleased
 ----------
 
+* Add `subdomain_lookup` option to change which subdomain is used - @excid3
 * Unsaved tenant records will now return no records. #227 - @excid3
 * Refactor test suite and use dummy Rails app - @excid3
 * Remove tenant getter override. Fixes caching issues with association. - @bernardeli

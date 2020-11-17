@@ -3,3 +3,8 @@ foo:
 
 bar:
   name: bar
+
+with_domain:
+  name: domain
+  subdomain: domain
+  domain: domain.com

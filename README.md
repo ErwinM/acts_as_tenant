@@ -41,7 +41,8 @@ There are three ways to set the current tenant:
 2. by setting  the current tenant in the controller, and
 3. by setting the current tenant for a block.
 
-### Use the subdomain to lookup the current tenant ###
+### Looking Up Tenants
+#### By Subdomain to lookup the current tenant
 
 ```ruby
 class ApplicationController < ActionController::Base
@@ -49,11 +50,23 @@ class ApplicationController < ActionController::Base
 end
 ```
 
-This tells acts_as_tenant to use the current subdomain to identify the current tenant. In addition, it tells acts_as_tenant that tenants are represented by the Account model and this model has a column named 'subdomain' which can be used to lookup the Account using the actual subdomain. If ommitted, the parameters will default to the values used above.
+This tells acts_as_tenant to use the last subdomain to identify the current tenant. In addition, it tells acts_as_tenant that tenants are represented by the Account model and this model has a column named 'subdomain' which can be used to lookup the Account using the actual subdomain. If ommitted, the parameters will default to the values used above.
 
-Alternatively, you could locate the tenant using the method `set_current_tenant_by_subdomain_or_domain( :account, :subdomain,  :domain )` which will try to match a record first by subdomain. in case it fails, by domain.
+By default, the *last* subdomain will be used for lookup. Pass in `subdomain_lookup: :first` to use the first subdomain instead.
 
-### Setting the current tenant in a controller, manually ###
+#### By Domain to lookup the current tenant
+
+```ruby
+class ApplicationController < ActionController::Base
+  set_current_tenant_by_subdomain_or_domain(:account, :subdomain, :domain)
+end
+```
+
+You can locate the tenant using `set_current_tenant_by_subdomain_or_domain( :account, :subdomain,  :domain )` which will check for a subdomain and fallback to domain.
+
+By default, the *last* subdomain will be used for lookup. Pass in `subdomain_lookup: :first` to use the first subdomain instead.
+
+#### Manually using before_action
 
 ```ruby
 class ApplicationController < ActionController::Base
