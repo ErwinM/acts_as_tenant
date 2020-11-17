@@ -71,18 +71,6 @@ describe ActsAsTenant do
     expect(project.account.name).to eq("Acme")
   end
 
-  # Scoping models
-  it "Project.all should be scoped to the current tenant if set" do
-    ActsAsTenant.current_tenant = account
-    expect(Project.count).to eq(account.projects.count)
-    expect(Project.all).to eq(account.projects)
-  end
-
-  it "Project.unscoped.all should return the unscoped value" do
-    ActsAsTenant.current_tenant = account
-    expect(Project.unscoped.count).to be > account.projects.count
-  end
-
   it "Querying the tenant from a scoped model without a tenant set" do
     expect(projects(:foo).account).to_not be_nil
   end
@@ -93,6 +81,24 @@ describe ActsAsTenant do
     expect(projects(:bar).account).to eq(accounts(:bar))
   end
 
+  describe "scoping models" do
+    it "should scope Project.all to the current tenant if set" do
+      ActsAsTenant.current_tenant = account
+      expect(Project.count).to eq(account.projects.count)
+      expect(Project.all).to eq(account.projects)
+    end
+
+    it "should allow unscoping" do
+      ActsAsTenant.current_tenant = account
+      expect(Project.unscoped.count).to be > account.projects.count
+    end
+
+    it "returns nothing with unsaved tenant" do
+      ActsAsTenant.current_tenant = Account.new
+      expect(Project.all.count).to eq(0)
+    end
+  end
+
   describe "A tenant model with global records" do
     before do
       ActsAsTenant.current_tenant = account
@@ -100,6 +106,11 @@ describe ActsAsTenant do
 
     it "should return global and tenant projects" do
       expect(GlobalProject.count).to eq(GlobalProject.unscoped.where(account: [nil, account]).count)
+    end
+
+    it "returns global records with unsaved tenant" do
+      ActsAsTenant.current_tenant = Account.new
+      expect(GlobalProject.all.count).to eq(GlobalProject.unscoped.where(account: [nil]).count)
     end
 
     context "should validate tenant records against global & tenant records" do

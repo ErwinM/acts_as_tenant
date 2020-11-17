@@ -1,10 +1,8 @@
 module ActsAsTenant
   module ModelExtensions
-    def self.included(base)
-      base.extend(ClassMethods)
-    end
+    extend ActiveSupport::Concern
 
-    module ClassMethods
+    class_methods do
       def acts_as_tenant(tenant = :account, **options)
         ActsAsTenant.set_tenant_klass(tenant)
 
@@ -21,8 +19,9 @@ module ActsAsTenant
           if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
             raise ActsAsTenant::Errors::NoTenantSet
           end
+
           if ActsAsTenant.current_tenant
-            keys = [ActsAsTenant.current_tenant.send(pkey)]
+            keys = [ActsAsTenant.current_tenant.send(pkey)].compact
             keys.push(nil) if options[:has_global_records]
 
             query_criteria = {fkey.to_sym => keys}
