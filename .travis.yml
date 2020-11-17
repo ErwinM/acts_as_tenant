@@ -3,7 +3,6 @@ before_install:
   - gem update bundler
 script: bundle exec rake spec
 rvm:
-  - 2.4.9
+  - 2.7.2
+  - 2.6.6
   - 2.5.7
-  - 2.6.5
-  - ruby-2.7.0-preview3
