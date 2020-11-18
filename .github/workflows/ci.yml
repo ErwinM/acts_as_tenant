@@ -22,7 +22,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
 
       - name: Cache gems
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-${{ matrix.ruby }}-gem-${{ hashFiles('**/Gemfile.lock') }}
