@@ -1,7 +1,7 @@
 Acts As Tenant
 ==============
 
-[![Build Status](https://github.com/ErwinM/acts_as_tenant/workflows/Tests/badge.svg)](https://github.com/ErwinM/acts_as_tenant/actions)
+[![Build Status](https://github.com/ErwinM/acts_as_tenant/workflows/Tests/badge.svg)](https://github.com/ErwinM/acts_as_tenant/actions) [![Gem Version](https://badge.fury.io/rb/acts_as_tenant.svg)](https://badge.fury.io/rb/acts_as_tenant)
 
 This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to our Rails app through a shared database strategy, that integrates (near) seamless with Rails.
 
