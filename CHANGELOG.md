@@ -1,17 +1,17 @@
 Unreleased
 ----------
 
-* Add `subdomain_lookup` option to change which subdomain is used - @excid3
-* Unsaved tenant records will now return no records. #227 - @excid3
-* Refactor test suite and use dummy Rails app - @excid3
-* Remove tenant getter override. Fixes caching issues with association. - @bernardeli
-
-0.4.6
+0.5.0
 -----
+
 * Drop support for Rails 5.1 or earlier
 * Add tests for Rails 5.2, 6.0, and Rails master
 * Use standardrb
 * Refactor controller extensions into modules
+* Add `subdomain_lookup` option to change which subdomain is used - @excid3
+* Unsaved tenant records will now return no records. #227 - @excid3
+* Refactor test suite and use dummy Rails app - @excid3
+* Remove tenant getter override. Fixes caching issues with association. - @bernardeli
 
 0.4.4
 -----
