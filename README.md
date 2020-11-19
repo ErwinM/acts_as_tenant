@@ -206,6 +206,23 @@ end
 
 * `config.require_tenant` when set to true will raise an ActsAsTenant::NoTenant error whenever a query is made without a tenant set.
 
+belongs_to options
+---------------------
+`acts_as_tenant :account` includes the belongs_to relationship. 
+So when using acts_as_tenant on a model, do not add `belongs_to :account` alongside `acts_as_tenant :account`:
+
+```
+class User < ActiveRecord::Base
+  acts_as_tenant(:account) # YES
+  belongs_to :account # REDUNDANT
+end
+```
+
+You can add the following `belongs_to` options to `acts_as_tenant`:
+`:foreign_key, :class_name, :inverse_of, :optional, :primary_key, :counter_cache`
+
+Example: `acts_as_tenant(:account, counter_cache: true)`
+
 Sidekiq support
 ---------------
 
