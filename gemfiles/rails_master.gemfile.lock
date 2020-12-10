@@ -86,7 +86,7 @@ GIT
 PATH
   remote: ..
   specs:
-    acts_as_tenant (0.4.6)
+    acts_as_tenant (0.5.0)
       rails (>= 5.2)
       request_store (>= 1.0.5)
 
