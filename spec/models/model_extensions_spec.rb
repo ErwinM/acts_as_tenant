@@ -113,6 +113,11 @@ describe ActsAsTenant do
       expect(GlobalProject.all.count).to eq(GlobalProject.unscoped.where(account: [nil]).count)
     end
 
+    it "should add the model to ActsAsTenant.models_with_global_records" do
+      expect(ActsAsTenant.models_with_global_records.include?(GlobalProject)).to be_truthy
+      expect(ActsAsTenant.models_with_global_records.include?(Project)).to be_falsy
+    end
+
     context "should validate tenant records against global & tenant records" do
       it "global records are valid" do
         expect(global_projects(:global).valid?).to be(true)
@@ -120,6 +125,12 @@ describe ActsAsTenant do
 
       it "allows separate global and tenant records" do
         expect(GlobalProject.new(name: "foo new").valid?).to be(true)
+      end
+
+      it "is valid if tenant is different" do
+        ActsAsTenant.current_tenant = accounts(:bar)
+
+        expect(GlobalProject.new(name: "global foo").valid?).to be(true)
       end
 
       it "is invalid with duplicate tenant records" do
@@ -131,9 +142,28 @@ describe ActsAsTenant do
       end
     end
 
-    it "should add the model to ActsAsTenant.models_with_global_records" do
-      expect(ActsAsTenant.models_with_global_records.include?(GlobalProject)).to be_truthy
-      expect(ActsAsTenant.models_with_global_records.include?(Project)).to be_falsy
+    context "should validate global records against global & tenant records" do
+      before do
+        ActsAsTenant.current_tenant = nil
+      end
+
+      it "is invalid if global record conflicts with tenant record" do
+        expect(GlobalProject.new(name: "global foo").valid?).to be(false)
+      end
+    end
+
+    context "with conditions in args" do
+      it "respects conditions" do
+        expect(GlobalProjectWithConditions.new(name: "foo").valid?).to be(false)
+        expect(GlobalProjectWithConditions.new(name: "global foo").valid?).to be(true)
+      end
+    end
+
+    context "with if in args" do
+      it "respects if" do
+        expect(GlobalProjectWithIf.new(name: "foo").valid?).to be(false)
+        expect(GlobalProjectWithIf.new(name: "global foo").valid?).to be(true)
+      end
     end
   end
 

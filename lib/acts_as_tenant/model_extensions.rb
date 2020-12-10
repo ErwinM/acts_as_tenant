@@ -103,12 +103,26 @@ module ActsAsTenant
           fkey
         end
 
+        # validating within tenant scope
         validates_uniqueness_of(fields, validation_args)
 
         if ActsAsTenant.models_with_global_records.include?(self)
-          global_validation_args = args.merge(conditions: -> { where(fkey => nil) })
+          arg_if = args.delete(:if)
+          arg_condition = args.delete(:conditions)
 
+          # if tenant is not set (instance is global) - validating globally
+          global_validation_args = args.merge(
+            if: ->(instance) { instance[fkey].blank? && (arg_if.blank? || arg_if.call(instance)) }
+          )
           validates_uniqueness_of(fields, global_validation_args)
+
+          # if tenant is set (instance is not global) and records can be global - validating within records with blank tenant
+          blank_tenant_validation_args = args.merge({
+            conditions: -> { arg_condition.blank? ? where(fkey => nil) : arg_condition.call.where(fkey => nil) },
+            if: ->(instance) { instance[fkey].present? && (arg_if.blank? || arg_if.call(instance)) }
+          })
+
+          validates_uniqueness_of(fields, blank_tenant_validation_args)
         end
       end
     end
