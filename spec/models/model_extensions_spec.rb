@@ -122,7 +122,7 @@ describe ActsAsTenant do
         expect(GlobalProject.new(name: "foo new").valid?).to be(true)
       end
 
-      it "is invalid with with duplicate tenant records" do
+      it "is invalid with duplicate tenant records" do
         expect(GlobalProject.new(name: "global foo").valid?).to be(false)
       end
 

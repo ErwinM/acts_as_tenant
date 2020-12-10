@@ -93,34 +93,22 @@ module ActsAsTenant
 
       def validates_uniqueness_to_tenant(fields, args = {})
         raise ActsAsTenant::Errors::ModelNotScopedByTenant unless respond_to?(:scoped_by_tenant?)
+
         fkey = reflect_on_association(ActsAsTenant.tenant_klass).foreign_key
-        # tenant_id = lambda { "#{ActsAsTenant.fkey}"}.call
-        args[:scope] = if args[:scope]
+
+        validation_args = args.clone
+        validation_args[:scope] = if args[:scope]
           Array(args[:scope]) << fkey
         else
           fkey
         end
 
-        validates_uniqueness_of(fields, args)
+        validates_uniqueness_of(fields, validation_args)
 
         if ActsAsTenant.models_with_global_records.include?(self)
-          validate do |instance|
-            Array(fields).each do |field|
-              if instance.new_record?
-                unless self.class.where(fkey.to_sym => [nil, instance[fkey]],
-                                        field.to_sym => instance[field]).empty?
-                  errors.add(field, "has already been taken")
-                end
-              else
-                unless self.class.where(fkey.to_sym => [nil, instance[fkey]],
-                                        field.to_sym => instance[field])
-                    .where.not(id: instance.id).empty?
-                  errors.add(field, "has already been taken")
-                end
+          global_validation_args = args.merge(conditions: -> { where(fkey => nil) })
 
-              end
-            end
-          end
+          validates_uniqueness_of(fields, global_validation_args)
         end
       end
     end
