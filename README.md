@@ -1,7 +1,8 @@
-Acts As Tenant
-==============
+# Acts As Tenant
 
 [![Build Status](https://github.com/ErwinM/acts_as_tenant/workflows/Tests/badge.svg)](https://github.com/ErwinM/acts_as_tenant/actions) [![Gem Version](https://badge.fury.io/rb/acts_as_tenant.svg)](https://badge.fury.io/rb/acts_as_tenant)
+
+Row-level multitenancy for Ruby on Rails apps.
 
 This gem was born out of our own need for a fail-safe and out-of-the-way manner to add multi-tenancy to our Rails app through a shared database strategy, that integrates (near) seamless with Rails.
 
@@ -15,6 +16,22 @@ In addition, acts_as_tenant:
 * sets up a helper method containing the current tenant
 
 **Note**: acts_as_tenant was introduced in this [blog post](https://github.com/ErwinM/acts_as_tenant/blob/master/docs/blog_post.md).
+
+**Row-level vs schema multitenancy**
+
+What's the difference?
+
+Row-level multitenancy  each model must have a tenant ID column on it. This makes it easy to filter records for each tenant using your standard database columns and indexes. ActsAsTenant uses row-level multitenancy.
+
+Schema multitenancy uses database schemas to handle multitenancy. For this approach, your database has multiple schemas and each schema contains your database tables. Schemas require migrations to be run against each tenant and generally makes it harder to scale as you add more tenants. The Apartment gem uses schema multitenancy.
+
+#### 🎬 Walkthrough 
+
+Want to see how it works? Check out [the ActsAsTenant walkthrough video](https://www.youtube.com/watch?v=BIyxM9f8Jus):
+
+<a href="https://www.youtube.com/watch?v=BIyxM9f8Jus">
+<img src="https://i.imgur.com/DLRPzhv.png" width="300" height="auto" alt="ActsAsTenant Walkthrough Video">
+</a>
 
 Installation
 ------------
