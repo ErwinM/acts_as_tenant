@@ -55,7 +55,8 @@ jobs:
           DATABASE_URL: mysql2://root:password@127.0.0.1:3306/test
           RAILS_ENV: test
         run: |
-          bundle exec appraisal rake
+          bundle exec rails db:create
+  # bundle exec appraisal rake
 
   # Postgres ###
   postgres:
