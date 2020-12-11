@@ -1,3 +1,4 @@
+---
 name: Tests
 
 on:
@@ -8,15 +9,27 @@ on:
     branches:
       - master
 jobs:
-  test:
+
+  # MySQL ###
+  mysql:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: [ '2.7', '2.6' ]
+        ruby: ['2.6', '2.7']
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MSQL_DATABASE: test
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
       - uses: actions/checkout@master
 
-      - name: Set up Ruby
+      - name: Set up Ruby ${{ matrix.ruby }}
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
@@ -25,9 +38,94 @@ jobs:
         uses: actions/cache@v1
         with:
           path: vendor/bundle
-          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+          key: ${{ runner.os }}-${{ matrix.ruby }}-gem-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-gem-
+            ${{ runner.os }}-${{ matrix.ruby }}-gem-
+
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install --jobs 4 --retry 3
+          bundle exec appraisal install
+      - name: StandardRb check
+        run: bundle exec standardrb
+
+      - name: Run tests
+        env:
+          DATABASE_URL: mysql2://root:password@127.0.0.1:3306/test
+          RAILS_ENV: test
+        run: |
+          bundle exec appraisal rake
+
+  # Postgres ###
+  postgres:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: ['2.6', '2.7']
+
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test
+        ports: ['5432:5432']
+
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Set up Ruby ${{ matrix.ruby }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Cache gems
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-${{ matrix.ruby }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.ruby }}-gem-
+
+      - name: Install dependencies
+        run: |
+          gem install bundler
+          bundle install --jobs 4 --retry 3
+          bundle exec appraisal install
+      - name: StandardRb check
+        run: bundle exec standardrb
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgres://postgres:password@localhost:5432/test
+          RAILS_ENV: test
+        run: |
+          bundle exec appraisal rake
+
+  # SQLite ###
+  sqlite:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: ['2.6', '2.7']
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Set up Ruby ${{ matrix.ruby }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Cache gems
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-${{ matrix.ruby }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.ruby }}-gem-
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -36,7 +134,6 @@ jobs:
           gem install bundler
           bundle install --jobs 4 --retry 3
           bundle exec appraisal install
-
       - name: StandardRb check
         run: bundle exec standardrb
 
