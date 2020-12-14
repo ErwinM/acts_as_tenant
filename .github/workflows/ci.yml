@@ -3,7 +3,7 @@ name: Tests
 on:
   pull_request:
     branches:
-      - '*'
+      - "*"
   push:
     branches:
       - master
@@ -12,30 +12,30 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: [ '2.7', '2.6' ]
+        ruby: ["2.7", "2.6"]
+        gemfile:
+          - rails_5.gemfile
+          - rails_6.gemfile
+          - rails_6_1.gemfile
+          - rails_master.gemfile
+
     steps:
       - uses: actions/checkout@master
+
+      - name: Set BUNDLE_GEMFILE
+        run: |
+          echo 'BUNDLE_GEMFILE=${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}' >> $GITHUB_ENV
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
+          bundler: default
+          bundler-cache: true
 
-      - name: Cache gems
-        uses: actions/cache@v1
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gem-
       - name: Install dependencies
         run: |
-          sudo apt-get update
           sudo apt-get install libsqlite3-dev
-          gem update --system
-          gem install bundler
-          bundle install --jobs 4 --retry 3
-          bundle exec appraisal install
 
       - name: StandardRb check
         run: bundle exec standardrb
@@ -44,4 +44,4 @@ jobs:
         env:
           RAILS_ENV: test
         run: |
-          bundle exec appraisal rake
+          bundle exec rake
