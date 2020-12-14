@@ -7,24 +7,25 @@ on:
   push:
     branches:
       - master
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    name: ruby-${{ matrix.ruby }} ${{ matrix.gemfile }}
     strategy:
       matrix:
         ruby: ["2.7", "2.6"]
         gemfile:
-          - rails_5.gemfile
-          - rails_6.gemfile
-          - rails_6_1.gemfile
-          - rails_master.gemfile
+          - rails_5
+          - rails_6
+          - rails_6_1
+          - rails_master
+    env:
+      BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile
+      BUNDLE_PATH_RELATIVE_TO_CWD: true
 
     steps:
       - uses: actions/checkout@master
-
-      - name: Set BUNDLE_GEMFILE
-        run: |
-          echo 'BUNDLE_GEMFILE=${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}' >> $GITHUB_ENV
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -32,10 +33,6 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler: default
           bundler-cache: true
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get install libsqlite3-dev
 
       - name: StandardRb check
         run: bundle exec standardrb
