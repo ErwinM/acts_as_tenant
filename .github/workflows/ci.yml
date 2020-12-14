@@ -19,13 +19,11 @@ jobs:
           - rails_6
           - rails_6_1
           - rails_master
+    env:
+      BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile
 
     steps:
       - uses: actions/checkout@master
-
-      - name: Set BUNDLE_GEMFILE
-        run: |
-          echo 'BUNDLE_GEMFILE=${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile' >> $GITHUB_ENV
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
