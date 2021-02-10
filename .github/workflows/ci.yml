@@ -12,7 +12,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ruby: [ '2.7', '2.6' ]
+        ruby: [ '2.6', '2.7', '3.0']
+        gemfile:
+          - rails_5
+          - rails_6
+          - rails_6_1
+          - rails_master
+        exclude:
+          # Rails 7 requires Ruby 2.7 or higher
+          - ruby: '2.6'
+            gemfile: rails_master
+    env:
+      BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile
+      BUNDLE_PATH_RELATIVE_TO_CWD: true
+
     steps:
       - uses: actions/checkout@master
 
@@ -20,22 +33,8 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-
-      - name: Cache gems
-        uses: actions/cache@v1
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gem-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install libsqlite3-dev
-          gem update --system
-          gem install bundler
-          bundle install --jobs 4 --retry 3
-          bundle exec appraisal install
+          bundler: default
+          bundler-cache: true
 
       - name: StandardRb check
         run: bundle exec standardrb
@@ -44,4 +43,4 @@ jobs:
         env:
           RAILS_ENV: test
         run: |
-          bundle exec appraisal rake
+          bundle exec rake
