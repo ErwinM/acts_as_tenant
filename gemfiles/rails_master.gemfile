@@ -3,6 +3,6 @@
 source "https://rubygems.org"
 
 gem "byebug", group: [:development, :test]
-gem "rails", git: "https://github.com/rails/rails.git"
+gem "rails", branch: :main, git: "https://github.com/rails/rails.git"
 
 gemspec path: "../"
