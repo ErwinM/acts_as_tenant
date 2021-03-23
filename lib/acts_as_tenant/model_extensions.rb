@@ -14,7 +14,7 @@ module ActsAsTenant
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
         pkey = valid_options[:primary_key] || ActsAsTenant.pkey
         polymorphic_type = valid_options[:foreign_type] || ActsAsTenant.polymorphic_type
-        belongs_to tenant, valid_options
+        belongs_to tenant, **valid_options
 
         default_scope lambda {
           if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
