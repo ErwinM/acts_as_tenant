@@ -121,7 +121,7 @@ module ActsAsTenant
 
   def self.with_mutable_tenant(&block)
     ActsAsTenant.mutable_tenant!(true)
-    self.without_tenant(&block)
+    without_tenant(&block)
   ensure
     ActsAsTenant.mutable_tenant!(false)
   end

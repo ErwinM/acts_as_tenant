@@ -96,7 +96,6 @@ module ActsAsTenant
         raise ActsAsTenant::Errors::ModelNotScopedByTenant unless respond_to?(:scoped_by_tenant?)
 
         fkey = reflect_on_association(ActsAsTenant.tenant_klass).foreign_key
-        pkey = reflect_on_association(ActsAsTenant.tenant_klass).active_record_primary_key
 
         validation_args = args.clone
         validation_args[:scope] = if args[:scope]
