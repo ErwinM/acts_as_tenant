@@ -140,7 +140,7 @@ This is useful in shared routes such as admin panels or internal dashboards when
 ### Allowing tenant updating for a block ###
 
 ```ruby
-ActsAsTenant.without_tenant! do
+ActsAsTenant.with_mutable_tenant do
   # Tenant updating is enabled for all code in this block
 end
 ```
