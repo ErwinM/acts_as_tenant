@@ -352,6 +352,39 @@ describe ActsAsTenant do
     end
   end
 
+  describe "::with_mutable_tenant" do
+    it "should return the value of the block" do
+      value = ActsAsTenant.with_mutable_tenant do
+        "something"
+      end
+      expect(value).to eq "something"
+    end
+
+    it "should raise an error when no block is provided" do
+      expect { ActsAsTenant.with_mutable_tenant }.to raise_error(ArgumentError, /block required/)
+    end
+
+    it "should set tenant back to immutable after the block" do
+      ActsAsTenant.with_mutable_tenant do
+        "something"
+      end
+      expect(ActsAsTenant.mutable_tenant?).to eq false
+    end
+
+    describe 'mutability' do
+      before do
+        @account = Account.create!(:name => 'foo')
+        @project = @account.projects.create!(:name => 'bar')
+      end
+
+      it "should allow tenant_id to change inside the block" do
+        new_account_id = @account.id + 1
+        expect{ ActsAsTenant.with_mutable_tenant { @project.account_id = new_account_id } }.to_not raise_error(ActsAsTenant::Errors::TenantIsImmutable)
+        expect(@project.account_id).to eq new_account_id
+      end
+    end
+  end
+
   # Tenant required
   context "tenant required" do
     before do

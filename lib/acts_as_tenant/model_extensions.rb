@@ -73,7 +73,7 @@ module ActsAsTenant
         to_include = Module.new {
           define_method "#{fkey}=" do |integer|
             write_attribute(fkey.to_s, integer)
-            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil?
+            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil? && !ActsAsTenant.mutable_tenant?
             integer
           end
 
@@ -96,6 +96,7 @@ module ActsAsTenant
         raise ActsAsTenant::Errors::ModelNotScopedByTenant unless respond_to?(:scoped_by_tenant?)
 
         fkey = reflect_on_association(ActsAsTenant.tenant_klass).foreign_key
+        pkey = reflect_on_association(ActsAsTenant.tenant_klass).active_record_primary_key
 
         validation_args = args.clone
         validation_args[:scope] = if args[:scope]
