@@ -6,11 +6,11 @@ describe ActionView::Base, type: :helper do
   end
 
   it "returns nil if no tenant set" do
-    expect(helper.current_tenant).to be_nil
+    expect(helper.current_tenant).to eq []
   end
 
   it "returns the current tenant" do
     ActsAsTenant.current_tenant = accounts(:foo)
-    expect(helper.current_tenant).to eq(accounts(:foo))
+    expect(helper.current_tenant).to eq([accounts(:foo)])
   end
 end

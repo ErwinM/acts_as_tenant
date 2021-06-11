@@ -18,7 +18,7 @@ describe ActsAsTenant::Sidekiq do
     end
 
     it "does not set tenant if not present" do
-      expect(ActsAsTenant.current_tenant).to be_nil
+      expect(ActsAsTenant.current_tenant).to eq []
 
       msg = {}
       subject.call(nil, msg, nil, nil) {}
@@ -34,9 +34,9 @@ describe ActsAsTenant::Sidekiq do
 
       msg = message
       subject.call(nil, msg, nil) do
-        expect(ActsAsTenant.current_tenant).to be_a_kind_of Account
+        expect(ActsAsTenant.current_tenant.first).to be_a_kind_of Account
       end
-      expect(ActsAsTenant.current_tenant).to be_nil
+      expect(ActsAsTenant.current_tenant).to eq []
     end
 
     it "runs without tenant if no tenant saved" do
@@ -44,9 +44,9 @@ describe ActsAsTenant::Sidekiq do
 
       msg = {}
       subject.call(nil, msg, nil) do
-        expect(ActsAsTenant.current_tenant).to be_nil
+        expect(ActsAsTenant.current_tenant).to eq []
       end
-      expect(ActsAsTenant.current_tenant).to be_nil
+      expect(ActsAsTenant.current_tenant).to eq []
     end
   end
 

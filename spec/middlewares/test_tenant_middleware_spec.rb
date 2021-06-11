@@ -4,7 +4,7 @@ require "acts_as_tenant/test_tenant_middleware"
 class TestRackApp1
   def call(_env)
     ActsAsTenant.current_tenant = Account.first
-    TestReceiver.assert_current_id(ActsAsTenant.current_tenant.id)
+    TestReceiver.assert_current_id(ActsAsTenant.current_tenant.first.id)
     ActsAsTenant.current_tenant = nil
     [200, {}, ["OK"]]
   end
@@ -12,7 +12,7 @@ end
 
 class TestRackApp2
   def call(_env)
-    TestReceiver.assert_current_id(ActsAsTenant.current_tenant.try(:id))
+    TestReceiver.assert_current_id(ActsAsTenant.current_tenant.first.try(:id))
     [200, {}, ["OK"]]
   end
 end
@@ -39,10 +39,10 @@ describe ActsAsTenant::TestTenantMiddleware do
       let(:app) { TestRackApp1.new }
 
       it "should remain nil after processing" do
-        expect(ActsAsTenant.current_tenant).to be_nil
+        expect(ActsAsTenant.current_tenant).to eq []
         expect(TestReceiver).to receive(:assert_current_id).with(account1.id)
         expect(subject.status).to eq 200
-        expect(ActsAsTenant.current_tenant).to be_nil
+        expect(ActsAsTenant.current_tenant).to eq []
       end
     end
 
@@ -50,10 +50,10 @@ describe ActsAsTenant::TestTenantMiddleware do
       let(:app) { TestRackApp2.new }
 
       it "should remain nil after processing" do
-        expect(ActsAsTenant.current_tenant).to be_nil
+        expect(ActsAsTenant.current_tenant).to eq []
         expect(TestReceiver).to receive(:assert_current_id).with(nil)
         expect(subject.status).to eq 200
-        expect(ActsAsTenant.current_tenant).to be_nil
+        expect(ActsAsTenant.current_tenant).to eq []
       end
     end
   end
@@ -65,10 +65,10 @@ describe ActsAsTenant::TestTenantMiddleware do
       let(:app) { TestRackApp1.new }
 
       it "should remain assigned after processing" do
-        expect(ActsAsTenant.current_tenant).to eq account2
+        expect(ActsAsTenant.current_tenant).to eq [account2]
         expect(TestReceiver).to receive(:assert_current_id).with(account1.id)
         expect(subject.status).to eq 200
-        expect(ActsAsTenant.current_tenant).to eq account2
+        expect(ActsAsTenant.current_tenant).to eq [account2]
       end
     end
 
@@ -76,10 +76,10 @@ describe ActsAsTenant::TestTenantMiddleware do
       let(:app) { TestRackApp2.new }
 
       it "should remain assigned after processing" do
-        expect(ActsAsTenant.current_tenant).to eq account2
+        expect(ActsAsTenant.current_tenant).to eq [account2]
         expect(TestReceiver).to receive(:assert_current_id).with(nil)
         expect(subject.status).to eq 200
-        expect(ActsAsTenant.current_tenant).to eq account2
+        expect(ActsAsTenant.current_tenant).to eq [account2]
       end
     end
   end
