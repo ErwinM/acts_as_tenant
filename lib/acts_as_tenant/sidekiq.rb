@@ -2,11 +2,11 @@ module ActsAsTenant::Sidekiq
   # Get the current tenant and store in the message to be sent to Sidekiq.
   class Client
     def call(worker_class, msg, queue, redis_pool)
-      if ActsAsTenant.current_tenant.present?
+      if ActsAsTenant.current_tenant.one?
         msg["acts_as_tenant"] ||=
           {
-            "class" => ActsAsTenant.current_tenant.class.name,
-            "id" => ActsAsTenant.current_tenant.id
+            "class" => ActsAsTenant.current_tenant.first.class.name,
+            "id" => ActsAsTenant.current_tenant.first.id
           }
       end
 

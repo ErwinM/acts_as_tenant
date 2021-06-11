@@ -16,16 +16,22 @@ module ActsAsTenant
         belongs_to tenant, **valid_options
 
         default_scope lambda {
-          if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
+          if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.empty? && !ActsAsTenant.unscoped?
             raise ActsAsTenant::Errors::NoTenantSet
           end
 
-          if ActsAsTenant.current_tenant
-            keys = [ActsAsTenant.current_tenant.send(pkey)].compact
+          if ActsAsTenant.current_tenant.any?
+            keys = ActsAsTenant.current_tenant.map { |e| e.send(pkey) }.compact
             keys.push(nil) if options[:has_global_records]
 
             query_criteria = {fkey.to_sym => keys}
-            query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
+
+            if options[:polymorphic]
+              raise ActsAsTenant::Errors::MultiplePolymorphicTenants unless ActsAsTenant.current_tenant.one?
+
+              query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.first.class.to_s
+            end
+
             where(query_criteria)
           else
             all
@@ -37,12 +43,12 @@ module ActsAsTenant
         # - validate that associations belong to the tenant, currently only for belongs_to
         #
         before_validation proc { |m|
-          if ActsAsTenant.current_tenant
+          if ActsAsTenant.current_tenant.one?
             if options[:polymorphic]
-              m.send("#{fkey}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send(fkey.to_s).nil?
-              m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send(polymorphic_type.to_s).nil?
+              m.send("#{fkey}=".to_sym, ActsAsTenant.current_tenant.first.class.to_s) if m.send(fkey.to_s).nil?
+              m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_tenant.first.class.to_s) if m.send(polymorphic_type.to_s).nil?
             else
-              m.send "#{fkey}=".to_sym, ActsAsTenant.current_tenant.send(pkey)
+              m.send "#{fkey}=".to_sym, ActsAsTenant.current_tenant.first.send(pkey)
             end
           end
         }, on: :create

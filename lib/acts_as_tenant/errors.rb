@@ -14,5 +14,8 @@ module ActsAsTenant
 
     class TenantIsImmutable < ActsAsTenant::Error
     end
+
+    class MultiplePolymorphicTenants < ActsAsTenant::Error
+    end
   end
 end
