@@ -11,28 +11,28 @@ describe SubdomainController, type: :controller do
   controller(SubdomainController) do
     def index
       # Exercise current_tenant helper method
-      render plain: current_tenant.name
+      render plain: current_tenant.first.name
     end
   end
 
   it "finds the correct tenant with a subdomain.example.com" do
     @request.host = "#{account.subdomain}.example.com"
     get :index
-    expect(ActsAsTenant.current_tenant).to eq account
+    expect(ActsAsTenant.current_tenant).to eq [account]
     expect(response.body).to eq(account.subdomain)
   end
 
   it "finds the correct tenant with a www.subdomain.example.com" do
     @request.host = "www.#{account.subdomain}.example.com"
     get :index
-    expect(ActsAsTenant.current_tenant).to eq account
+    expect(ActsAsTenant.current_tenant).to eq [account]
     expect(response.body).to eq(account.subdomain)
   end
 
   it "ignores case when finding tenant by subdomain" do
     @request.host = "#{account.subdomain.upcase}.example.com"
     get :index
-    expect(ActsAsTenant.current_tenant).to eq account
+    expect(ActsAsTenant.current_tenant).to eq [account]
   end
 
   context "overriding subdomain lookup" do
@@ -42,7 +42,7 @@ describe SubdomainController, type: :controller do
       controller.subdomain_lookup = :first
       @request.host = "#{account.subdomain}.another.example.com"
       get :index
-      expect(ActsAsTenant.current_tenant).to eq account
+      expect(ActsAsTenant.current_tenant).to eq [account]
       expect(response.body).to eq(account.subdomain)
     end
   end

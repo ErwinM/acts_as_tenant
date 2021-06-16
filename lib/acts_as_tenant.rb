@@ -57,11 +57,11 @@ module ActsAsTenant
   end
 
   def self.current_tenant=(tenant)
-    RequestStore.store[:current_tenant] = tenant
+    RequestStore.store[:current_tenant] = Array(tenant)
   end
 
   def self.current_tenant
-    RequestStore.store[:current_tenant] || test_tenant || default_tenant
+    RequestStore.store[:current_tenant].presence || Array(test_tenant).presence || Array(default_tenant)
   end
 
   def self.unscoped=(unscoped)

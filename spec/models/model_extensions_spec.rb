@@ -5,7 +5,7 @@ describe ActsAsTenant do
 
   it "can set the current tenant" do
     ActsAsTenant.current_tenant = :foo
-    expect(ActsAsTenant.current_tenant).to eq(:foo)
+    expect(ActsAsTenant.current_tenant).to eq([:foo])
   end
 
   it "is_scoped_as_tenant should return the correct value when true" do
@@ -298,14 +298,14 @@ describe ActsAsTenant do
   describe "::with_tenant" do
     it "should set current_tenant to the specified tenant inside the block" do
       ActsAsTenant.with_tenant(account) do
-        expect(ActsAsTenant.current_tenant).to eq(account)
+        expect(ActsAsTenant.current_tenant).to eq([account])
       end
     end
 
     it "should reset current_tenant to the previous tenant once exiting the block" do
       ActsAsTenant.current_tenant = account
       ActsAsTenant.with_tenant(accounts(:bar)) {}
-      expect(ActsAsTenant.current_tenant).to eq(account)
+      expect(ActsAsTenant.current_tenant).to eq([account])
     end
 
     it "should return the value of the block" do
@@ -322,7 +322,7 @@ describe ActsAsTenant do
   describe "::without_tenant" do
     it "should set current_tenant to nil inside the block" do
       ActsAsTenant.without_tenant do
-        expect(ActsAsTenant.current_tenant).to be_nil
+        expect(ActsAsTenant.current_tenant).to eq []
       end
     end
 
@@ -330,7 +330,7 @@ describe ActsAsTenant do
       old_default_tenant = ActsAsTenant.default_tenant
       ActsAsTenant.default_tenant = Account.create!(name: "foo")
       ActsAsTenant.without_tenant do
-        expect(ActsAsTenant.current_tenant).to be_nil
+        expect(ActsAsTenant.current_tenant).to eq []
       end
     ensure
       ActsAsTenant.default_tenant = old_default_tenant
@@ -339,7 +339,7 @@ describe ActsAsTenant do
     it "should reset current_tenant to the previous tenant once exiting the block" do
       ActsAsTenant.current_tenant = account
       ActsAsTenant.without_tenant {}
-      expect(ActsAsTenant.current_tenant).to eq(account)
+      expect(ActsAsTenant.current_tenant).to eq([account])
     end
 
     it "should return the value of the block" do
@@ -381,33 +381,33 @@ describe ActsAsTenant do
 
     it "provides current_tenant" do
       ActsAsTenant.default_tenant = account
-      expect(ActsAsTenant.current_tenant).to eq(account)
+      expect(ActsAsTenant.current_tenant).to eq([account])
     end
 
     it "can be overridden by assignment" do
       ActsAsTenant.default_tenant = account
       ActsAsTenant.current_tenant = accounts(:bar)
-      expect(ActsAsTenant.current_tenant).to eq(accounts(:bar))
+      expect(ActsAsTenant.current_tenant).to eq([accounts(:bar)])
     end
 
     it "can be overridden by with_tenant" do
       ActsAsTenant.default_tenant = account
       ActsAsTenant.with_tenant accounts(:bar) do
-        expect(ActsAsTenant.current_tenant).to eq(accounts(:bar))
+        expect(ActsAsTenant.current_tenant).to eq([accounts(:bar)])
       end
-      expect(ActsAsTenant.current_tenant).to eq(account)
+      expect(ActsAsTenant.current_tenant).to eq([account])
     end
 
     it "doesn't override existing current_tenant" do
       ActsAsTenant.current_tenant = accounts(:bar)
       ActsAsTenant.default_tenant = account
-      expect(ActsAsTenant.current_tenant).to eq(accounts(:bar))
+      expect(ActsAsTenant.current_tenant).to eq([accounts(:bar)])
     end
 
     it "survives request resets" do
       ActsAsTenant.default_tenant = account
       RequestStore.clear!
-      expect(ActsAsTenant.current_tenant).to eq(account)
+      expect(ActsAsTenant.current_tenant).to eq([account])
     end
   end
 end
