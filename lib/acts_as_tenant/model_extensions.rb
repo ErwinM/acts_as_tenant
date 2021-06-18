@@ -5,6 +5,7 @@ module ActsAsTenant
     class_methods do
       def acts_as_tenant(tenant = :account, **options)
         ActsAsTenant.set_tenant_klass(tenant)
+        ActsAsTenant.mutable_tenant!(false)
 
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
 
@@ -72,13 +73,13 @@ module ActsAsTenant
         to_include = Module.new {
           define_method "#{fkey}=" do |integer|
             write_attribute(fkey.to_s, integer)
-            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil?
+            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil? && !ActsAsTenant.mutable_tenant?
             integer
           end
 
           define_method "#{ActsAsTenant.tenant_klass}=" do |model|
             super(model)
-            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil?
+            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil? && !ActsAsTenant.mutable_tenant?
             model
           end
         }
