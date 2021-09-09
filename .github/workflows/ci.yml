@@ -3,13 +3,15 @@ name: Tests
 on:
   pull_request:
     branches:
-      - '*'
+      - "*"
   push:
     branches:
       - master
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    name: ruby-${{ matrix.ruby }} ${{ matrix.gemfile }}
     strategy:
       matrix:
         ruby: [ '2.6', '2.7', '3.0']

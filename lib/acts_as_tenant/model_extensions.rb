@@ -93,34 +93,36 @@ module ActsAsTenant
 
       def validates_uniqueness_to_tenant(fields, args = {})
         raise ActsAsTenant::Errors::ModelNotScopedByTenant unless respond_to?(:scoped_by_tenant?)
+
         fkey = reflect_on_association(ActsAsTenant.tenant_klass).foreign_key
-        # tenant_id = lambda { "#{ActsAsTenant.fkey}"}.call
-        args[:scope] = if args[:scope]
+
+        validation_args = args.clone
+        validation_args[:scope] = if args[:scope]
           Array(args[:scope]) << fkey
         else
           fkey
         end
 
-        validates_uniqueness_of(fields, args)
+        # validating within tenant scope
+        validates_uniqueness_of(fields, validation_args)
 
         if ActsAsTenant.models_with_global_records.include?(self)
-          validate do |instance|
-            Array(fields).each do |field|
-              if instance.new_record?
-                unless self.class.where(fkey.to_sym => [nil, instance[fkey]],
-                                        field.to_sym => instance[field]).empty?
-                  errors.add(field, "has already been taken")
-                end
-              else
-                unless self.class.where(fkey.to_sym => [nil, instance[fkey]],
-                                        field.to_sym => instance[field])
-                    .where.not(id: instance.id).empty?
-                  errors.add(field, "has already been taken")
-                end
+          arg_if = args.delete(:if)
+          arg_condition = args.delete(:conditions)
 
-              end
-            end
-          end
+          # if tenant is not set (instance is global) - validating globally
+          global_validation_args = args.merge(
+            if: ->(instance) { instance[fkey].blank? && (arg_if.blank? || arg_if.call(instance)) }
+          )
+          validates_uniqueness_of(fields, global_validation_args)
+
+          # if tenant is set (instance is not global) and records can be global - validating within records with blank tenant
+          blank_tenant_validation_args = args.merge({
+            conditions: -> { arg_condition.blank? ? where(fkey => nil) : arg_condition.call.where(fkey => nil) },
+            if: ->(instance) { instance[fkey].present? && (arg_if.blank? || arg_if.call(instance)) }
+          })
+
+          validates_uniqueness_of(fields, blank_tenant_validation_args)
         end
       end
     end
