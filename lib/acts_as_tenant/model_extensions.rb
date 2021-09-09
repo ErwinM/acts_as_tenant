@@ -28,7 +28,7 @@ module ActsAsTenant
             query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
             where(query_criteria)
           else
-            ActiveRecord::VERSION::MAJOR < 4 ? scoped : all
+            all
           end
         }
 
@@ -53,14 +53,13 @@ module ActsAsTenant
 
         reflect_on_all_associations(:belongs_to).each do |a|
           unless a == reflect_on_association(tenant) || polymorphic_foreign_keys.include?(a.foreign_key)
-            association_class = a.options[:class_name].nil? ? a.name.to_s.classify.constantize : a.options[:class_name].constantize
             validates_each a.foreign_key.to_sym do |record, attr, value|
               primary_key = if a.respond_to?(:active_record_primary_key)
                 a.active_record_primary_key
               else
                 a.primary_key
               end.to_sym
-              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || association_class.where(primary_key => value).any?
+              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || a.klass.where(primary_key => value).any?
             end
           end
         end
