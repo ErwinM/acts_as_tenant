@@ -1,6 +1,11 @@
 Unreleased
 ----------
 
+0.5.1
+-----
+
+* Use `klass` from Rails association instead of our own custom lookup - @bramjetten
+
 0.5.0
 -----
 

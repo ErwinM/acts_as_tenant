@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    acts_as_tenant (0.5.0)
+    acts_as_tenant (0.5.1)
       rails (>= 5.2)
       request_store (>= 1.0.5)
 
@@ -79,10 +79,6 @@ GEM
     nio4r (2.5.8)
     nokogiri (1.12.4)
       mini_portile2 (~> 2.6.1)
-      racc (~> 1.4)
-    nokogiri (1.12.4-x86_64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.12.4-x86_64-linux)
       racc (~> 1.4)
     parallel (1.20.1)
     parser (3.0.2.0)
