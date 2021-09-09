@@ -3,6 +3,6 @@
 source "https://rubygems.org"
 
 gem "byebug", group: [:development, :test]
-gem "rails", "~> 5.2.0"
+gem "rails", "~> 5.2", ">= 5.2.6"
 
 gemspec path: "../"
