@@ -101,7 +101,7 @@ Setting the `current_tenant` yourself, requires you to declare `set_current_tena
 
 If you are setting the tenant in a specific controller (except `application_controller`), it should to be included **AT THE TOP** of the file.
 
-```
+```ruby
 class MembersController < ActionController::Base
   set_current_tenant_through_filter
   before_action :set_tenant
@@ -228,7 +228,7 @@ belongs_to options
 `acts_as_tenant :account` includes the belongs_to relationship. 
 So when using acts_as_tenant on a model, do not add `belongs_to :account` alongside `acts_as_tenant :account`:
 
-```
+```ruby
 class User < ActiveRecord::Base
   acts_as_tenant(:account) # YES
   belongs_to :account # REDUNDANT
