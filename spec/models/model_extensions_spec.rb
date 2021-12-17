@@ -31,6 +31,12 @@ describe ActsAsTenant do
     expect { project.account_id = account.id.to_s }.not_to raise_error
   end
 
+  it "setting tenant_id to nil should throw error" do
+    project = account.projects.create!(name: "bar")
+    expect(project.account_id).not_to be_nil
+    expect { project.account_id = nil }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
+  end
+
   it "tenant_id should be mutable, if not already set" do
     project = projects(:without_account)
     expect(project.account_id).to be_nil
