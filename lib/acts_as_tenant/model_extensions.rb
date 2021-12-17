@@ -82,7 +82,7 @@ module ActsAsTenant
           end
 
           define_method "tenant_modified?" do
-            (send("will_save_change_to_#{fkey}?") || send("saved_change_to_#{fkey}?")) && persisted? && !(send("#{fkey}_in_database").nil? || send("#{fkey}_before_last_save").nil?)
+            send("will_save_change_to_#{fkey}?") && persisted? && !send("#{fkey}_in_database").nil?
           end
         }
         include to_include
