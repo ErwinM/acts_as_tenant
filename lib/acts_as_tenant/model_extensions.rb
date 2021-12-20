@@ -71,14 +71,18 @@ module ActsAsTenant
         to_include = Module.new {
           define_method "#{fkey}=" do |integer|
             write_attribute(fkey.to_s, integer)
-            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil?
+            raise ActsAsTenant::Errors::TenantIsImmutable if tenant_modified?
             integer
           end
 
           define_method "#{ActsAsTenant.tenant_klass}=" do |model|
             super(model)
-            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil?
+            raise ActsAsTenant::Errors::TenantIsImmutable if tenant_modified?
             model
+          end
+
+          define_method "tenant_modified?" do
+            will_save_change_to_attribute?(fkey) && persisted? && attribute_in_database(fkey).present?
           end
         }
         include to_include
