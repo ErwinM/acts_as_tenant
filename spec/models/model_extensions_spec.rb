@@ -33,7 +33,6 @@ describe ActsAsTenant do
 
   it "setting tenant_id to nil should throw error" do
     project = account.projects.create!(name: "bar")
-    expect(project.account_id).not_to be_nil
     expect { project.account_id = nil }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
   end
 
