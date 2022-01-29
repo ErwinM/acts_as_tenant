@@ -16,7 +16,7 @@ module ActsAsTenant
         belongs_to tenant, **valid_options
 
         default_scope lambda {
-          if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
+          if ActsAsTenant.should_require_tenant? && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
             raise ActsAsTenant::Errors::NoTenantSet
           end
 
