@@ -111,7 +111,7 @@ module ActsAsTenant
   end
 
   def self.should_require_tenant?
-    if ActsAsTenant.configuration.require_tenant.respond_to?(:call)
+    if configuration.require_tenant.respond_to?(:call)
       ActsAsTenant.configuration.require_tenant.call
     else
       !!ActsAsTenant.configuration.require_tenant
