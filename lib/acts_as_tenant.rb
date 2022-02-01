@@ -109,6 +109,14 @@ module ActsAsTenant
     self.current_tenant = old_tenant
     self.unscoped = old_unscoped
   end
+
+  def self.should_require_tenant?
+    if configuration.require_tenant.respond_to?(:call)
+      !!configuration.require_tenant.call
+    else
+      !!configuration.require_tenant
+    end
+  end
 end
 
 ActiveSupport.on_load(:active_record) do |base|

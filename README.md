@@ -25,7 +25,7 @@ Row-level multitenancy  each model must have a tenant ID column on it. This make
 
 Schema multitenancy uses database schemas to handle multitenancy. For this approach, your database has multiple schemas and each schema contains your database tables. Schemas require migrations to be run against each tenant and generally makes it harder to scale as you add more tenants. The Apartment gem uses schema multitenancy.
 
-#### 🎬 Walkthrough 
+#### 🎬 Walkthrough
 
 Want to see how it works? Check out [the ActsAsTenant walkthrough video](https://www.youtube.com/watch?v=BIyxM9f8Jus):
 
@@ -223,9 +223,19 @@ end
 
 * `config.require_tenant` when set to true will raise an ActsAsTenant::NoTenant error whenever a query is made without a tenant set.
 
+`config.require_tenant` can also be assigned a lambda that is evaluated at run time. For example:
+
+```ruby
+ActsAsTenant.configure do |config|
+  config.require_tenant = lambda { !current_user.admin? }
+end
+```
+
+`ActsAsTenant.should_require_tenant?` is used to determine if a tenant is required in the current context, either by evaluating the lambda provided, or by returning the boolean value assigned to `config.require_tenant`.
+
 belongs_to options
 ---------------------
-`acts_as_tenant :account` includes the belongs_to relationship. 
+`acts_as_tenant :account` includes the belongs_to relationship.
 So when using acts_as_tenant on a model, do not add `belongs_to :account` alongside `acts_as_tenant :account`:
 
 ```ruby
