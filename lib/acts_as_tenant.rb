@@ -112,9 +112,9 @@ module ActsAsTenant
 
   def self.should_require_tenant?
     if configuration.require_tenant.respond_to?(:call)
-      ActsAsTenant.configuration.require_tenant.call
+      configuration.require_tenant.call
     else
-      !!ActsAsTenant.configuration.require_tenant
+      !!configuration.require_tenant
     end
   end
 end
