@@ -1,6 +1,8 @@
 Unreleased
 ----------
 
+* Allow callable object (lambda, proc, block, etc) for `require_tenant` - @cmer
+
 0.5.1
 -----
 
