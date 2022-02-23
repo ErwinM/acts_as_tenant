@@ -104,6 +104,25 @@ describe ActsAsTenant do
     end
   end
 
+  describe "acts_as_tenant :through" do
+    let(:account) { accounts(:abc) }
+
+    it "should scope User.all to the current tenant if set" do
+      ActsAsTenant.current_tenant = account
+      expect(User.count).to eq(account.users.count)
+      expect(User.all).to eq(account.users)
+    end
+
+    it "should return all users when no current tenant is set" do
+      expect(User.count).to eq(3)
+    end
+
+    it "should allow unscoping" do
+      ActsAsTenant.current_tenant = account
+      expect(User.unscoped.count).to be > account.users.count
+    end
+  end
+
   describe "A tenant model with global records" do
     before do
       ActsAsTenant.current_tenant = account

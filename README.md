@@ -210,6 +210,28 @@ You can also explicitly specifiy a primary_key for AaT to use should the key dif
 acts_as_tenant(:account, :primary_key => 'primaryID') # by default AaT expects id
 ```
 
+
+### Has and belongs to many ###
+
+You can scope a model that is part of a HABTM relationship by using the `through` option.
+
+```ruby
+class Organisation < ActiveRecord::Base
+  has_many :organisations_users
+  has_many :users, through: :organisations_users
+end
+
+class User < ActiveRecord::Base
+  has_many :organisations_users
+  acts_as_tenant :organisation, through: :organisations_users
+end
+
+class OrganisationsUser < ActiveRecord::Base
+  belongs_to :user
+  acts_as_tenant :organisation
+end
+```
+
 Configuration options
 ---------------------
 An initializer can be created to control (currently one) option in ActsAsTenant. Defaults
