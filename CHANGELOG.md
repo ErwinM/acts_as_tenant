@@ -1,6 +1,7 @@
 Unreleased
 ----------
 
+* Add `acts_as_tenant through:` option for HABTM - @scarhand
 * Allow callable object (lambda, proc, block, etc) for `require_tenant` - @cmer
 
 0.5.1
