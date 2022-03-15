@@ -81,6 +81,18 @@ describe ActsAsTenant::TestTenantMiddleware do
         expect(subject.status).to eq 200
         expect(ActsAsTenant.current_tenant).to eq account2
       end
+
+      it "does not leak test_tenant into current_tenant when using with_tenant before request" do
+        ActsAsTenant.with_tenant(account1) {}
+        expect(TestReceiver).to receive(:assert_current_id).with(nil)
+        expect(subject.status).to eq 200
+      end
+
+      it "does not leak test_tenant into current_tenant when using without_tenant before request" do
+        ActsAsTenant.without_tenant {}
+        expect(TestReceiver).to receive(:assert_current_id).with(nil)
+        expect(subject.status).to eq 200
+      end
     end
   end
 end
