@@ -56,11 +56,19 @@ module ActsAsTenant
   end
 
   def self.current_tenant=(tenant)
-    RequestStore.store[:current_tenant] = tenant
+    RequestStore.store[:current_tenant] = if multi_tenanted?
+      Array(tenant)
+    else
+      tenant
+    end
   end
 
   def self.current_tenant
-    RequestStore.store[:current_tenant] || test_tenant || default_tenant
+    if multi_tenanted?
+      RequestStore.store[:current_tenant].presence || Array(test_tenant).presence || Array(default_tenant)
+    else
+      RequestStore.store[:current_tenant] || test_tenant || default_tenant
+    end
   end
 
   def self.test_tenant=(tenant)
@@ -123,6 +131,10 @@ module ActsAsTenant
     else
       !!configuration.require_tenant
     end
+  end
+
+  def self.multi_tenanted?
+    configuration.multi_tenanted
   end
 end
 

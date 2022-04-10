@@ -16,13 +16,17 @@ module ActsAsTenant
         belongs_to tenant, **valid_options
 
         default_scope lambda {
-          if ActsAsTenant.should_require_tenant? && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
+          if ActsAsTenant.should_require_tenant? && !ActsAsTenant.current_tenant.presence && !ActsAsTenant.unscoped?
             raise ActsAsTenant::Errors::NoTenantSet
           end
 
-          if ActsAsTenant.current_tenant
-            keys = [ActsAsTenant.current_tenant.send(pkey)].compact
+          if ActsAsTenant.current_tenant.presence
+            keys = ActsAsTenant.multi_tenanted? ? ActsAsTenant.current_tenant.map { |e| e.send(pkey) }.compact : [ActsAsTenant.current_tenant.send(pkey)].compact
             keys.push(nil) if options[:has_global_records]
+
+            if options[:polymorphic] && ActsAsTenant.multi_tenanted?
+              raise ActsAsTenant::Errors::MultiplePolymorphicTenants unless ActsAsTenant.current_tenant.one?
+            end
 
             if options[:through]
               query_criteria = {options[:through] => {fkey.to_sym => keys}}
@@ -43,7 +47,7 @@ module ActsAsTenant
         # - validate that associations belong to the tenant, currently only for belongs_to
         #
         before_validation proc { |m|
-          if ActsAsTenant.current_tenant
+          if !ActsAsTenant.multi_tenanted? && ActsAsTenant.current_tenant
             if options[:polymorphic]
               m.send("#{fkey}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send(fkey.to_s).nil?
               m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send(polymorphic_type.to_s).nil?
