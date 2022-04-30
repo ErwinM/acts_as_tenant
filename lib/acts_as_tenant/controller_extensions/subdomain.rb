@@ -11,6 +11,8 @@ module ActsAsTenant
       private
 
       def find_tenant_by_subdomain
+        raise if ActsAsTenant.multi_tenanted?
+
         if (subdomain = request.subdomains.send(subdomain_lookup))
           ActsAsTenant.current_tenant = tenant_class.where(tenant_column => subdomain.downcase).first
         end

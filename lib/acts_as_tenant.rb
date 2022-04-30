@@ -56,11 +56,16 @@ module ActsAsTenant
   end
 
   def self.current_tenant=(tenant)
-    RequestStore.store[:current_tenant] = if multi_tenanted?
-      Array(tenant)
+    if multi_tenanted?
+      RequestStore.store[:current_tenant] = Array(tenant)
     else
-      tenant
+      self.current_master_tenant = tenant
+      RequestStore.store[:current_tenant] = tenant
     end
+  end
+
+  def self.current_master_tenant=(tenant)
+    RequestStore.store[:current_master_tenant] = tenant
   end
 
   def self.current_tenant
@@ -69,6 +74,10 @@ module ActsAsTenant
     else
       RequestStore.store[:current_tenant] || test_tenant || default_tenant
     end
+  end
+
+  def self.current_master_tenant
+    RequestStore.store[:current_master_tenant] || test_tenant || default_tenant
   end
 
   def self.test_tenant=(tenant)
@@ -95,17 +104,26 @@ module ActsAsTenant
     @default_tenant unless unscoped
   end
 
-  def self.with_tenant(tenant, &block)
+  def self.with_tenant(tenant, master_tenant = nil, &block)
     if block.nil?
       raise ArgumentError, "block required"
     end
 
+    if master_tenant.nil? && multi_tenanted?
+      raise ArgumentError, "master tenant required"
+    end
+
     old_tenant = current_tenant
+    old_master_tenant = current_master_tenant
     self.current_tenant = tenant
+    if multi_tenanted?
+      self.current_master_tenant = master_tenant
+    end
     value = block.call
     value
   ensure
     self.current_tenant = old_tenant
+    self.current_master_tenant = old_master_tenant
   end
 
   def self.without_tenant(&block)

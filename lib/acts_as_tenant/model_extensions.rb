@@ -24,17 +24,13 @@ module ActsAsTenant
             keys = ActsAsTenant.multi_tenanted? ? ActsAsTenant.current_tenant.map { |e| e.send(pkey) }.compact : [ActsAsTenant.current_tenant.send(pkey)].compact
             keys.push(nil) if options[:has_global_records]
 
-            if options[:polymorphic] && ActsAsTenant.multi_tenanted?
-              raise ActsAsTenant::Errors::MultiplePolymorphicTenants unless ActsAsTenant.current_tenant.one?
-            end
-
             if options[:through]
               query_criteria = {options[:through] => {fkey.to_sym => keys}}
-              query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
+              query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_master_tenant.class.to_s if options[:polymorphic]
               joins(options[:through]).where(query_criteria)
             else
               query_criteria = {fkey.to_sym => keys}
-              query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
+              query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_master_tenant.class.to_s if options[:polymorphic]
               where(query_criteria)
             end
           else
@@ -47,12 +43,12 @@ module ActsAsTenant
         # - validate that associations belong to the tenant, currently only for belongs_to
         #
         before_validation proc { |m|
-          if !ActsAsTenant.multi_tenanted? && ActsAsTenant.current_tenant
+          if ActsAsTenant.current_master_tenant
             if options[:polymorphic]
-              m.send("#{fkey}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send(fkey.to_s).nil?
-              m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_tenant.class.to_s) if m.send(polymorphic_type.to_s).nil?
+              m.send("#{fkey}=".to_sym, ActsAsTenant.current_master_tenant.class.to_s) if m.send(fkey.to_s).nil?
+              m.send("#{polymorphic_type}=".to_sym, ActsAsTenant.current_master_tenant.class.to_s) if m.send(polymorphic_type.to_s).nil?
             else
-              m.send "#{fkey}=".to_sym, ActsAsTenant.current_tenant.send(pkey)
+              m.send "#{fkey}=".to_sym, ActsAsTenant.current_master_tenant.send(pkey)
             end
           end
         }, on: :create
