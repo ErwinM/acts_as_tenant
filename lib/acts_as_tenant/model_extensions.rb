@@ -20,6 +20,10 @@ module ActsAsTenant
             raise ActsAsTenant::Errors::NoTenantSet
           end
 
+          if ActsAsTenant.multi_tenanted? && options[:polymorphic]
+            raise ActsAsTenant::Errors::MultiplePolymorphicTenants
+          end
+
           if ActsAsTenant.current_tenant.presence
             keys = ActsAsTenant.multi_tenanted? ? ActsAsTenant.current_tenant.map { |e| e.send(pkey) }.compact : [ActsAsTenant.current_tenant.send(pkey)].compact
             keys.push(nil) if options[:has_global_records]
@@ -37,6 +41,34 @@ module ActsAsTenant
             all
           end
         }
+
+        if ActsAsTenant.multi_tenanted?
+          scope :master_tenanted, lambda {
+            if ActsAsTenant.should_require_tenant? && !ActsAsTenant.current_tenant.presence && !ActsAsTenant.unscoped?
+              raise ActsAsTenant::Errors::NoTenantSet
+            end
+
+            if ActsAsTenant.multi_tenanted? && options[:polymorphic]
+              raise ActsAsTenant::Errors::MultiplePolymorphicTenants
+            end
+
+            if ActsAsTenant.current_tenant.presence
+              key = ActsAsTenant.current_master_tenant.send(pkey)
+
+              if options[:through]
+                query_criteria = {options[:through] => {fkey.to_sym => key}}
+                query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_master_tenant.class.to_s if options[:polymorphic]
+                joins(options[:through]).where(query_criteria)
+              else
+                query_criteria = {fkey.to_sym => key}
+                query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_master_tenant.class.to_s if options[:polymorphic]
+                where(query_criteria)
+              end
+            else
+              all
+            end
+          }
+        end
 
         # Add the following validations to the receiving model:
         # - new instances should have the tenant set
