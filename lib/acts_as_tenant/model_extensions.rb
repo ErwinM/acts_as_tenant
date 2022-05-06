@@ -3,7 +3,7 @@ module ActsAsTenant
     extend ActiveSupport::Concern
 
     class_methods do
-      def acts_as_tenant(tenant = :account, **options)
+      def acts_as_tenant(tenant = :account, scope = nil, **options)
         ActsAsTenant.set_tenant_klass(tenant)
 
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
@@ -13,7 +13,7 @@ module ActsAsTenant
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
         pkey = valid_options[:primary_key] || ActsAsTenant.pkey
         polymorphic_type = valid_options[:foreign_type] || ActsAsTenant.polymorphic_type
-        belongs_to tenant, **valid_options
+        belongs_to tenant, scope, **valid_options
 
         default_scope lambda {
           if ActsAsTenant.should_require_tenant? && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
@@ -65,7 +65,8 @@ module ActsAsTenant
               else
                 a.primary_key
               end.to_sym
-              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || a.klass.where(primary_key => value).any?
+              scope = a.scope || ->(relation) { relation }
+              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || a.klass.class_eval(&scope).where(primary_key => value).any?
             end
           end
         end

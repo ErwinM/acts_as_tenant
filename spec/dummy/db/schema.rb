@@ -15,12 +15,14 @@ ActiveRecord::Schema.define(version: 1) do
     t.column :name, :string
     t.column :subdomain, :string
     t.column :domain, :string
+    t.column :deleted_at, :timestamp
     t.column :projects_count, :integer, default: 0
   end
 
   create_table :projects, force: true do |t|
     t.column :name, :string
     t.column :account_id, :integer
+    t.column :deleted_at, :timestamp
   end
 
   create_table :managers, force: true do |t|

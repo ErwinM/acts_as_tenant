@@ -234,6 +234,21 @@ describe ActsAsTenant do
     expect(AliasedTask.create(name: "foo", project_alias: @project2).valid?).to eq(true)
   end
 
+  it "uses the scope passed to acts_as_tenant" do
+    account.update!(deleted_at: Time.now)
+    manager = Manager.create!(account_id: account.id)
+
+    expect(manager.valid?).to eq(true)
+    expect(manager.account).to eq(account)
+  end
+
+  it "uses the scope passed to belongs_to when validating" do
+    project = account.projects.create!(name: "foobar", deleted_at: Time.now)
+    manager = Manager.new(account: account, project: project)
+
+    expect(manager.valid?).to eq(true)
+  end
+
   describe "It should be possible to use associations with foreign_key from polymorphic" do
     it "tenanted objects have a polymorphic association" do
       ActsAsTenant.current_tenant = account
