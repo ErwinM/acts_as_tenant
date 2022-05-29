@@ -249,7 +249,11 @@ end
 
 ```ruby
 ActsAsTenant.configure do |config|
-  config.require_tenant = lambda { !current_user.admin? }
+  config.require_tenant = lambda do
+    if $request_env.present?
+      return false if $request_env["REQUEST_PATH"].start_with?("/admin/")
+    end
+  end
 end
 ```
 
