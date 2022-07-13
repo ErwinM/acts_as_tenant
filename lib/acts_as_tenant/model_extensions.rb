@@ -13,7 +13,12 @@ module ActsAsTenant
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
         pkey = valid_options[:primary_key] || ActsAsTenant.pkey
         polymorphic_type = valid_options[:foreign_type] || ActsAsTenant.polymorphic_type
-        belongs_to tenant, **valid_options
+        if options[:through]
+          valid_options[:through] = options[:through]
+          has_many tenant.to_s.pluralize.to_sym, **valid_options
+        else
+          belongs_to tenant, **valid_options
+        end
 
         default_scope lambda {
           if ActsAsTenant.should_require_tenant? && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
@@ -27,11 +32,22 @@ module ActsAsTenant
             if options[:through]
               query_criteria = {options[:through] => {fkey.to_sym => keys}}
               query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
-              joins(options[:through]).where(query_criteria)
+              where(query_criteria)
+                .then do |query|
+                  if options[:unscoped]
+                    query
+                      .or(where(options[:unscoped]))
+                      .left_joins(options[:through])
+                  else
+                    query.joins(options[:through])
+                  end
+                end
             else
               query_criteria = {fkey.to_sym => keys}
               query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
-              where(query_criteria)
+              where(query_criteria).then do |q|
+                options[:unscoped] ? q.or(where(options[:unscoped])) : q
+              end
             end
           else
             all
