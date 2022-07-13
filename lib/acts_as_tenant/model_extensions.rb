@@ -32,14 +32,14 @@ module ActsAsTenant
             if options[:through]
               query_criteria = {options[:through] => {fkey.to_sym => keys}}
               query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
-              where(query_criteria)
-                .then do |query|
+              joins(options[:through])
+                .where(query_criteria)
+                .ids
+                .then do |ids|
                   if options[:unscoped]
-                    query
-                      .or(where(options[:unscoped]))
-                      .left_joins(options[:through])
+                    where(id: ids).or(where(options[:unscoped]))
                   else
-                    query.joins(options[:through])
+                    where(id: ids)
                   end
                 end
             else
