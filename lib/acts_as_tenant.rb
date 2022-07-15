@@ -106,14 +106,17 @@ module ActsAsTenant
     end
 
     old_tenant = current_tenant
+    old_test_tenant = test_tenant
     old_unscoped = unscoped
 
     self.current_tenant = nil
+    self.test_tenant = nil
     self.unscoped = true
     value = block.call
     value
   ensure
     self.current_tenant = old_tenant
+    self.test_tenant = old_test_tenant
     self.unscoped = old_unscoped
   end
 
