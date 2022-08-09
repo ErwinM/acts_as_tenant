@@ -366,6 +366,29 @@ describe ActsAsTenant do
       expect(ActsAsTenant.current_tenant).to eq(account)
     end
 
+    it "should set test_tenant to nil inside the block" do
+      ActsAsTenant.test_tenant = account
+      ActsAsTenant.without_tenant do
+        expect(ActsAsTenant.test_tenant).to be_nil
+      end
+    end
+
+    it "should set test_tenant to nil even if default_tenant is set" do
+      old_default_tenant = ActsAsTenant.default_tenant
+      ActsAsTenant.default_tenant = Account.create!(name: "foo")
+      ActsAsTenant.without_tenant do
+        expect(ActsAsTenant.test_tenant).to be_nil
+      end
+    ensure
+      ActsAsTenant.default_tenant = old_default_tenant
+    end
+
+    it "should reset test_tenant to the previous tenant once exiting the block" do
+      ActsAsTenant.test_tenant = account
+      ActsAsTenant.without_tenant {}
+      expect(ActsAsTenant.test_tenant).to eq(account)
+    end
+
     it "should return the value of the block" do
       value = ActsAsTenant.without_tenant { "something" }
       expect(value).to eq "something"
