@@ -105,9 +105,9 @@ module ActsAsTenant
 
         fkey = reflect_on_association(ActsAsTenant.tenant_klass).foreign_key
 
-        validation_args = args.clone
+        validation_args = args.deep_dup
         validation_args[:scope] = if args[:scope]
-          Array(args[:scope]) << fkey
+          Array(args[:scope]) + [fkey]
         else
           fkey
         end
