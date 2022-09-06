@@ -87,7 +87,7 @@ module ActsAsTenant
             model
           end
 
-          define_method "tenant_modified?" do
+          define_method :tenant_modified? do
             will_save_change_to_attribute?(fkey) && persisted? && attribute_in_database(fkey).present?
           end
         }
