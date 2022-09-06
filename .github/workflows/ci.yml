@@ -28,6 +28,8 @@ jobs:
             gemfile: rails_5
           # Rails 7 requires Ruby 2.7 or higher
           - ruby: '2.6'
+            gemfile: rails_7
+          - ruby: '2.6'
             gemfile: rails_master
     env:
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile
