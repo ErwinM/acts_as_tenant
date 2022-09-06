@@ -13,3 +13,10 @@ gemspec
 
 # To use a debugger
 gem "byebug", group: [:development, :test]
+
+# Ruby 3.1+ no longer includes these by default
+group :development, :test do
+  gem "net-imap"
+  gem "net-pop"
+  gem "net-smtp"
+end

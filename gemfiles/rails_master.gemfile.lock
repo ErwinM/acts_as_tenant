@@ -234,6 +234,9 @@ DEPENDENCIES
   acts_as_tenant!
   appraisal
   byebug
+  net-imap
+  net-pop
+  net-smtp
   rails!
   rspec (>= 3.0)
   rspec-rails

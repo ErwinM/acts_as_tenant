@@ -5,4 +5,10 @@ source "https://rubygems.org"
 gem "byebug", group: [:development, :test]
 gem "rails", "~> 6.0", ">= 6.0.4.1"
 
+group :development, :test do
+  gem "net-imap"
+  gem "net-pop"
+  gem "net-smtp"
+end
+
 gemspec path: "../"
