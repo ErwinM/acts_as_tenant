@@ -1,6 +1,8 @@
 Unreleased
 ----------
 
+* `test_tenant` uses current thread for parallel testing - @mikecmpbll
+* Reset `test_tenant` in `with_tenant` - @hakimaryan
 * Add `acts_as_tenant through:` option for HABTM - @scarhand
 * Allow callable object (lambda, proc, block, etc) for `require_tenant` - @cmer
 
