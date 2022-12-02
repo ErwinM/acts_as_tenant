@@ -1,7 +1,9 @@
 module ActsAsTenant::Sidekiq
+  SIDEKIQ_VERSION = Gem::Version.new(Sidekiq::VERSION)
+
   # Get the current tenant and store in the message to be sent to Sidekiq.
   class Client
-    include Sidekiq::ClientMiddleware if Sidekiq::MAJOR >= 7
+    include Sidekiq::ClientMiddleware if SIDEKIQ_VERSION >= 7
 
     def call(worker_class, msg, queue, redis_pool)
       if ActsAsTenant.current_tenant.present?
@@ -18,7 +20,7 @@ module ActsAsTenant::Sidekiq
 
   # Pull the tenant out and run the current thread with it.
   class Server
-    include Sidekiq::ServerMiddleware if Sidekiq::MAJOR >= 7
+    include Sidekiq::ServerMiddleware if SIDEKIQ_VERSION >= 7
 
     def call(worker_class, msg, queue)
       if msg.has_key?("acts_as_tenant")
