@@ -17,7 +17,7 @@ end
 appraise "rails-main" do
   gem "rails", github: "rails/rails", branch: :main
   %w[rspec rspec-core rspec-expectations rspec-mocks rspec-support rspec-rails].each do |lib|
-    gem lib, :git => "https://github.com/rspec/#{lib}.git", branch: 'main'
+    gem lib, git: "https://github.com/rspec/#{lib}.git", branch: "main"
   end
 end
 
