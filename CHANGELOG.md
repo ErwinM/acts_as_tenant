@@ -1,6 +1,8 @@
 Unreleased
 ----------
 
+* Add support for Sidekiq 7 - @excid3
+
 0.5.2
 -----
 
