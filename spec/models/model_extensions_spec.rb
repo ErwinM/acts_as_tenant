@@ -164,6 +164,14 @@ describe ActsAsTenant do
       it "is invalid if tenant record conflicts with global record" do
         expect(GlobalProject.new(name: "global").valid?).to be(false)
       end
+
+      it "is invalid if tenant record conflicts with global record with scope" do
+        duplicate = GlobalProjectWithScope.new(
+          name: "global scope",
+          user_defined_scope: "abc"
+        )
+        expect(duplicate.valid?).to be(false)
+      end
     end
 
     context "should validate global records against global & tenant records" do
