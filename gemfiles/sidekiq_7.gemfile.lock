@@ -110,6 +110,8 @@ GEM
     nio4r (2.5.8)
     nokogiri (1.13.9-arm64-darwin)
       racc (~> 1.4)
+    nokogiri (1.13.9-x86_64-linux)
+      racc (~> 1.4)
     parallel (1.22.1)
     parser (3.1.3.0)
       ast (~> 2.4.1)
@@ -194,6 +196,7 @@ GEM
       rack (>= 2.2.4)
       redis-client (>= 0.11.0)
     sqlite3 (1.5.4-arm64-darwin)
+    sqlite3 (1.5.4-x86_64-linux)
     standard (1.18.1)
       rubocop (= 1.39.0)
       rubocop-performance (= 1.15.1)
@@ -209,6 +212,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-22
+  x86_64-linux
 
 DEPENDENCIES
   acts_as_tenant!
