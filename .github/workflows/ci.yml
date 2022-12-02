@@ -21,6 +21,7 @@ jobs:
           - rails_6_1
           - rails_7
           - rails_master
+          - sidekiq_7
         exclude:
           - ruby: '3.1'
             gemfile: rails_5
@@ -31,6 +32,8 @@ jobs:
             gemfile: rails_7
           - ruby: '2.6'
             gemfile: rails_master
+          - ruby: '2.6'
+            gemfile: sidekiq_7
     env:
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile
       BUNDLE_PATH_RELATIVE_TO_CWD: true

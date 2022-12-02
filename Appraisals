@@ -17,3 +17,7 @@ end
 appraise "rails-master" do
   gem "rails", github: "rails/rails", branch: :main
 end
+
+appraise "sidekiq-7" do
+  gem "sidekiq", "~> 7.0"
+end

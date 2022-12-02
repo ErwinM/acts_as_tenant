@@ -1,6 +1,8 @@
 module ActsAsTenant::Sidekiq
   # Get the current tenant and store in the message to be sent to Sidekiq.
   class Client
+    include Sidekiq::ClientMiddleware if Sidekiq::MAJOR >= 7
+
     def call(worker_class, msg, queue, redis_pool)
       if ActsAsTenant.current_tenant.present?
         msg["acts_as_tenant"] ||=
@@ -16,6 +18,8 @@ module ActsAsTenant::Sidekiq
 
   # Pull the tenant out and run the current thread with it.
   class Server
+    include Sidekiq::ServerMiddleware if Sidekiq::MAJOR >= 7
+
     def call(worker_class, msg, queue)
       if msg.has_key?("acts_as_tenant")
         account = msg["acts_as_tenant"]["class"].constantize.find msg["acts_as_tenant"]["id"]
