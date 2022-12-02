@@ -4,6 +4,12 @@ source "https://rubygems.org"
 
 gem "byebug", group: [:development, :test]
 gem "rails", branch: :main, git: "https://github.com/rails/rails.git"
+gem "rspec", git: "https://github.com/rspec/rspec.git", branch: "main"
+gem "rspec-core", git: "https://github.com/rspec/rspec-core.git", branch: "main"
+gem "rspec-expectations", git: "https://github.com/rspec/rspec-expectations.git", branch: "main"
+gem "rspec-mocks", git: "https://github.com/rspec/rspec-mocks.git", branch: "main"
+gem "rspec-support", git: "https://github.com/rspec/rspec-support.git", branch: "main"
+gem "rspec-rails", git: "https://github.com/rspec/rspec-rails.git", branch: "main"
 
 group :development, :test do
   gem "net-imap"
