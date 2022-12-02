@@ -1,7 +1,11 @@
 Unreleased
 ----------
 
+0.5.3
+-----
+
 * Add support for Sidekiq 7 - @excid3
+* Fix global record validations with existing scope #294 - @mikecmpbll
 
 0.5.2
 -----

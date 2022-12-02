@@ -152,7 +152,7 @@ GIT
 PATH
   remote: ..
   specs:
-    acts_as_tenant (0.5.2)
+    acts_as_tenant (0.5.3)
       rails (>= 5.2)
       request_store (>= 1.0.5)
 
