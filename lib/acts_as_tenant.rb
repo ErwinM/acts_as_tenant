@@ -135,7 +135,7 @@ module ActsAsTenant
   ensure
     ActsAsTenant.mutable_tenant!(false)
   end
-  
+
   def self.should_require_tenant?
     if configuration.require_tenant.respond_to?(:call)
       !!configuration.require_tenant.call
