@@ -1,6 +1,25 @@
 Unreleased
 ----------
 
+0.5.3
+-----
+
+* Add support for Sidekiq 7 - @excid3
+* Fix global record validations with existing scope #294 - @mikecmpbll
+
+0.5.2
+-----
+
+* `test_tenant` uses current thread for parallel testing - @mikecmpbll
+* Reset `test_tenant` in `with_tenant` - @hakimaryan
+* Add `acts_as_tenant through:` option for HABTM - @scarhand
+* Allow callable object (lambda, proc, block, etc) for `require_tenant` - @cmer
+
+0.5.1
+-----
+
+* Use `klass` from Rails association instead of our own custom lookup - @bramjetten
+
 0.5.0
 -----
 

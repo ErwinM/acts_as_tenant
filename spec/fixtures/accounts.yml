@@ -8,3 +8,11 @@ with_domain:
   name: domain
   subdomain: domain
   domain: domain.com
+
+abc:
+  name: abc
+  users: john, bob # habtm relation
+
+def:
+  name: def
+  users: john, alice # habtm relation

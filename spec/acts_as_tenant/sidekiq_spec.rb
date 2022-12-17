@@ -51,7 +51,11 @@ describe ActsAsTenant::Sidekiq do
   end
 
   it "includes ActsAsTenant client middleware" do
-    expect(Sidekiq.client_middleware.exists?(ActsAsTenant::Sidekiq::Client)).to eq(true)
+    if ActsAsTenant::Sidekiq::BaseMiddleware.sidekiq_7_and_up?
+      expect(Sidekiq.default_configuration.client_middleware.exists?(ActsAsTenant::Sidekiq::Client)).to eq(true)
+    else
+      expect(Sidekiq.client_middleware.exists?(ActsAsTenant::Sidekiq::Client)).to eq(true)
+    end
   end
 
   # unable to test server configuration

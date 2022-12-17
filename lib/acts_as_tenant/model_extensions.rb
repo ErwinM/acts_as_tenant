@@ -10,14 +10,14 @@ module ActsAsTenant
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
 
         # Create the association
-        valid_options = options.slice(:foreign_key, :class_name, :inverse_of, :optional, :primary_key, :counter_cache)
+        valid_options = options.slice(:foreign_key, :class_name, :inverse_of, :optional, :primary_key, :counter_cache, :polymorphic)
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
         pkey = valid_options[:primary_key] || ActsAsTenant.pkey
         polymorphic_type = valid_options[:foreign_type] || ActsAsTenant.polymorphic_type
         belongs_to tenant, **valid_options
 
         default_scope lambda {
-          if ActsAsTenant.configuration.require_tenant && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
+          if ActsAsTenant.should_require_tenant? && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
             raise ActsAsTenant::Errors::NoTenantSet
           end
 
@@ -25,11 +25,17 @@ module ActsAsTenant
             keys = [ActsAsTenant.current_tenant.send(pkey)].compact
             keys.push(nil) if options[:has_global_records]
 
-            query_criteria = {fkey.to_sym => keys}
-            query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
-            where(query_criteria)
+            if options[:through]
+              query_criteria = {options[:through] => {fkey.to_sym => keys}}
+              query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
+              joins(options[:through]).where(query_criteria)
+            else
+              query_criteria = {fkey.to_sym => keys}
+              query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
+              where(query_criteria)
+            end
           else
-            ActiveRecord::VERSION::MAJOR < 4 ? scoped : all
+            all
           end
         }
 
@@ -54,14 +60,13 @@ module ActsAsTenant
 
         reflect_on_all_associations(:belongs_to).each do |a|
           unless a == reflect_on_association(tenant) || polymorphic_foreign_keys.include?(a.foreign_key)
-            association_class = a.options[:class_name].nil? ? a.name.to_s.classify.constantize : a.options[:class_name].constantize
             validates_each a.foreign_key.to_sym do |record, attr, value|
               primary_key = if a.respond_to?(:active_record_primary_key)
                 a.active_record_primary_key
               else
                 a.primary_key
               end.to_sym
-              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || association_class.where(primary_key => value).any?
+              record.errors.add attr, "association is invalid [ActsAsTenant]" unless value.nil? || a.klass.where(primary_key => value).any?
             end
           end
         end
@@ -73,14 +78,18 @@ module ActsAsTenant
         to_include = Module.new {
           define_method "#{fkey}=" do |integer|
             write_attribute(fkey.to_s, integer)
-            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil? && !ActsAsTenant.mutable_tenant?
+            raise ActsAsTenant::Errors::TenantIsImmutable if tenant_modified?
             integer
           end
 
           define_method "#{ActsAsTenant.tenant_klass}=" do |model|
             super(model)
-            raise ActsAsTenant::Errors::TenantIsImmutable if send("#{fkey}_changed?") && persisted? && !send("#{fkey}_was").nil? && !ActsAsTenant.mutable_tenant?
+            raise ActsAsTenant::Errors::TenantIsImmutable if tenant_modified?
             model
+          end
+
+          define_method :tenant_modified? do
+            will_save_change_to_attribute?(fkey) && persisted? && attribute_in_database(fkey).present?
           end
         }
         include to_include
@@ -97,9 +106,9 @@ module ActsAsTenant
 
         fkey = reflect_on_association(ActsAsTenant.tenant_klass).foreign_key
 
-        validation_args = args.clone
+        validation_args = args.deep_dup
         validation_args[:scope] = if args[:scope]
-          Array(args[:scope]) << fkey
+          Array(args[:scope]) + [fkey]
         else
           fkey
         end

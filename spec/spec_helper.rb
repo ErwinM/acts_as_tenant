@@ -10,6 +10,7 @@ require "rspec/rails"
 RSpec.configure do |config|
   config.after(:each) do
     ActsAsTenant.current_tenant = nil
+    ActsAsTenant.test_tenant = nil
   end
 
   config.fixture_path = "spec/fixtures"

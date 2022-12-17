@@ -21,6 +21,7 @@ ActiveRecord::Schema.define(version: 1) do
   create_table :projects, force: true do |t|
     t.column :name, :string
     t.column :account_id, :integer
+    t.column :user_defined_scope, :string
   end
 
   create_table :managers, force: true do |t|
@@ -80,5 +81,15 @@ ActiveRecord::Schema.define(version: 1) do
     t.column :polymorphic_tenant_commentable_id, :integer
     t.column :polymorphic_tenant_commentable_type, :string
     t.column :account_id, :integer
+  end
+
+  create_table :users, force: true do |t|
+    t.column :name, :string
+  end
+
+  create_table :users_accounts, force: true do |t|
+    t.column :user_id, :integer
+    t.column :account_id, :integer
+    t.index [:user_id, :account_id], name: :index_users_accounts_on_user_id_and_account_id, unique: true
   end
 end

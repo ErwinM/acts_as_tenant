@@ -11,7 +11,6 @@ Gem::Specification.new do |spec|
   spec.description = "Integrates multi-tenancy into a Rails application in a convenient and out-of-your way manner"
 
   spec.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
-  spec.test_files = `git ls-files -- {test,spec,features}/*`.split("\n")
 
   spec.require_paths = ["lib"]
 

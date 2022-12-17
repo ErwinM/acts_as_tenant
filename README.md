@@ -25,7 +25,7 @@ Row-level multitenancy  each model must have a tenant ID column on it. This make
 
 Schema multitenancy uses database schemas to handle multitenancy. For this approach, your database has multiple schemas and each schema contains your database tables. Schemas require migrations to be run against each tenant and generally makes it harder to scale as you add more tenants. The Apartment gem uses schema multitenancy.
 
-#### 🎬 Walkthrough 
+#### 🎬 Walkthrough
 
 Want to see how it works? Check out [the ActsAsTenant walkthrough video](https://www.youtube.com/watch?v=BIyxM9f8Jus):
 
@@ -101,7 +101,7 @@ Setting the `current_tenant` yourself, requires you to declare `set_current_tena
 
 If you are setting the tenant in a specific controller (except `application_controller`), it should to be included **AT THE TOP** of the file.
 
-```
+```ruby
 class MembersController < ActionController::Base
   set_current_tenant_through_filter
   before_action :set_tenant
@@ -220,6 +220,28 @@ You can also explicitly specifiy a primary_key for AaT to use should the key dif
 acts_as_tenant(:account, :primary_key => 'primaryID') # by default AaT expects id
 ```
 
+
+### Has and belongs to many ###
+
+You can scope a model that is part of a HABTM relationship by using the `through` option.
+
+```ruby
+class Organisation < ActiveRecord::Base
+  has_many :organisations_users
+  has_many :users, through: :organisations_users
+end
+
+class User < ActiveRecord::Base
+  has_many :organisations_users
+  acts_as_tenant :organisation, through: :organisations_users
+end
+
+class OrganisationsUser < ActiveRecord::Base
+  belongs_to :user
+  acts_as_tenant :organisation
+end
+```
+
 Configuration options
 ---------------------
 An initializer can be created to control (currently one) option in ActsAsTenant. Defaults
@@ -233,12 +255,26 @@ end
 
 * `config.require_tenant` when set to true will raise an ActsAsTenant::NoTenant error whenever a query is made without a tenant set.
 
+`config.require_tenant` can also be assigned a lambda that is evaluated at run time. For example:
+
+```ruby
+ActsAsTenant.configure do |config|
+  config.require_tenant = lambda do
+    if $request_env.present?
+      return false if $request_env["REQUEST_PATH"].start_with?("/admin/")
+    end
+  end
+end
+```
+
+`ActsAsTenant.should_require_tenant?` is used to determine if a tenant is required in the current context, either by evaluating the lambda provided, or by returning the boolean value assigned to `config.require_tenant`.
+
 belongs_to options
 ---------------------
-`acts_as_tenant :account` includes the belongs_to relationship. 
+`acts_as_tenant :account` includes the belongs_to relationship.
 So when using acts_as_tenant on a model, do not add `belongs_to :account` alongside `acts_as_tenant :account`:
 
-```
+```ruby
 class User < ActiveRecord::Base
   acts_as_tenant(:account) # YES
   belongs_to :account # REDUNDANT
