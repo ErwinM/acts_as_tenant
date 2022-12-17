@@ -1,6 +1,11 @@
 Unreleased
 ----------
 
+0.6.0
+-----
+
+* Add `ActsAsTenant.with_mutable_tenant` for allowing tenants to be changed within a block #230
+
 0.5.3
 -----
 
