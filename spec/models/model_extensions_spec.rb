@@ -432,7 +432,7 @@ describe ActsAsTenant do
 
       it "should allow tenant_id to change inside the block" do
         new_account_id = @account.id + 1
-        expect { ActsAsTenant.with_mutable_tenant { @project.account_id = new_account_id } }.to_not raise_error(ActsAsTenant::Errors::TenantIsImmutable)
+        expect { ActsAsTenant.with_mutable_tenant { @project.account_id = new_account_id } }.to_not raise_error
         expect(@project.account_id).to eq new_account_id
       end
     end
