@@ -11,3 +11,7 @@ global_foo:
 global_bar:
   account: bar
   name: "global bar"
+
+global_scope:
+  name: "global scope"
+  user_defined_scope: abc

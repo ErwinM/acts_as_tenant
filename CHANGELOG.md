@@ -1,6 +1,17 @@
 Unreleased
 ----------
 
+0.6.0
+-----
+
+* Add `ActsAsTenant.with_mutable_tenant` for allowing tenants to be changed within a block #230
+
+0.5.3
+-----
+
+* Add support for Sidekiq 7 - @excid3
+* Fix global record validations with existing scope #294 - @mikecmpbll
+
 0.5.2
 -----
 

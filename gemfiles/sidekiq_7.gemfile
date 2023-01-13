@@ -3,7 +3,7 @@
 source "https://rubygems.org"
 
 gem "byebug", group: [:development, :test]
-gem "rails", branch: :main, git: "https://github.com/rails/rails.git"
+gem "sidekiq", "~> 7.0"
 
 group :development, :test do
   gem "net-imap"

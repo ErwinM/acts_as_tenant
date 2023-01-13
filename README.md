@@ -137,6 +137,16 @@ end
 ```
 This is useful in shared routes such as admin panels or internal dashboards when `require_tenant` option is enabled throughout the app.
 
+### Allowing tenant updating for a block ###
+
+```ruby
+ActsAsTenant.with_mutable_tenant do
+  # Tenant updating is enabled for all code in this block
+end
+```
+
+This will allow you to change the tenant of a model. This feature is useful for admin screens, where it is ok to allow certain users to change the tenant on existing models in specific cases.
+
 ### Require tenant to be set always ###
 
 If you want to require the tenant to be set at all times, you can configure acts_as_tenant to raise an error when a query is made without a tenant available. See below under configuration options.

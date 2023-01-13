@@ -12,6 +12,7 @@ module ActsAsTenant
   @@configuration = nil
   @@tenant_klass = nil
   @@models_with_global_records = []
+  @@mutable_tenant = false
 
   class << self
     attr_writer :default_tenant
@@ -87,6 +88,14 @@ module ActsAsTenant
     @default_tenant unless unscoped
   end
 
+  def self.mutable_tenant!(toggle)
+    @@mutable_tenant = toggle
+  end
+
+  def self.mutable_tenant?
+    @@mutable_tenant
+  end
+
   def self.with_tenant(tenant, &block)
     if block.nil?
       raise ArgumentError, "block required"
@@ -118,6 +127,13 @@ module ActsAsTenant
     self.current_tenant = old_tenant
     self.test_tenant = old_test_tenant
     self.unscoped = old_unscoped
+  end
+
+  def self.with_mutable_tenant(&block)
+    ActsAsTenant.mutable_tenant!(true)
+    without_tenant(&block)
+  ensure
+    ActsAsTenant.mutable_tenant!(false)
   end
 
   def self.should_require_tenant?
