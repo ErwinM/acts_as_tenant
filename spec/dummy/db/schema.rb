@@ -21,6 +21,7 @@ ActiveRecord::Schema.define(version: 1) do
   create_table :projects, force: true do |t|
     t.column :name, :string
     t.column :account_id, :integer
+    t.column :user_defined_scope, :string
   end
 
   create_table :managers, force: true do |t|

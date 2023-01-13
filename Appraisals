@@ -14,6 +14,13 @@ appraise "rails-7" do
   gem "rails", "~> 7.0.0", ">= 7.0.0"
 end
 
-appraise "rails-master" do
+appraise "rails-main" do
   gem "rails", github: "rails/rails", branch: :main
+  %w[rspec rspec-core rspec-expectations rspec-mocks rspec-support rspec-rails].each do |lib|
+    gem lib, git: "https://github.com/rspec/#{lib}.git", branch: "main"
+  end
+end
+
+appraise "sidekiq-7" do
+  gem "sidekiq", "~> 7.0"
 end

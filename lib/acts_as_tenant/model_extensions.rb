@@ -5,11 +5,12 @@ module ActsAsTenant
     class_methods do
       def acts_as_tenant(tenant = :account, **options)
         ActsAsTenant.set_tenant_klass(tenant)
+        ActsAsTenant.mutable_tenant!(false)
 
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
 
         # Create the association
-        valid_options = options.slice(:foreign_key, :class_name, :inverse_of, :optional, :primary_key, :counter_cache)
+        valid_options = options.slice(:foreign_key, :class_name, :inverse_of, :optional, :primary_key, :counter_cache, :polymorphic)
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
         pkey = valid_options[:primary_key] || ActsAsTenant.pkey
         polymorphic_type = valid_options[:foreign_type] || ActsAsTenant.polymorphic_type
@@ -77,13 +78,13 @@ module ActsAsTenant
         to_include = Module.new {
           define_method "#{fkey}=" do |integer|
             write_attribute(fkey.to_s, integer)
-            raise ActsAsTenant::Errors::TenantIsImmutable if tenant_modified?
+            raise ActsAsTenant::Errors::TenantIsImmutable if !ActsAsTenant.mutable_tenant? && tenant_modified?
             integer
           end
 
           define_method "#{ActsAsTenant.tenant_klass}=" do |model|
             super(model)
-            raise ActsAsTenant::Errors::TenantIsImmutable if tenant_modified?
+            raise ActsAsTenant::Errors::TenantIsImmutable if !ActsAsTenant.mutable_tenant? && tenant_modified?
             model
           end
 
@@ -105,9 +106,9 @@ module ActsAsTenant
 
         fkey = reflect_on_association(ActsAsTenant.tenant_klass).foreign_key
 
-        validation_args = args.clone
+        validation_args = args.deep_dup
         validation_args[:scope] = if args[:scope]
-          Array(args[:scope]) << fkey
+          Array(args[:scope]) + [fkey]
         else
           fkey
         end
