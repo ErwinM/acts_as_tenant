@@ -282,7 +282,7 @@ end
 ```
 
 You can add the following `belongs_to` options to `acts_as_tenant`:
-`:foreign_key, :class_name, :inverse_of, :optional, :primary_key, :counter_cache`
+`:foreign_key, :class_name, :inverse_of, :optional, :primary_key, :counter_cache, :polymorphic, :touch`
 
 Example: `acts_as_tenant(:account, counter_cache: true)`
 
