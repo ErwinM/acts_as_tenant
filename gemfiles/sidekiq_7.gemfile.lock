@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    acts_as_tenant (0.6.0)
+    acts_as_tenant (0.6.1)
       rails (>= 5.2)
       request_store (>= 1.0.5)
 
@@ -86,7 +86,7 @@ GEM
     date (3.3.2)
     diff-lcs (1.5.0)
     erubi (1.11.0)
-    globalid (1.0.0)
+    globalid (1.0.1)
       activesupport (>= 5.0)
     i18n (1.12.0)
       concurrent-ruby (~> 1.0)
@@ -95,7 +95,7 @@ GEM
     loofah (2.19.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
-    mail (2.8.0)
+    mail (2.8.0.1)
       mini_mime (>= 0.1.1)
       net-imap
       net-pop
