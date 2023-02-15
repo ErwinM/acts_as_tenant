@@ -121,6 +121,11 @@ describe ActsAsTenant do
       ActsAsTenant.current_tenant = account
       expect(User.unscoped.count).to be > account.users.count
     end
+
+    it "allows users to be created for the current tenant" do
+      ActsAsTenant.current_tenant = account
+      expect(User.create).to be_present
+    end
   end
 
   describe "A tenant model with global records" do

@@ -233,7 +233,7 @@ end
 
 class User < ActiveRecord::Base
   has_many :organisations_users
-  acts_as_tenant :organisation, through: :organisations_users
+  acts_as_tenant :organisations, through: :organisations_users
 end
 
 class OrganisationsUser < ActiveRecord::Base

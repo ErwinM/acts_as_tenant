@@ -10,11 +10,24 @@ module ActsAsTenant
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
 
         # Create the association
-        valid_options = options.slice(:foreign_key, :class_name, :inverse_of, :optional, :primary_key, :counter_cache, :polymorphic, :touch)
+        valid_options = options.slice(
+          :foreign_key, :class_name, :inverse_of, :optional, :primary_key, :counter_cache,
+          :polymorphic, :source, :through, :touch
+        )
         fkey = valid_options[:foreign_key] || ActsAsTenant.fkey
         pkey = valid_options[:primary_key] || ActsAsTenant.pkey
         polymorphic_type = valid_options[:foreign_type] || ActsAsTenant.polymorphic_type
-        belongs_to tenant, **valid_options
+
+        reflection = reflect_on_association(tenant)
+        reflection ||= begin
+          if tenant.to_s.singularize == tenant.to_s
+            belongs_to tenant, **valid_options
+          else
+            has_many tenant, **valid_options
+          end
+
+          reflect_on_association(tenant)
+        end
 
         default_scope lambda {
           if ActsAsTenant.should_require_tenant? && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
@@ -77,7 +90,14 @@ module ActsAsTenant
         # - Add a helper method to verify if a model has been scoped by AaT
         to_include = Module.new {
           define_method "#{fkey}=" do |integer|
-            write_attribute(fkey.to_s, integer)
+            if reflection.macro == :has_many
+              associations = public_send(reflection.name)
+              associations.find { |assoc| assoc.public_send(pkey) == integer } ||
+                associations << ActsAsTenant.current_tenant
+            else
+              write_attribute(fkey.to_s, integer)
+            end
+
             raise ActsAsTenant::Errors::TenantIsImmutable if !ActsAsTenant.mutable_tenant? && tenant_modified?
             integer
           end

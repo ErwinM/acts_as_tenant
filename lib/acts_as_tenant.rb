@@ -45,7 +45,7 @@ module ActsAsTenant
   end
 
   def self.fkey
-    "#{@@tenant_klass}_id"
+    "#{@@tenant_klass.to_s.singularize}_id"
   end
 
   def self.pkey
