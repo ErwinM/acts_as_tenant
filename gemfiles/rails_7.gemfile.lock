@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    acts_as_tenant (0.6.0)
+    acts_as_tenant (0.6.1)
       rails (>= 5.2)
       request_store (>= 1.0.5)
 

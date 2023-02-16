@@ -1,6 +1,11 @@
 Unreleased
 ----------
 
+0.6.1
+-----
+
+* Add `touch` for `belongs_to` association #306
+
 0.6.0
 -----
 
