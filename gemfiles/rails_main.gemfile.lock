@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/rails/rails.git
-  revision: 01001028dfa01e5d038baf1a07758ad7acf2b7a8
+  revision: bef58144b6398d34e93b873a8418391270f2c0db
   branch: main
   specs:
     actioncable (7.1.0.alpha)
@@ -93,7 +93,7 @@ GIT
 
 GIT
   remote: https://github.com/rspec/rspec-core.git
-  revision: 522b7727d02d9648c090b56fa68bbdc18a21c04d
+  revision: 79ec0fd5b5ebd13031a10960f293b8a4a43cb734
   branch: main
   specs:
     rspec-core (3.13.0.pre)
@@ -101,7 +101,7 @@ GIT
 
 GIT
   remote: https://github.com/rspec/rspec-expectations.git
-  revision: ae06ba1535fca7c0ce4014d7d05fae823e6be9d4
+  revision: 4ef5b0e21c2273a14ff46b2382ab921e7b100d72
   branch: main
   specs:
     rspec-expectations (3.13.0.pre)
@@ -110,7 +110,7 @@ GIT
 
 GIT
   remote: https://github.com/rspec/rspec-mocks.git
-  revision: f4f444c19b89a48855dec106461d440a5b418684
+  revision: 44d987e5ee9b09e20a97774eb1f4cf2972048649
   branch: main
   specs:
     rspec-mocks (3.13.0.pre)
@@ -119,7 +119,7 @@ GIT
 
 GIT
   remote: https://github.com/rspec/rspec-rails.git
-  revision: c60ff7907559653cd9d1ec1a6113bf86c9359fab
+  revision: 40261bb72875c00a6e4a0ca2ac697b660d4e8d9c
   branch: main
   specs:
     rspec-rails (6.1.0.pre)
@@ -133,7 +133,7 @@ GIT
 
 GIT
   remote: https://github.com/rspec/rspec-support.git
-  revision: e28c64aba9e625d8b153ec010f43b4ecb298b73b
+  revision: 9b9a81c0b38cd2fc6af69932e12f3eab2cee992a
   branch: main
   specs:
     rspec-support (3.13.0.pre)
@@ -168,9 +168,9 @@ GEM
     concurrent-ruby (1.1.10)
     connection_pool (2.3.0)
     crass (1.0.6)
-    date (3.3.2)
+    date (3.3.3)
     diff-lcs (1.5.0)
-    erubi (1.11.0)
+    erubi (1.12.0)
     globalid (1.0.0)
       activesupport (>= 5.0)
     i18n (1.12.0)
@@ -180,16 +180,16 @@ GEM
     loofah (2.19.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
-    mail (2.8.0)
+    mail (2.8.0.1)
       mini_mime (>= 0.1.1)
       net-imap
       net-pop
       net-smtp
     marcel (1.0.2)
     mini_mime (1.1.2)
-    mini_portile2 (2.8.0)
-    minitest (5.16.3)
-    net-imap (0.3.2)
+    mini_portile2 (2.8.1)
+    minitest (5.17.0)
+    net-imap (0.3.4)
       date
       net-protocol
     net-pop (0.1.2)
@@ -199,18 +199,18 @@ GEM
     net-smtp (0.3.3)
       net-protocol
     nio4r (2.5.8)
-    nokogiri (1.13.10)
+    nokogiri (1.14.0)
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
-    nokogiri (1.13.10-x86_64-darwin)
+    nokogiri (1.14.0-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.13.10-x86_64-linux)
+    nokogiri (1.14.0-x86_64-linux)
       racc (~> 1.4)
     parallel (1.22.1)
-    parser (3.1.3.0)
+    parser (3.2.0.0)
       ast (~> 2.4.1)
-    racc (1.6.1)
-    rack (2.2.4)
+    racc (1.6.2)
+    rack (2.2.5)
     rack-test (2.0.2)
       rack (>= 1.3)
     rails-dom-testing (2.0.3)
@@ -225,19 +225,19 @@ GEM
     request_store (1.5.1)
       rack (>= 1.4)
     rexml (3.2.5)
-    rubocop (1.39.0)
+    rubocop (1.42.0)
       json (~> 2.3)
       parallel (~> 1.10)
       parser (>= 3.1.2.1)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.8, < 3.0)
       rexml (>= 3.2.5, < 4.0)
-      rubocop-ast (>= 1.23.0, < 2.0)
+      rubocop-ast (>= 1.24.1, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 1.4.0, < 3.0)
-    rubocop-ast (1.24.0)
+    rubocop-ast (1.24.1)
       parser (>= 3.1.1.0)
-    rubocop-performance (1.15.1)
+    rubocop-performance (1.15.2)
       rubocop (>= 1.7.0, < 2.0)
       rubocop-ast (>= 0.4.0)
     ruby-progressbar (1.11.0)
@@ -245,19 +245,19 @@ GEM
       connection_pool (>= 2.2.5, < 3)
       rack (~> 2.0)
       redis (>= 4.5.0, < 5)
-    sqlite3 (1.5.4)
+    sqlite3 (1.6.0.rc2)
       mini_portile2 (~> 2.8.0)
-    sqlite3 (1.5.4-x86_64-darwin)
-    sqlite3 (1.5.4-x86_64-linux)
-    standard (1.19.1)
+    sqlite3 (1.6.0.rc2-x86_64-darwin)
+    sqlite3 (1.6.0.rc2-x86_64-linux)
+    standard (1.21.1)
       language_server-protocol (~> 3.17.0.2)
-      rubocop (= 1.39.0)
-      rubocop-performance (= 1.15.1)
+      rubocop (= 1.42.0)
+      rubocop-performance (= 1.15.2)
     thor (1.2.1)
     timeout (0.3.1)
     tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
-    unicode-display_width (2.3.0)
+    unicode-display_width (2.4.2)
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
@@ -283,8 +283,8 @@ DEPENDENCIES
   rspec-rails!
   rspec-support!
   sidekiq (~> 6.1, >= 6.1.2)
-  sqlite3
+  sqlite3 (~> 1.6.0.rc2)
   standard
 
 BUNDLED WITH
-   2.3.26
+   2.4.3

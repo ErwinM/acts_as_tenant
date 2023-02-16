@@ -11,6 +11,13 @@ gemspec
 # Git. Remember to move these dependencies to your gemspec before releasing
 # your gem to rubygems.org.
 
+gem "rspec", ">=3.0"
+gem "rspec-rails"
+gem "sqlite3", "~> 1.6.0.rc2"
+gem "sidekiq", "~> 6.1", ">= 6.1.2"
+gem "standard"
+gem "appraisal"
+
 # To use a debugger
 gem "byebug", group: [:development, :test]
 
