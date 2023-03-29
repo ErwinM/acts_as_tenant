@@ -92,8 +92,32 @@ module ActsAsTenant
           define_method "#{fkey}=" do |integer|
             if reflection.macro == :has_many
               associations = public_send(reflection.name)
-              associations.find { |assoc| assoc.public_send(pkey) == integer } ||
-                associations << ActsAsTenant.current_tenant
+              # If an association has been created manually on a has_and_belongs_to_many before the
+              # parent record has been persisted, it won't be found by calling the tenant
+              # association since Active Record will notice the lack of ID on the parent record. We
+              # can, however, find the tenant via the join record
+              association =
+                if public_send(pkey).nil? && reflection.options[:through]
+                  through_association_name = reflection.options.fetch(:through).to_s
+                  through_association = self.class.reflections[through_association_name]
+                  through_tenant_association_name =
+                    through_association.options[:inverse_of] ||
+                    reflection.name.to_s.singularize
+                  through_tenant_association = through_association.klass.reflections[through_tenant_association_name.to_s]
+
+                  through_resource_key = through_association.foreign_key
+                  through_tenant_key = through_tenant_association.foreign_key
+                  tenant_primary_key = through_tenant_association.klass.primary_key
+
+                  through_associations = public_send(reflection.options.fetch(:through))
+                  through_associations.find do |assoc|
+                    assoc.public_send(through_resource_key) == id &&
+                      assoc.public_send(through_tenant_key) == integer
+                  end
+                else
+                  associations.find { |assoc| assoc.public_send(pkey) == integer }
+                end
+              association || associations << ActsAsTenant.current_tenant
             else
               write_attribute(fkey.to_s, integer)
             end
