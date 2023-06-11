@@ -22,6 +22,7 @@ jobs:
           - rails_7
           - rails_main
           - sidekiq_6
+          - delayed_job
         exclude:
           - ruby: '3.0'
             gemfile: rails_5

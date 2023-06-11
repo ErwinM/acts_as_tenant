@@ -24,3 +24,7 @@ end
 appraise "sidekiq-6" do
   gem "sidekiq", "~> 6.0"
 end
+
+appraise "delayed-job" do
+  gem "delayed_job", "~> 4.1"
+end

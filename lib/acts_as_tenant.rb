@@ -148,6 +148,7 @@ end
 ActiveSupport.on_load(:active_record) do |base|
   base.include ActsAsTenant::ModelExtensions
   require "acts_as_tenant/sidekiq" if defined?(::Sidekiq)
+  require "acts_as_tenant/delayed_job" if defined?(::Delayed)
 end
 
 ActiveSupport.on_load(:action_controller) do |base|
