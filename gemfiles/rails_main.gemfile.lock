@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/rails/rails.git
-  revision: 0fbe3b9ef4e03bfade0b2c7004b587639f3587f3
+  revision: 87ab32f72a494ea18a4e2335becaebb66f5ce673
   branch: main
   specs:
     actioncable (7.1.0.alpha)
@@ -151,6 +151,16 @@ GIT
       rspec-expectations (= 3.13.0.pre)
       rspec-mocks (= 3.13.0.pre)
 
+GIT
+  remote: https://github.com/thoughtbot/appraisal.git
+  revision: b200e636903700098bef25f4f51dbc4c46e4c04c
+  ref: b200e63
+  specs:
+    appraisal (2.4.1)
+      bundler
+      rake
+      thor (>= 0.14.0)
+
 PATH
   remote: ..
   specs:
@@ -161,10 +171,6 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    appraisal (2.4.1)
-      bundler
-      rake
-      thor (>= 0.14.0)
     ast (2.4.2)
     builder (3.2.4)
     byebug (11.1.3)
@@ -211,8 +217,8 @@ GEM
     parser (3.2.2.3)
       ast (~> 2.4.1)
       racc
-    racc (1.7.0)
-    rack (3.0.7)
+    racc (1.7.1)
+    rack (3.0.8)
     rack-session (2.0.0)
       rack (>= 3.0.0)
     rack-test (2.1.0)
@@ -278,7 +284,7 @@ PLATFORMS
 
 DEPENDENCIES
   acts_as_tenant!
-  appraisal
+  appraisal!
   byebug
   net-imap
   net-pop

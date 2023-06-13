@@ -12,8 +12,7 @@ gemspec
 # your gem to rubygems.org.
 
 gem "sqlite3", "~> 1.6.0.rc2"
-gem "appraisal"
-
+gem "appraisal", github: "thoughtbot/appraisal", ref: "b200e63"
 
 # Ruby 3.1+ no longer includes these by default
 group :development, :test do

@@ -3,7 +3,7 @@
 source "https://rubygems.org"
 
 gem "sqlite3", "~> 1.6.0.rc2"
-gem "appraisal"
+gem "appraisal", ref: "b200e63", git: "https://github.com/thoughtbot/appraisal.git"
 gem "rails", branch: :main, git: "https://github.com/rails/rails.git"
 gem "rspec", git: "https://github.com/rspec/rspec.git", branch: "main"
 gem "rspec-core", git: "https://github.com/rspec/rspec-core.git", branch: "main"

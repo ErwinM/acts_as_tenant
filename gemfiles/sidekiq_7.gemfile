@@ -3,8 +3,8 @@
 source "https://rubygems.org"
 
 gem "sqlite3", "~> 1.6.0.rc2"
+gem "appraisal", ref: "b200e63", git: "https://github.com/thoughtbot/appraisal.git"
 gem "sidekiq", "~> 7.0"
-gem "appraisal"
 
 group :development, :test do
   gem "net-imap"

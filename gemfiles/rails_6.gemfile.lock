@@ -1,3 +1,13 @@
+GIT
+  remote: https://github.com/thoughtbot/appraisal.git
+  revision: b200e636903700098bef25f4f51dbc4c46e4c04c
+  ref: b200e63
+  specs:
+    appraisal (2.4.1)
+      bundler
+      rake
+      thor (>= 0.14.0)
+
 PATH
   remote: ..
   specs:
@@ -63,10 +73,6 @@ GEM
       minitest (~> 5.1)
       tzinfo (~> 1.1)
       zeitwerk (~> 2.2, >= 2.2.2)
-    appraisal (2.4.1)
-      bundler
-      rake
-      thor (>= 0.14.0)
     ast (2.4.2)
     builder (3.2.4)
     byebug (11.1.3)
@@ -110,7 +116,7 @@ GEM
     parser (3.2.2.3)
       ast (~> 2.4.1)
       racc
-    racc (1.7.0)
+    racc (1.7.1)
     rack (2.2.7)
     rack-test (2.1.0)
       rack (>= 1.3)
@@ -219,7 +225,7 @@ PLATFORMS
 
 DEPENDENCIES
   acts_as_tenant!
-  appraisal
+  appraisal!
   byebug
   net-imap
   net-pop
