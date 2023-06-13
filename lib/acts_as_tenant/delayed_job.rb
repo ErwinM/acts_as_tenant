@@ -1,5 +1,3 @@
-
-
 module Delayed
   module Backend
     module Base

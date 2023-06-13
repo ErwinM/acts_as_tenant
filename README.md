@@ -170,14 +170,26 @@ end
 
 * `config.require_tenant` when set to true will raise an ActsAsTenant::NoTenant error whenever a query is made without a tenant set.
 
-Sidekiq support
----------------
+Background Processing
+---------------------
 
-ActsAsTenant supports [Sidekiq](http://sidekiq.org/). A background processing library.
+#### Sidekiq
+
+ActsAsTenant supports [Sidekiq](//sidekiq.org/). A background processing library.
 Add the following code to your `config/initializers/acts_as_tenant.rb`:
 
 ```ruby
 require 'acts_as_tenant/sidekiq'
+```
+
+
+#### DelayedJob
+
+ActsAsTenant supports [DelayedJob](collectiveidea/delayed_job). A background processing library.
+Add the following code to your `config/initializers/acts_as_tenant.rb`:
+
+```ruby
+require 'acts_as_tenant/delayed_job'
 ```
 
 Testing
