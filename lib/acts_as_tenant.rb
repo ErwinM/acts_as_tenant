@@ -2,6 +2,7 @@ require "request_store"
 
 require "acts_as_tenant/version"
 require "acts_as_tenant/errors"
+require "acts_as_tenant/sidekiq" if defined?(Sidekiq)
 
 module ActsAsTenant
   autoload :Configuration, "acts_as_tenant/configuration"

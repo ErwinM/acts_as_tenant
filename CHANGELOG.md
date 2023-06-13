@@ -1,6 +1,8 @@
 Unreleased
 ----------
 
+* Easy integration with Sidekiq, not requiring to add any configuration to the initializer - @nunommc
+
 0.6.1
 -----
 
