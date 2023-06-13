@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/rails/rails.git
-  revision: bef58144b6398d34e93b873a8418391270f2c0db
+  revision: 0fbe3b9ef4e03bfade0b2c7004b587639f3587f3
   branch: main
   specs:
     actioncable (7.1.0.alpha)
@@ -32,10 +32,12 @@ GIT
     actionpack (7.1.0.alpha)
       actionview (= 7.1.0.alpha)
       activesupport (= 7.1.0.alpha)
-      rack (~> 2.0, >= 2.2.4)
+      nokogiri (>= 1.8.5)
+      rack (>= 2.2.4)
+      rack-session (>= 1.0.1)
       rack-test (>= 0.6.3)
       rails-dom-testing (~> 2.0)
-      rails-html-sanitizer (~> 1.0, >= 1.2.0)
+      rails-html-sanitizer (~> 1.6)
     actiontext (7.1.0.alpha)
       actionpack (= 7.1.0.alpha)
       activerecord (= 7.1.0.alpha)
@@ -48,7 +50,7 @@ GIT
       builder (~> 3.1)
       erubi (~> 1.11)
       rails-dom-testing (~> 2.0)
-      rails-html-sanitizer (~> 1.1, >= 1.2.0)
+      rails-html-sanitizer (~> 1.6)
     activejob (7.1.0.alpha)
       activesupport (= 7.1.0.alpha)
       globalid (>= 0.3.6)
@@ -63,7 +65,6 @@ GIT
       activerecord (= 7.1.0.alpha)
       activesupport (= 7.1.0.alpha)
       marcel (~> 1.0)
-      mini_mime (>= 1.1.0)
     activesupport (7.1.0.alpha)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       connection_pool (>= 2.2.5)
@@ -87,13 +88,15 @@ GIT
     railties (7.1.0.alpha)
       actionpack (= 7.1.0.alpha)
       activesupport (= 7.1.0.alpha)
+      irb
+      rackup (>= 1.0.0)
       rake (>= 12.2)
-      thor (~> 1.0)
+      thor (~> 1.0, >= 1.2.2)
       zeitwerk (~> 2.6)
 
 GIT
   remote: https://github.com/rspec/rspec-core.git
-  revision: 79ec0fd5b5ebd13031a10960f293b8a4a43cb734
+  revision: 8caecca0b9b299ccbaa5c7ea5dd885ab42cd57d3
   branch: main
   specs:
     rspec-core (3.13.0.pre)
@@ -101,7 +104,7 @@ GIT
 
 GIT
   remote: https://github.com/rspec/rspec-expectations.git
-  revision: 4ef5b0e21c2273a14ff46b2382ab921e7b100d72
+  revision: 8a468eea0a2ee456db4d6e2dccccd66ff269b862
   branch: main
   specs:
     rspec-expectations (3.13.0.pre)
@@ -110,7 +113,7 @@ GIT
 
 GIT
   remote: https://github.com/rspec/rspec-mocks.git
-  revision: 44d987e5ee9b09e20a97774eb1f4cf2972048649
+  revision: 0d22620149a66d38ed03f60e96045721d71ce134
   branch: main
   specs:
     rspec-mocks (3.13.0.pre)
@@ -119,7 +122,7 @@ GIT
 
 GIT
   remote: https://github.com/rspec/rspec-rails.git
-  revision: 40261bb72875c00a6e4a0ca2ac697b660d4e8d9c
+  revision: ce4b5264ebb7ba7fb7a794782e334332faa33a20
   branch: main
   specs:
     rspec-rails (6.1.0.pre)
@@ -133,7 +136,7 @@ GIT
 
 GIT
   remote: https://github.com/rspec/rspec-support.git
-  revision: 9b9a81c0b38cd2fc6af69932e12f3eab2cee992a
+  revision: 6d33eaa48a761d616e23b81fc33b68a6e68ec296
   branch: main
   specs:
     rspec-support (3.13.0.pre)
@@ -165,31 +168,34 @@ GEM
     ast (2.4.2)
     builder (3.2.4)
     byebug (11.1.3)
-    concurrent-ruby (1.1.10)
-    connection_pool (2.3.0)
+    concurrent-ruby (1.2.2)
+    connection_pool (2.4.1)
     crass (1.0.6)
     date (3.3.3)
     diff-lcs (1.5.0)
     erubi (1.12.0)
-    globalid (1.0.0)
+    globalid (1.1.0)
       activesupport (>= 5.0)
-    i18n (1.12.0)
+    i18n (1.14.1)
       concurrent-ruby (~> 1.0)
+    io-console (0.6.0)
+    irb (1.7.0)
+      reline (>= 0.3.0)
     json (2.6.3)
-    language_server-protocol (3.17.0.2)
-    loofah (2.19.1)
+    language_server-protocol (3.17.0.3)
+    lint_roller (1.0.0)
+    loofah (2.21.3)
       crass (~> 1.0.2)
-      nokogiri (>= 1.5.9)
-    mail (2.8.0.1)
+      nokogiri (>= 1.12.0)
+    mail (2.8.1)
       mini_mime (>= 0.1.1)
       net-imap
       net-pop
       net-smtp
     marcel (1.0.2)
     mini_mime (1.1.2)
-    mini_portile2 (2.8.1)
-    minitest (5.17.0)
-    net-imap (0.3.4)
+    minitest (5.18.0)
+    net-imap (0.3.6)
       date
       net-protocol
     net-pop (0.1.2)
@@ -198,74 +204,76 @@ GEM
       timeout
     net-smtp (0.3.3)
       net-protocol
-    nio4r (2.5.8)
-    nokogiri (1.14.0)
-      mini_portile2 (~> 2.8.0)
+    nio4r (2.5.9)
+    nokogiri (1.15.2-x86_64-linux)
       racc (~> 1.4)
-    nokogiri (1.14.0-x86_64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.14.0-x86_64-linux)
-      racc (~> 1.4)
-    parallel (1.22.1)
-    parser (3.2.0.0)
+    parallel (1.23.0)
+    parser (3.2.2.3)
       ast (~> 2.4.1)
-    racc (1.6.2)
-    rack (2.2.5)
-    rack-test (2.0.2)
+      racc
+    racc (1.7.0)
+    rack (3.0.7)
+    rack-session (2.0.0)
+      rack (>= 3.0.0)
+    rack-test (2.1.0)
       rack (>= 1.3)
+    rackup (2.1.0)
+      rack (>= 3)
+      webrick (~> 1.8)
     rails-dom-testing (2.0.3)
       activesupport (>= 4.2.0)
       nokogiri (>= 1.6)
-    rails-html-sanitizer (1.4.4)
-      loofah (~> 2.19, >= 2.19.1)
+    rails-html-sanitizer (1.6.0)
+      loofah (~> 2.21)
+      nokogiri (~> 1.14)
     rainbow (3.1.1)
     rake (13.0.6)
-    redis (4.8.0)
-    regexp_parser (2.6.1)
+    regexp_parser (2.8.1)
+    reline (0.3.5)
+      io-console (~> 0.5)
     request_store (1.5.1)
       rack (>= 1.4)
     rexml (3.2.5)
-    rubocop (1.42.0)
+    rubocop (1.52.1)
       json (~> 2.3)
       parallel (~> 1.10)
-      parser (>= 3.1.2.1)
+      parser (>= 3.2.2.3)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.8, < 3.0)
       rexml (>= 3.2.5, < 4.0)
-      rubocop-ast (>= 1.24.1, < 2.0)
+      rubocop-ast (>= 1.28.0, < 2.0)
       ruby-progressbar (~> 1.7)
-      unicode-display_width (>= 1.4.0, < 3.0)
-    rubocop-ast (1.24.1)
-      parser (>= 3.1.1.0)
-    rubocop-performance (1.15.2)
+      unicode-display_width (>= 2.4.0, < 3.0)
+    rubocop-ast (1.29.0)
+      parser (>= 3.2.1.0)
+    rubocop-performance (1.18.0)
       rubocop (>= 1.7.0, < 2.0)
       rubocop-ast (>= 0.4.0)
-    ruby-progressbar (1.11.0)
-    sidekiq (6.5.8)
-      connection_pool (>= 2.2.5, < 3)
-      rack (~> 2.0)
-      redis (>= 4.5.0, < 5)
-    sqlite3 (1.6.0.rc2)
-      mini_portile2 (~> 2.8.0)
-    sqlite3 (1.6.0.rc2-x86_64-darwin)
-    sqlite3 (1.6.0.rc2-x86_64-linux)
-    standard (1.21.1)
+    ruby-progressbar (1.13.0)
+    sqlite3 (1.6.3-x86_64-linux)
+    standard (1.29.0)
       language_server-protocol (~> 3.17.0.2)
-      rubocop (= 1.42.0)
-      rubocop-performance (= 1.15.2)
-    thor (1.2.1)
-    timeout (0.3.1)
-    tzinfo (2.0.5)
+      lint_roller (~> 1.0)
+      rubocop (~> 1.52.0)
+      standard-custom (~> 1.0.0)
+      standard-performance (~> 1.1.0)
+    standard-custom (1.0.1)
+      lint_roller (~> 1.0)
+    standard-performance (1.1.0)
+      lint_roller (~> 1.0)
+      rubocop-performance (~> 1.18.0)
+    thor (1.2.2)
+    timeout (0.3.2)
+    tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.4.2)
+    webrick (1.8.1)
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    zeitwerk (2.6.6)
+    zeitwerk (2.6.8)
 
 PLATFORMS
-  ruby
-  x86_64-darwin-20
   x86_64-linux
 
 DEPENDENCIES
@@ -282,9 +290,8 @@ DEPENDENCIES
   rspec-mocks!
   rspec-rails!
   rspec-support!
-  sidekiq (~> 6.1, >= 6.1.2)
   sqlite3 (~> 1.6.0.rc2)
   standard
 
 BUNDLED WITH
-   2.4.3
+   2.4.10
