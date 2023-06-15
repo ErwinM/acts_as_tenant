@@ -165,7 +165,6 @@ PATH
   specs:
     acts_as_tenant (0.6.1)
       rails (>= 5.2)
-      request_store (>= 1.0.5)
 
 GEM
   remote: https://rubygems.org/
@@ -244,8 +243,6 @@ GEM
     regexp_parser (2.8.1)
     reline (0.3.5)
       io-console (~> 0.5)
-    request_store (1.5.1)
-      rack (>= 1.4)
     rexml (3.2.5)
     rubocop (1.52.1)
       json (~> 2.3)

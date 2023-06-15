@@ -12,7 +12,6 @@ PATH
   specs:
     acts_as_tenant (0.6.1)
       rails (>= 5.2)
-      request_store (>= 1.0.5)
 
 GEM
   remote: https://rubygems.org/
@@ -141,8 +140,6 @@ GEM
     redis-client (0.14.1)
       connection_pool
     regexp_parser (2.8.1)
-    request_store (1.5.1)
-      rack (>= 1.4)
     rexml (3.2.5)
     rspec (3.12.0)
       rspec-core (~> 3.12.0)
