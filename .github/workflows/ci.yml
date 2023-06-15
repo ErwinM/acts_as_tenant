@@ -22,7 +22,6 @@ jobs:
           - rails_7
           - rails_main
           - sidekiq_6
-          - sidekiq_7
         exclude:
           - ruby: '3.0'
             gemfile: rails_5
