@@ -4,17 +4,11 @@ source "https://rubygems.org"
 
 gem "rspec", ">=3.0"
 gem "rspec-rails"
-gem "sqlite3", "~> 1.6.0.rc2"
-gem "sidekiq", "~> 6.1", ">= 6.1.2"
+gem "sqlite3"
 gem "standard"
-gem "appraisal"
+gem "sidekiq", "~> 7.0"
+gem "appraisal", git: "https://github.com/thoughtbot/appraisal.git"
 gem "byebug", group: [:development, :test]
 gem "rails", "~> 6.1.0", ">= 6.1.4.1"
-
-group :development, :test do
-  gem "net-imap"
-  gem "net-pop"
-  gem "net-smtp"
-end
 
 gemspec path: "../"

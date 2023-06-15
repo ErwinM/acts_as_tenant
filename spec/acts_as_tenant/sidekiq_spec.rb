@@ -1,5 +1,4 @@
 require "spec_helper"
-require "sidekiq"
 require "acts_as_tenant/sidekiq"
 
 describe ActsAsTenant::Sidekiq do

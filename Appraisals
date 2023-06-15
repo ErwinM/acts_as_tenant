@@ -21,6 +21,6 @@ appraise "rails-main" do
   end
 end
 
-appraise "sidekiq-7" do
-  gem "sidekiq", "~> 7.0"
+appraise "sidekiq-6" do
+  gem "sidekiq", "~> 6.0"
 end

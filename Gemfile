@@ -13,17 +13,10 @@ gemspec
 
 gem "rspec", ">=3.0"
 gem "rspec-rails"
-gem "sqlite3", "~> 1.6.0.rc2"
-gem "sidekiq", "~> 6.1", ">= 6.1.2"
+gem "sqlite3"
 gem "standard"
-gem "appraisal"
+gem "sidekiq", "~> 7.0"
+gem "appraisal", github: "thoughtbot/appraisal"
 
 # To use a debugger
 gem "byebug", group: [:development, :test]
-
-# Ruby 3.1+ no longer includes these by default
-group :development, :test do
-  gem "net-imap"
-  gem "net-pop"
-  gem "net-smtp"
-end
