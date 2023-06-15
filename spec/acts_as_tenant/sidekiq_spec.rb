@@ -1,12 +1,10 @@
 require "spec_helper"
-require "sidekiq"
-require "acts_as_tenant/sidekiq"
 
-describe ActsAsTenant::Sidekiq do
+describe "ActsAsTenant::Sidekiq" do
   let(:account) { Account.new(id: 1234) }
   let(:message) { {"acts_as_tenant" => {"class" => "Account", "id" => 1234}} }
 
-  describe ActsAsTenant::Sidekiq::Client do
+  describe "ActsAsTenant::Sidekiq::Client" do
     subject { ActsAsTenant::Sidekiq::Client.new }
 
     it "saves tenant if present" do
@@ -26,7 +24,7 @@ describe ActsAsTenant::Sidekiq do
     end
   end
 
-  describe ActsAsTenant::Sidekiq::Server do
+  describe "ActsAsTenant::Sidekiq::Server" do
     subject { ActsAsTenant::Sidekiq::Server.new }
 
     it "restores tenant if tenant saved" do
