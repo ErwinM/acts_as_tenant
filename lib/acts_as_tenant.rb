@@ -1,5 +1,4 @@
-require "request_store"
-
+require "active_support/current_attributes"
 require "acts_as_tenant/version"
 require "acts_as_tenant/errors"
 
@@ -13,6 +12,10 @@ module ActsAsTenant
   @@tenant_klass = nil
   @@models_with_global_records = []
   @@mutable_tenant = false
+
+  class Current < ActiveSupport::CurrentAttributes
+    attribute :current_tenant, :test_tenant, :acts_as_tenant_unscoped
+  end
 
   class << self
     attr_writer :default_tenant
@@ -57,11 +60,11 @@ module ActsAsTenant
   end
 
   def self.current_tenant=(tenant)
-    RequestStore.store[:current_tenant] = tenant
+    Current.current_tenant = tenant
   end
 
   def self.current_tenant
-    RequestStore.store[:current_tenant] || test_tenant || default_tenant
+    Current.current_tenant || test_tenant || default_tenant
   end
 
   def self.test_tenant=(tenant)
@@ -73,11 +76,11 @@ module ActsAsTenant
   end
 
   def self.unscoped=(unscoped)
-    RequestStore.store[:acts_as_tenant_unscoped] = unscoped
+    Current.acts_as_tenant_unscoped = unscoped
   end
 
   def self.unscoped
-    RequestStore.store[:acts_as_tenant_unscoped]
+    Current.acts_as_tenant_unscoped
   end
 
   def self.unscoped?

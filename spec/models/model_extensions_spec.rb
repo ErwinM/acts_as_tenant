@@ -489,11 +489,5 @@ describe ActsAsTenant do
       ActsAsTenant.default_tenant = account
       expect(ActsAsTenant.current_tenant).to eq(accounts(:bar))
     end
-
-    it "survives request resets" do
-      ActsAsTenant.default_tenant = account
-      RequestStore.clear!
-      expect(ActsAsTenant.current_tenant).to eq(account)
-    end
   end
 end
