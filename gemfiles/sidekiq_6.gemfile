@@ -8,6 +8,6 @@ gem "sqlite3"
 gem "standard"
 gem "appraisal", git: "https://github.com/thoughtbot/appraisal.git"
 gem "byebug", group: [:development, :test]
-gem "rails", "~> 6.1.0", ">= 6.1.4.1"
+gem "sidekiq", "~> 6.0"
 
 gemspec path: "../"
