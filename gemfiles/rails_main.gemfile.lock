@@ -239,6 +239,8 @@ GEM
       nokogiri (~> 1.14)
     rainbow (3.1.1)
     rake (13.0.6)
+    redis-client (0.14.1)
+      connection_pool
     regexp_parser (2.8.1)
     reline (0.3.5)
       io-console (~> 0.5)
@@ -261,6 +263,11 @@ GEM
       rubocop (>= 1.7.0, < 2.0)
       rubocop-ast (>= 0.4.0)
     ruby-progressbar (1.13.0)
+    sidekiq (7.1.2)
+      concurrent-ruby (< 2)
+      connection_pool (>= 2.3.0)
+      rack (>= 2.2.4)
+      redis-client (>= 0.14.0)
     sqlite3 (1.6.3)
       mini_portile2 (~> 2.8.0)
     sqlite3 (1.6.3-x86_64-darwin)
@@ -303,6 +310,7 @@ DEPENDENCIES
   rspec-mocks!
   rspec-rails!
   rspec-support!
+  sidekiq (~> 7.0)
   sqlite3
   standard
 

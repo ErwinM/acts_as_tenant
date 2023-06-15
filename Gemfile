@@ -15,6 +15,7 @@ gem "rspec", ">=3.0"
 gem "rspec-rails"
 gem "sqlite3"
 gem "standard"
+gem "sidekiq", "~> 7.0"
 gem "appraisal", github: "thoughtbot/appraisal"
 
 # To use a debugger

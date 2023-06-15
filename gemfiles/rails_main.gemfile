@@ -6,6 +6,7 @@ gem "rspec", git: "https://github.com/rspec/rspec.git", branch: "main"
 gem "rspec-rails", git: "https://github.com/rspec/rspec-rails.git", branch: "main"
 gem "sqlite3"
 gem "standard"
+gem "sidekiq", "~> 7.0"
 gem "appraisal", git: "https://github.com/thoughtbot/appraisal.git"
 gem "byebug", group: [:development, :test]
 gem "rails", branch: :main, git: "https://github.com/rails/rails.git"
