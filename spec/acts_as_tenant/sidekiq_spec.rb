@@ -28,8 +28,7 @@ describe "ActsAsTenant::Sidekiq" do
     subject { ActsAsTenant::Sidekiq::Server.new }
 
     it "restores tenant if tenant saved" do
-      expect(Account).to receive(:find).with(1234).once { account }
-
+      Account.create!(id: 1234)
       msg = message
       subject.call(nil, msg, nil) do
         expect(ActsAsTenant.current_tenant).to be_a_kind_of Account
@@ -45,6 +44,20 @@ describe "ActsAsTenant::Sidekiq" do
         expect(ActsAsTenant.current_tenant).to be_nil
       end
       expect(ActsAsTenant.current_tenant).to be_nil
+    end
+
+    it "restores tenant with custom scope" do
+      original_job_scope = ActsAsTenant.configuration.job_scope
+      ActsAsTenant.configuration.job_scope = ->{ unscope(where: :deleted_at) }
+
+      Account.create!(id: 1234, deleted_at: 1.day.ago)
+      msg = message
+      subject.call(nil, msg, nil) do
+        expect(ActsAsTenant.current_tenant).to be_a_kind_of Account
+      end
+      expect(ActsAsTenant.current_tenant).to be_nil
+    ensure
+      ActsAsTenant.configuration.job_scope = original_job_scope
     end
   end
 
