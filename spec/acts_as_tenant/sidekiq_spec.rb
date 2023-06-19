@@ -48,7 +48,7 @@ describe "ActsAsTenant::Sidekiq" do
 
     it "restores tenant with custom scope" do
       original_job_scope = ActsAsTenant.configuration.job_scope
-      ActsAsTenant.configuration.job_scope = ->{ unscope(where: :deleted_at) }
+      ActsAsTenant.configuration.job_scope = -> { unscope(where: :deleted_at) }
 
       Account.create!(id: 1234, deleted_at: 1.day.ago)
       msg = message
