@@ -28,7 +28,9 @@ module ActsAsTenant::Sidekiq
 
     def call(worker_class, msg, queue)
       if msg.has_key?("acts_as_tenant")
-        account = msg["acts_as_tenant"]["class"].constantize.unscoped.find msg["acts_as_tenant"]["id"]
+        klass = msg["acts_as_tenant"]["class"].constantize
+        id = msg["acts_as_tenant"]["id"]
+        account = klass.class_eval(&ActsAsTenant.configuration.job_scope).find(id)
         ActsAsTenant.with_tenant account do
           yield
         end

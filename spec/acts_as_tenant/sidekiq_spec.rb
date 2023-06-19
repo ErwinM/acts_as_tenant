@@ -27,37 +27,37 @@ describe "ActsAsTenant::Sidekiq" do
   describe "ActsAsTenant::Sidekiq::Server" do
     subject { ActsAsTenant::Sidekiq::Server.new }
 
-    context "when tenant exist" do
-      before { account.save }
-
-      it "restores tenant" do
-        msg = message
-        subject.call(nil, msg, nil) do
-          expect(ActsAsTenant.current_tenant).to be_a_kind_of Account
-        end
-        expect(ActsAsTenant.current_tenant).to be_nil
+    it "restores tenant if tenant saved" do
+      Account.create!(id: 1234)
+      msg = message
+      subject.call(nil, msg, nil) do
+        expect(ActsAsTenant.current_tenant).to be_a_kind_of Account
       end
-
-      context "but it is outside its own scope" do
-        before { account.update!(deleted_at: Time.now) }
-
-        it "ignores the scope and sets the tenant" do
-          msg = {}
-          subject.call(nil, message, nil) do
-            expect(ActsAsTenant.current_tenant).to eq(account)
-          end
-        end
-      end
+      expect(ActsAsTenant.current_tenant).to be_nil
     end
 
-    context "when tenant does not exist" do
-      it "runs without tenant" do
-        msg = {}
-        subject.call(nil, msg, nil) do
-          expect(ActsAsTenant.current_tenant).to be_nil
-        end
+    it "runs without tenant if no tenant saved" do
+      expect(Account).not_to receive(:find)
+
+      msg = {}
+      subject.call(nil, msg, nil) do
         expect(ActsAsTenant.current_tenant).to be_nil
       end
+      expect(ActsAsTenant.current_tenant).to be_nil
+    end
+
+    it "restores tenant with custom scope" do
+      original_job_scope = ActsAsTenant.configuration.job_scope
+      ActsAsTenant.configuration.job_scope = ->{ unscope(where: :deleted_at) }
+
+      Account.create!(id: 1234, deleted_at: 1.day.ago)
+      msg = message
+      subject.call(nil, msg, nil) do
+        expect(ActsAsTenant.current_tenant).to be_a_kind_of Account
+      end
+      expect(ActsAsTenant.current_tenant).to be_nil
+    ensure
+      ActsAsTenant.configuration.job_scope = original_job_scope
     end
   end
 
