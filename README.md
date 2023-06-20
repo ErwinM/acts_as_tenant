@@ -297,10 +297,11 @@ Background Processing libraries
 
 ActsAsTenant supports
 
-- [Sidekiq](//sidekiq.org/) - make sure to place acts_as_tenant gem after sidekiq in your gemfiles;
+- [Sidekiq](//sidekiq.org/);
+- [DelayedJob](//github.com/collectiveidea/delayed_job);
 
 Testing
----------------
+-------
 
 If you set the `current_tenant` in your tests, make sure to clean up the tenant after each test by calling `ActsAsTenant.current_tenant = nil`. Integration tests are more difficult: manually setting the `current_tenant` value will not survive across multiple requests, even if they take place within the same test. This can result in undesired boilerplate to set the desired tenant. Moreover, the efficacy of the test can be compromised because the set `current_tenant` value will carry over into the request-response cycle.
 
@@ -314,6 +315,7 @@ Rails.application.configure do
   config.middleware.use ActsAsTenant::TestTenantMiddleware
 end
 ```
+
 ```ruby
 # spec_helper.rb
 config.before(:suite) do |example|
@@ -337,6 +339,7 @@ config.after(:each) do |example|
   ActsAsTenant.test_tenant = nil
 end
 ```
+
 Bug reports & suggested improvements
 ------------------------------------
 
