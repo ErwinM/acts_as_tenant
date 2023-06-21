@@ -301,6 +301,7 @@ Background Processing libraries
 ActsAsTenant supports
 
 - [Sidekiq](//sidekiq.org/) - make sure to place acts_as_tenant gem after sidekiq in your gemfiles;
+- DelayedJob - [acts_as_tenant-delayed_job](https://github.com/nunommc/acts_as_tenant-delayed_job)
 
 Testing
 ---------------
