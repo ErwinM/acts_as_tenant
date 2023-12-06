@@ -255,6 +255,9 @@ are shown below with sample overrides following. In `config/initializers/acts_as
 ```ruby
 ActsAsTenant.configure do |config|
   config.require_tenant = false # true
+
+  # Customize the query for loading the tenant in background jobs
+  config.job_scope = ->{ all }
 end
 ```
 
@@ -273,6 +276,31 @@ end
 ```
 
 `ActsAsTenant.should_require_tenant?` is used to determine if a tenant is required in the current context, either by evaluating the lambda provided, or by returning the boolean value assigned to `config.require_tenant`.
+
+When using `config.require_tenant` alongside the `rails console`, a nice quality of life tweak is to set the tenant in the console session in your initializer script. For example in `config/initializers/acts_as_tenant.rb`:
+
+```ruby
+SET_TENANT_PROC = lambda do
+  if defined?(Rails::Console)
+    puts "> ActsAsTenant.current_tenant = Account.first"
+    ActsAsTenant.current_tenant = Account.first
+  end
+end
+
+Rails.application.configure do
+  if Rails.env.development?
+    # Set the tenant to the first account in development on load
+    config.after_initialize do
+      SET_TENANT_PROC.call
+    end
+
+    # Reset the tenant after calling 'reload!' in the console
+    ActiveSupport::Reloader.to_complete do
+      SET_TENANT_PROC.call
+    end
+  end
+end
+```
 
 belongs_to options
 ------------------
@@ -298,6 +326,7 @@ Background Processing libraries
 ActsAsTenant supports
 
 - [Sidekiq](//sidekiq.org/) - make sure to place acts_as_tenant gem after sidekiq in your gemfiles;
+- DelayedJob - [acts_as_tenant-delayed_job](https://github.com/nunommc/acts_as_tenant-delayed_job)
 
 Testing
 ---------------

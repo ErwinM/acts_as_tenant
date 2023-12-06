@@ -1,8 +1,18 @@
 Unreleased
 ----------
 
-* Replace RequestStore dependency with CurrentAttributes. - @excid3
-* Easy integration with Sidekiq, not requiring to add any configuration to the initializer - @nunommc
+* Replace RequestStore dependency with CurrentAttributes. #313 - @excid3
+* Easy integration with Sidekiq, not requiring to add any configuration to the initializer #314 - @nunommc
+* Add `scope` support to `acts_as_tenant :account, ->{ with_deleted }` #282 - @adrian-gomez
+  The scope will be forwarded to `belongs_to`.
+* Add `job_scope` configuration to customize how tenants are loaded in background jobs - @excid3
+  This is helpful for situations like soft delete:
+
+```ruby
+ActsAsTenant.configure do |config|
+  config.job_scope = ->{ with_deleted }
+end
+```
 
 0.6.1
 -----
