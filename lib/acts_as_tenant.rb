@@ -14,7 +14,7 @@ module ActsAsTenant
   @@mutable_tenant = false
 
   class Current < ActiveSupport::CurrentAttributes
-    attribute :current_tenant, :test_tenant, :acts_as_tenant_unscoped
+    attribute :current_tenant, :acts_as_tenant_unscoped
   end
 
   class << self
