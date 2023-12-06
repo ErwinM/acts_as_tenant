@@ -1,6 +1,7 @@
 Unreleased
 ----------
 
+* Replace RequestStore dependency with CurrentAttributes. - @excid3
 * Easy integration with Sidekiq, not requiring to add any configuration to the initializer - @nunommc
 
 0.6.1
