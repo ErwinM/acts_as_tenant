@@ -5,8 +5,8 @@ Unreleased
 -----
 
 * [Breaking] Drop Rails 5.2 support
+* Set current_tenant with ActiveJob automatically #319
 * Replace RequestStore dependency with CurrentAttributes. #313 - @excid3
-* Easy integration with Sidekiq, not requiring to add any configuration to the initializer #314 - @nunommc
 * Add `scope` support to `acts_as_tenant :account, ->{ with_deleted }` #282 - @adrian-gomez
   The scope will be forwarded to `belongs_to`.
 * Add `job_scope` configuration to customize how tenants are loaded in background jobs - @excid3
