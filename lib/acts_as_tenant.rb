@@ -7,6 +7,7 @@ module ActsAsTenant
   autoload :ControllerExtensions, "acts_as_tenant/controller_extensions"
   autoload :ModelExtensions, "acts_as_tenant/model_extensions"
   autoload :TenantHelper, "acts_as_tenant/tenant_helper"
+  autoload :ActiveJobExtensions, "acts_as_tenant/active_job_extensions"
 
   @@configuration = nil
   @@tenant_klass = nil
@@ -160,4 +161,8 @@ end
 
 ActiveSupport.on_load(:action_view) do |base|
   base.include ActsAsTenant::TenantHelper
+end
+
+ActiveSupport.on_load(:active_job) do |base|
+  base.prepend ActsAsTenant::ActiveJobExtensions
 end
