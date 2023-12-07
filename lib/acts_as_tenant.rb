@@ -151,7 +151,6 @@ end
 
 ActiveSupport.on_load(:active_record) do |base|
   base.include ActsAsTenant::ModelExtensions
-  require "acts_as_tenant/sidekiq" if defined?(::Sidekiq)
 end
 
 ActiveSupport.on_load(:action_controller) do |base|

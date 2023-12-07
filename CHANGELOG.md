@@ -1,6 +1,7 @@
 Unreleased
 ----------
 
+* [Breaking] Drop Rails 5.2 support
 * Replace RequestStore dependency with CurrentAttributes. #313 - @excid3
 * Easy integration with Sidekiq, not requiring to add any configuration to the initializer #314 - @nunommc
 * Add `scope` support to `acts_as_tenant :account, ->{ with_deleted }` #282 - @adrian-gomez

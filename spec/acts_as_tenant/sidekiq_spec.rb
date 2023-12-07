@@ -1,4 +1,5 @@
 require "spec_helper"
+require "acts_as_tenant/sidekiq"
 
 describe "ActsAsTenant::Sidekiq" do
   let(:account) { Account.new(id: 1234) }

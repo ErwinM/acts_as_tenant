@@ -16,7 +16,6 @@ jobs:
       matrix:
         ruby: ['2.7', '3.0', '3.1', '3.2']
         gemfile:
-          - rails_5
           - rails_6
           - rails_6_1
           - rails_7
@@ -25,12 +24,6 @@ jobs:
           - sidekiq_6
           - sidekiq_7
         exclude:
-          - ruby: '3.0'
-            gemfile: rails_5
-          - ruby: '3.1'
-            gemfile: rails_5
-          - ruby: '3.2'
-            gemfile: rails_5
           - ruby: '3.2'
             gemfile: rails_6
 

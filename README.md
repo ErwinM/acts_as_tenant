@@ -36,8 +36,6 @@ Want to see how it works? Check out [the ActsAsTenant walkthrough video](https:/
 Installation
 ------------
 
-acts_as_tenant will only work on Rails 5.2 and up. This is due to changes made to the handling of `default_scope`, an essential pillar of the gem.
-
 To use it, add it to your Gemfile:
 
 ```ruby
@@ -325,7 +323,15 @@ Background Processing libraries
 
 ActsAsTenant supports
 
-- [Sidekiq](//sidekiq.org/) - make sure to place acts_as_tenant gem after sidekiq in your gemfiles;
+- ActiveJob - ActsAsTenant will automatically save the current tenant in ActiveJob arguments and set it when the job runs.
+
+- [Sidekiq](//sidekiq.org/)
+Add the following code to `config/initializers/acts_as_tenant.rb`:
+
+```ruby
+require 'acts_as_tenant/sidekiq'
+```
+
 - DelayedJob - [acts_as_tenant-delayed_job](https://github.com/nunommc/acts_as_tenant-delayed_job)
 
 Testing
