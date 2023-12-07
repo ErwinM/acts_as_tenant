@@ -86,6 +86,7 @@ ActiveRecord::Schema.define(version: 1) do
   end
 
   create_table :users, force: true do |t|
+    t.column :email, :string
     t.column :name, :string
   end
 

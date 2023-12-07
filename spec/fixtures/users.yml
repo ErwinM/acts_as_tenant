@@ -1,8 +1,11 @@
 john:
+  email: john@example.org
   name: john
 
 bob:
+  email: bob@example.org
   name: bob
 
 alice:
+  email: alice@example.org
   name: alice
