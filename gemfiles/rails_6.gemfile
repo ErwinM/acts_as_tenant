@@ -9,6 +9,6 @@ gem "standard"
 gem "sidekiq", "~> 7.0"
 gem "appraisal", git: "https://github.com/thoughtbot/appraisal.git"
 gem "byebug", group: [:development, :test]
-gem "rails", "~> 6.0.0", ">= 6.0.4.1"
+gem "rails", "~> 6.0.0"
 
 gemspec path: "../"
