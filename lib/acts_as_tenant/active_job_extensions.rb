@@ -1,7 +1,7 @@
 module ActsAsTenant
   module ActiveJobExtensions
     def serialize
-      super.merge("current_tenant" => ActsAsTenant.current_tenant&.to_global_id)
+      super.merge("current_tenant" => ActsAsTenant.current_tenant&.to_global_id&.to_s)
     end
 
     def deserialize(job_data)
