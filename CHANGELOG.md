@@ -1,6 +1,11 @@
 Unreleased
 ----------
 
+1.0.1
+-----
+
+* Cast GID to string for job args #326
+
 1.0.0
 -----
 
