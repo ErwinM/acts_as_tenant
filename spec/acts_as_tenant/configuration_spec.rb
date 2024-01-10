@@ -59,5 +59,34 @@ describe ActsAsTenant::Configuration do
 
       expect(ActsAsTenant.should_require_tenant?).to eq(false)
     end
+
+    it "runs a hook on current_tenant" do
+      truthy = false
+      ActsAsTenant.configure do |config|
+        config.tenant_change_hook = lambda do |tenant|
+          truthy = true
+        end
+      end
+
+      ActsAsTenant.current_tenant = "foobar"
+
+      expect(truthy).to eq(true)
+    end
+
+    it "runs a hook on with_tenant" do
+      truthy = false
+      ActsAsTenant.configure do |config|
+        config.tenant_change_hook = lambda do |tenant|
+          truthy = true
+        end
+      end
+
+      ActsAsTenant.with_tenant("foobar") do
+        # do nothing
+      end
+
+      expect(truthy).to eq(true)
+    end
+
   end
 end

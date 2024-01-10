@@ -16,6 +16,16 @@ module ActsAsTenant
 
   class Current < ActiveSupport::CurrentAttributes
     attribute :current_tenant, :acts_as_tenant_unscoped
+
+    def current_tenant=(tenant)
+      r = super
+      configuration.tenant_change_hook.call(tenant) if configuration.tenant_change_hook.present?
+      r
+    end
+
+    def configuration
+      Module.nesting.last.class_variable_get("@@configuration")
+    end
   end
 
   class << self
