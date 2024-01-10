@@ -87,6 +87,5 @@ describe ActsAsTenant::Configuration do
 
       expect(truthy).to eq(true)
     end
-
   end
 end

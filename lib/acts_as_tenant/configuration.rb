@@ -33,6 +33,5 @@ module ActsAsTenant
       raise(ArgumentError, "tenant_change_hook must be a Proc") unless hook.is_a?(Proc)
       @tenant_change_hook = hook
     end
-
   end
 end
