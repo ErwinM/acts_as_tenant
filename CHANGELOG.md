@@ -1,6 +1,21 @@
 Unreleased
 ----------
 
+* Add `config.tenant_change_hook` callback when a tenant changes. [#333](https://github.com/ErwinM/acts_as_tenant/pull/333)
+
+This can be used to implement Postgres's row-level security for example
+
+```ruby
+ActsAsTenant.configure do |config|
+  config.tenant_change_hook = lambda do |tenant|
+    if tenant.present?
+      ActiveRecord::Base.connection.execute(ActiveRecord::Base.sanitize_sql_array(["SET rls.account_id = ?;", tenant.id]))
+      Rails.logger.info "Changed tenant to " + [tenant.id, tenant.name].to_json
+    end
+  end
+end
+```
+
 1.0.1
 -----
 
