@@ -23,7 +23,7 @@ module ActsAsTenant
 
           if ActsAsTenant.current_tenant
             keys = [ActsAsTenant.current_tenant.send(pkey)].compact
-            keys.push(nil) if options[:has_global_records]
+            keys.push(ActsAsTenant.global_records_identifier) if options[:has_global_records]
 
             if options[:through]
               query_criteria = {options[:through] => {fkey.to_sym => keys}}

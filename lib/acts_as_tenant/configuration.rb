@@ -1,6 +1,6 @@
 module ActsAsTenant
   class Configuration
-    attr_writer :require_tenant, :pkey
+    attr_writer :require_tenant, :pkey, :global_records_identifier
     attr_reader :tenant_change_hook
 
     def require_tenant
@@ -9,6 +9,10 @@ module ActsAsTenant
 
     def pkey
       @pkey ||= :id
+    end
+
+    def global_records_identifier
+      @global_records_identifier ||= nil
     end
 
     def job_scope

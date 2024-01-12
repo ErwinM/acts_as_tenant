@@ -16,6 +16,16 @@ ActsAsTenant.configure do |config|
 end
 ```
 
+* Add `config.global_records_identifier` configuration. [#332](https://github.com/ErwinM/acts_as_tenant/pull/332)
+
+This is helpful when you want to use a different global records identifier instead of `nil`:
+
+```ruby
+ActsAsTenant.configure do |config|
+  config.global_records_identifier = 1
+end
+```
+
 1.0.1
 -----
 
