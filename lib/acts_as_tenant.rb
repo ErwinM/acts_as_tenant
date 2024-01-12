@@ -58,6 +58,10 @@ module ActsAsTenant
     @@models_with_global_records.push(model)
   end
 
+  def self.global_records_identifier
+    ActsAsTenant.configuration.global_records_identifier
+  end
+
   def self.fkey
     "#{@@tenant_klass}_id"
   end
