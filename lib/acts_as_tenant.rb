@@ -5,6 +5,7 @@ require "acts_as_tenant/errors"
 module ActsAsTenant
   autoload :Configuration, "acts_as_tenant/configuration"
   autoload :ControllerExtensions, "acts_as_tenant/controller_extensions"
+  autoload :ChannelExtensions, "acts_as_tenant/channel_extensions"
   autoload :ModelExtensions, "acts_as_tenant/model_extensions"
   autoload :TenantHelper, "acts_as_tenant/tenant_helper"
   autoload :ActiveJobExtensions, "acts_as_tenant/active_job_extensions"
@@ -165,6 +166,11 @@ end
 
 ActiveSupport.on_load(:action_controller) do |base|
   base.extend ActsAsTenant::ControllerExtensions
+  base.include ActsAsTenant::TenantHelper
+end
+
+ActiveSupport.on_load(:action_cable_channel) do |base|
+  base.extend ActsAsTenant::ChannelExtensions
   base.include ActsAsTenant::TenantHelper
 end
 
