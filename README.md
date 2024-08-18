@@ -197,6 +197,15 @@ Project.tasks.all #  => all tasks with account_id => 3
 
 Acts_as_tenant uses Rails' `default_scope` method to scope models. Rails 3.1 changed the way `default_scope` works in a good way. A user defined `default_scope` should integrate seamlessly with the one added by `acts_as_tenant`.
 
+### Validating belongs_to associations
+
+If you need to validate that a belongs_to association must have the same tenant as the model is defining the association. You can do so by using:
+
+```ruby
+tenantable_belongs_to :association_name
+```
+All options available to Rails' own `belongs_to` are also available to this method.
+
 ### Validating attribute uniqueness
 
 If you need to validate for uniqueness, chances are that you want to scope this validation to a tenant. You can do so by using:
