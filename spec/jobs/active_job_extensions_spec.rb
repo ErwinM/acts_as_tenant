@@ -35,6 +35,13 @@ RSpec.describe ApplicationTestJob, type: :job do
         expect { described_class.perform_later(expected_tenant: nil) }.to have_enqueued_job.on_queue("default")
         expect { perform_enqueued_jobs }.to raise_error(ActsAsTenant::Errors::NoTenantSet)
       end
+
+      it "serializes tenant to a JSON-compatible format" do
+        ActsAsTenant.current_tenant = account
+        job = described_class.perform_later(expected_tenant: account)
+        serialized_data = job.serialize
+        expect(serialized_data["current_tenant"]).to be_a_kind_of String
+      end
     end
 
     context "when tenant is not required" do
