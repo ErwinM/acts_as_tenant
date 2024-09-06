@@ -505,4 +505,31 @@ describe ActsAsTenant do
       expect(ActsAsTenant.current_tenant).to eq(accounts(:bar))
     end
   end
+
+  describe 'tenantable_belongs_to' do
+    let(:account) { accounts(:foo) }
+    let(:other_account) { accounts(:bar) }
+
+    it "validates that the task's account_id matches the project's account_id when tenantable_belongs_to is defined" do
+      project = Project.create!(account: account)
+      task = TenantableTask.new(project: project, account: account)
+
+      expect(task).to be_valid
+    end
+
+    it "is invalid if task's tenant_id does not match the project's tenant_id when tenantable_belongs_to is defined" do
+      project = Project.create!(account: account)
+      task = TenantableTask.new(project: project, account: other_account)
+
+      expect(task).not_to be_valid
+      expect(task.errors[:account_id]).to include("must match the project model's account_id")
+    end
+
+    it 'does not enforce tenant_id matching if default belongs_to is used' do
+      project = Project.create!(account: account)
+      task = Task.new(project: project, account: other_account)
+
+      expect(task).to be_valid
+    end
+  end
 end

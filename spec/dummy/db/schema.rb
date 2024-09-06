@@ -39,6 +39,13 @@ ActiveRecord::Schema.define(version: 1) do
     t.column :completed, :boolean
   end
 
+  create_table :tenantable_tasks, force: true do |t|
+    t.column :name, :string
+    t.column :account_id, :integer
+    t.column :project_id, :integer
+    t.column :completed, :boolean
+  end
+
   create_table :countries, force: true do |t|
     t.column :name, :string
   end

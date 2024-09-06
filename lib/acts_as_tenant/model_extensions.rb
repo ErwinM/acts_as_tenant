@@ -139,6 +139,39 @@ module ActsAsTenant
           validates_uniqueness_of(fields, blank_tenant_validation_args)
         end
       end
+
+      # Creates a `belongs_to` association with an automatic tenant validation.
+      #
+      # This method defines a `belongs_to` association where the associated record's tenant ID
+      # must match the tenant ID of the current record. This ensures that a record can only be associated
+      # with another record belonging to the same tenant.
+      #
+      # ==== Parameters
+      # * +name+ - The name of the association.
+      # * +scope+ - An optional scope to be applied to the association (can be +nil+).
+      # * +options+ - Additional options to be passed to the `belongs_to` method.
+      #
+      # ==== Examples
+      #
+      #   tenantable_belongs_to :project
+      #
+      #   tenantable_belongs_to :project, -> { where(active: true) }
+      #
+      # The validation added ensures that the associated record's tenant ID matches the tenant ID of the
+      # current record. If they do not match, an error will be added to the model, preventing it from being saved.
+      #
+      def tenantable_belongs_to(name, scope = nil, **options)
+        belongs_to name, scope, **options
+
+        fkey = reflect_on_association(ActsAsTenant.tenant_klass).foreign_key.to_sym
+
+        validate do
+          associated_record = send(name)
+          if associated_record.present? && associated_record.send(fkey) != send(fkey)
+            errors.add(fkey, "must match the #{name} model's #{fkey}")
+          end
+        end
+      end
     end
   end
 end
