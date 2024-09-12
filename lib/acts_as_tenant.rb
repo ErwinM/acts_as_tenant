@@ -115,7 +115,7 @@ module ActsAsTenant
       raise ArgumentError, "block required"
     end
 
-    old_tenant = current_tenant
+    old_tenant = Current.current_tenant
     self.current_tenant = tenant
     value = block.call
     value
@@ -128,7 +128,7 @@ module ActsAsTenant
       raise ArgumentError, "block required"
     end
 
-    old_tenant = current_tenant
+    old_tenant = Current.current_tenant
     old_test_tenant = test_tenant
     old_unscoped = unscoped
 
