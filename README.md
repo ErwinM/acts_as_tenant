@@ -253,6 +253,7 @@ are shown below with sample overrides following. In `config/initializers/acts_as
 ```ruby
 ActsAsTenant.configure do |config|
   config.require_tenant = false # true
+  config.global_records_identifier = nil
 
   # Customize the query for loading the tenant in background jobs
   config.job_scope = ->{ all }
