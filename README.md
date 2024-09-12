@@ -244,6 +244,37 @@ class OrganisationsUser < ActiveRecord::Base
 end
 ```
 
+Multitenancy based on user group (use case)
+---------------------
+
+Sometimes you just need a simple way to let multiple users in the same system have separate data without doing custom domains or subdomains. That could be teams within the same organisation using a system without seing data from each other.
+
+This simple aproach uses a team_id on users (and all other models) to lock users into a team.
+
+Create a user with a given team_id and he and his data will now be locked into that team.
+
+Simply combine primary_key and foreign_key on `acts_as_tenant`:
+```ruby
+class SomeModel < ApplicationRecord
+  acts_as_tenant(:user, primary_key: :team_id, foreign_key: :team_id, optional: true)
+end
+```
+
+Set the current tenant from the user logged in:
+```ruby
+class ApplicationController < ActionController::Base
+  set_current_tenant_through_filter
+  before_action :set_tenant
+
+  def set_tenant
+    # current user here is the user currently logged in
+    # replace with a user method matching your authentication system
+    set_current_tenant(current_user)
+  end
+end
+```
+
+
 Configuration options
 ---------------------
 
