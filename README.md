@@ -269,6 +269,7 @@ ActsAsTenant.configure do |config|
     if $request_env.present?
       return false if $request_env["REQUEST_PATH"].start_with?("/admin/")
     end
+    return true
   end
 end
 ```
