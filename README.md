@@ -158,7 +158,7 @@ Scoping your models
 -------------------
 
 ```ruby
-class AddAccountToUsers < ActiveRecord::Migration
+class AddAccountToProjects < ActiveRecord::Migration
   def up
     add_column :projects, :account_id, :integer
     add_index  :projects, :account_id
