@@ -2,7 +2,6 @@
 
 source "https://rubygems.org"
 
-gem "rspec", git: "https://github.com/rspec/rspec.git", branch: "main"
 gem "rspec-rails", git: "https://github.com/rspec/rspec-rails.git", branch: "main"
 gem "sqlite3"
 gem "standard"

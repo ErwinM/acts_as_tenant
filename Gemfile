@@ -11,7 +11,6 @@ gemspec
 # Git. Remember to move these dependencies to your gemspec before releasing
 # your gem to rubygems.org.
 
-gem "rspec", ">=3.0"
 gem "rspec-rails"
 gem "sqlite3"
 gem "standard"

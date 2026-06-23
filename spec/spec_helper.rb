@@ -13,7 +13,7 @@ RSpec.configure do |config|
     ActsAsTenant.test_tenant = nil
   end
 
-  config.fixture_path = "spec/fixtures"
+  config.fixture_paths = ["spec/fixtures"]
   config.global_fixtures = :all
   config.use_transactional_fixtures = true
   config.infer_base_class_for_anonymous_controllers = true
