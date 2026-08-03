@@ -2,6 +2,7 @@ require "spec_helper"
 
 class ApplicationController2 < ActionController::Base
   include Rails.application.routes.url_helpers
+
   set_current_tenant_through_filter
   before_action :your_method_that_finds_the_current_tenant
 
