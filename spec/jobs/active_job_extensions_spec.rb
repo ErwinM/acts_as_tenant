@@ -46,4 +46,31 @@ RSpec.describe ApplicationTestJob, type: :job do
       end
     end
   end
+
+  describe "#perform_now" do
+    let(:other_account) { accounts(:bar) }
+    let(:job_data) { ActsAsTenant.with_tenant(account) { described_class.new(expected_tenant: account).serialize } }
+
+    it "restores the tenant that was set before the job" do
+      job = described_class.new
+      job.deserialize(job_data)
+
+      ActsAsTenant.with_tenant(other_account) do
+        job.perform_now
+        expect(ActsAsTenant.current_tenant).to eq(other_account)
+      end
+    end
+
+    context "when the tenant no longer exists" do
+      before { job_data && account.destroy }
+
+      it "deserializes the job without loading the tenant" do
+        expect { described_class.new.deserialize(job_data) }.not_to raise_error
+      end
+
+      it "raises when the job is performed" do
+        expect { ActiveJob::Base.execute(job_data) }.to raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
+  end
 end
