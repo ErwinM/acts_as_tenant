@@ -3,7 +3,7 @@ Unreleased
 
 * Resolve the tenant when performing a job instead of when deserializing it. [#358](https://github.com/ErwinM/acts_as_tenant/pull/358)
 
-Deserializing a job no longer loads the tenant record, so a job dashboard can list a job whose tenant was deleted instead of raising `ActiveRecord::RecordNotFound`. The tenant is set for the duration of `perform` and restored afterwards.
+Deserializing a job no longer loads the tenant record, so a job dashboard can list a job whose tenant was deleted instead of raising `ActiveRecord::RecordNotFound`. Performing such a job still raises, and `discard_on ActiveRecord::RecordNotFound` can now handle it. The tenant is set for the duration of `perform` and restored afterwards.
 
 * Add `config.tenant_change_hook` callback when a tenant changes. [#333](https://github.com/ErwinM/acts_as_tenant/pull/333)
 
