@@ -281,23 +281,13 @@ end
 When using `config.require_tenant` alongside the `rails console`, a nice quality of life tweak is to set the tenant in the console session in your initializer script. For example in `config/initializers/acts_as_tenant.rb`:
 
 ```ruby
-SET_TENANT_PROC = lambda do
-  if defined?(Rails::Console)
-    puts "> ActsAsTenant.current_tenant = Account.first"
-    ActsAsTenant.current_tenant = Account.first
-  end
-end
-
 Rails.application.configure do
-  if Rails.env.development?
-    # Set the tenant to the first account in development on load
-    config.after_initialize do
-      SET_TENANT_PROC.call
-    end
-
-    # Reset the tenant after calling 'reload!' in the console
-    ActiveSupport::Reloader.to_complete do
-      SET_TENANT_PROC.call
+  if Rails.env.development? && defined?(Rails::Console)
+    # set the current_tenant during console startup and after calling reload!
+    # note: reload! calls the to_prepare callback twice
+    ActiveSupport::Reloader.to_prepare do
+      puts ">>> Setting ActsAsTenant.current_tenant = Account.first"
+      ActsAsTenant.current_tenant = Account.first
     end
   end
 end
