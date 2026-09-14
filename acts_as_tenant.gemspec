@@ -10,6 +10,7 @@ Gem::Specification.new do |spec|
   spec.summary = "Add multi-tenancy to Rails applications using a shared db strategy"
   spec.description = "Integrates multi-tenancy into a Rails application in a convenient and out-of-your way manner"
   spec.metadata = {"rubygems_mfa_required" => "true"}
+  spec.license = "MIT"
 
   spec.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
