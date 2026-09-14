@@ -154,7 +154,8 @@ module ActsAsTenant
     config = configuration.require_tenant
     return !!config unless config.respond_to?(:call)
 
-    config.arity.zero? ? !!config.call : !!config.call(context)
+    arity = config.respond_to?(:arity) ? config.arity : config.method(:call).arity
+    arity.zero? ? !!config.call : !!config.call(context)
   end
 end
 

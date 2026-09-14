@@ -1,6 +1,16 @@
 Unreleased
 ----------
 
+* `config.require_tenant` callables can accept the relation being queried as an argument. [#349](https://github.com/ErwinM/acts_as_tenant/pull/349)
+
+```ruby
+ActsAsTenant.configure do |config|
+  config.require_tenant = lambda do |relation|
+    relation.klass.name != "User"
+  end
+end
+```
+
 * Add support for Rails 7.2, 8.0, 8.1 and Sidekiq 8. [#361](https://github.com/ErwinM/acts_as_tenant/pull/361)
 
 * Resolve the tenant when performing a job instead of when deserializing it. [#358](https://github.com/ErwinM/acts_as_tenant/pull/358)

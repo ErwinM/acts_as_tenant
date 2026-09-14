@@ -45,6 +45,34 @@ describe ActsAsTenant::Configuration do
       expect(test_context.klass.name).to eq("Project")
     end
 
+    it "evaluates callable object" do
+      policy = Class.new do
+        def self.call
+          true
+        end
+      end
+
+      ActsAsTenant.configure do |config|
+        config.require_tenant = policy
+      end
+
+      expect(ActsAsTenant.should_require_tenant?).to eq(true)
+    end
+
+    it "evaluates callable object with context" do
+      policy = Class.new do
+        def self.call(context)
+          context.klass.name == "Project"
+        end
+      end
+
+      ActsAsTenant.configure do |config|
+        config.require_tenant = policy
+      end
+
+      expect { accounts(:foo).projects.create!(name: "foobar") }.to raise_error(ActsAsTenant::Errors::NoTenantSet)
+    end
+
     it "evaluates boolean" do
       ActsAsTenant.configure do |config|
         config.require_tenant = true

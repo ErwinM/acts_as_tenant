@@ -276,7 +276,7 @@ ActsAsTenant.configure do |config|
 end
 ```
 
-The lambda can also optionally receive the ar_relation currently being evaulated as an argument. This is useful for finer control over tenant requirements.
+The lambda can also optionally receive the ar_relation currently being evaluated as an argument. This is useful for finer control over tenant requirements.
 
 For example, if you wanted to require the tenant for every model except `User`, you could do the following:
 
