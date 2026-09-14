@@ -13,7 +13,11 @@ RSpec.configure do |config|
     ActsAsTenant.test_tenant = nil
   end
 
-  config.fixture_path = "spec/fixtures"
+  if Rails.gem_version >= Gem::Version.new("7.1")
+    config.fixture_paths = ["spec/fixtures"]
+  else
+    config.fixture_path = "spec/fixtures"
+  end
   config.global_fixtures = :all
   config.use_transactional_fixtures = true
   config.infer_base_class_for_anonymous_controllers = true

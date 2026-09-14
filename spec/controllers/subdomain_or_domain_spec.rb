@@ -2,6 +2,7 @@ require "spec_helper"
 
 class DomainController < ActionController::Base
   include Rails.application.routes.url_helpers
+
   set_current_tenant_by_subdomain_or_domain
 end
 
