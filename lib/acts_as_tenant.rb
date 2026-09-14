@@ -24,7 +24,7 @@ module ActsAsTenant
     end
 
     def configuration
-      Module.nesting.last.class_variable_get(:@@configuration)
+      ActsAsTenant.configuration
     end
   end
 

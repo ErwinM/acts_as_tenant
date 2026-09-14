@@ -158,14 +158,14 @@ Scoping your models
 -------------------
 
 ```ruby
-class AddAccountToUsers < ActiveRecord::Migration
+class AddAccountToProjects < ActiveRecord::Migration
   def up
-    add_column :users, :account_id, :integer
-    add_index  :users, :account_id
+    add_column :projects, :account_id, :integer
+    add_index  :projects, :account_id
   end
 end
 
-class User < ActiveRecord::Base
+class Project < ActiveRecord::Base
   acts_as_tenant(:account)
 end
 ```
@@ -196,6 +196,8 @@ Project.tasks.all #  => all tasks with account_id => 3
 ```
 
 Acts_as_tenant uses Rails' `default_scope` method to scope models. Rails 3.1 changed the way `default_scope` works in a good way. A user defined `default_scope` should integrate seamlessly with the one added by `acts_as_tenant`.
+
+You should call `acts_as_tenant` after any `belongs_to` associations in your model.
 
 ### Validating attribute uniqueness
 
@@ -269,6 +271,7 @@ ActsAsTenant.configure do |config|
     if $request_env.present?
       return false if $request_env["REQUEST_PATH"].start_with?("/admin/")
     end
+    return true
   end
 end
 ```
@@ -290,23 +293,13 @@ end
 When using `config.require_tenant` alongside the `rails console`, a nice quality of life tweak is to set the tenant in the console session in your initializer script. For example in `config/initializers/acts_as_tenant.rb`:
 
 ```ruby
-SET_TENANT_PROC = lambda do
-  if defined?(Rails::Console)
-    puts "> ActsAsTenant.current_tenant = Account.first"
-    ActsAsTenant.current_tenant = Account.first
-  end
-end
-
 Rails.application.configure do
-  if Rails.env.development?
-    # Set the tenant to the first account in development on load
-    config.after_initialize do
-      SET_TENANT_PROC.call
-    end
-
-    # Reset the tenant after calling 'reload!' in the console
-    ActiveSupport::Reloader.to_complete do
-      SET_TENANT_PROC.call
+  if Rails.env.development? && defined?(Rails::Console)
+    # set the current_tenant during console startup and after calling reload!
+    # note: reload! calls the to_prepare callback twice
+    ActiveSupport::Reloader.to_prepare do
+      puts ">>> Setting ActsAsTenant.current_tenant = Account.first"
+      ActsAsTenant.current_tenant = Account.first
     end
   end
 end

@@ -100,63 +100,6 @@ GIT
       zeitwerk (~> 2.6)
 
 GIT
-  remote: https://github.com/rspec/rspec-core.git
-  revision: f273314f575ab62092b2ad86addb6a3c93d6041f
-  branch: main
-  specs:
-    rspec-core (3.13.0.pre)
-      rspec-support (= 3.13.0.pre)
-
-GIT
-  remote: https://github.com/rspec/rspec-expectations.git
-  revision: 2e8e800a0d8b64e7168dd625efe8f7526b7f1262
-  branch: main
-  specs:
-    rspec-expectations (3.13.0.pre)
-      diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (= 3.13.0.pre)
-
-GIT
-  remote: https://github.com/rspec/rspec-mocks.git
-  revision: 868bf98d2aae5f0db15441a41b86b5f9346a12dd
-  branch: main
-  specs:
-    rspec-mocks (3.13.0.pre)
-      diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (= 3.13.0.pre)
-
-GIT
-  remote: https://github.com/rspec/rspec-rails.git
-  revision: d8d1e5ab49fc997dacc503888fe4f459f47649e0
-  branch: main
-  specs:
-    rspec-rails (6.2.0.pre)
-      actionpack (>= 6.1)
-      activesupport (>= 6.1)
-      railties (>= 6.1)
-      rspec-core (= 3.13.0.pre)
-      rspec-expectations (= 3.13.0.pre)
-      rspec-mocks (= 3.13.0.pre)
-      rspec-support (= 3.13.0.pre)
-
-GIT
-  remote: https://github.com/rspec/rspec-support.git
-  revision: 48c227f93d7b69ce28babb2dce0a9d08ac4d2654
-  branch: main
-  specs:
-    rspec-support (3.13.0.pre)
-
-GIT
-  remote: https://github.com/rspec/rspec.git
-  revision: cfb135a48b343fa75f28841f14874ea05e8e195f
-  branch: main
-  specs:
-    rspec (3.13.0.pre)
-      rspec-core (= 3.13.0.pre)
-      rspec-expectations (= 3.13.0.pre)
-      rspec-mocks (= 3.13.0.pre)
-
-GIT
   remote: https://github.com/thoughtbot/appraisal.git
   revision: feb78bcc6177038399bff098cb6c2bd4bca4972a
   specs:
@@ -183,7 +126,7 @@ GEM
     connection_pool (2.4.1)
     crass (1.0.6)
     date (3.3.4)
-    diff-lcs (1.5.0)
+    diff-lcs (1.6.2)
     drb (2.2.0)
       ruby2_keywords
     erubi (1.12.0)
@@ -259,6 +202,27 @@ GEM
     reline (0.4.1)
       io-console (~> 0.5)
     rexml (3.2.6)
+    rspec (3.13.2)
+      rspec-core (~> 3.13.0)
+      rspec-expectations (~> 3.13.0)
+      rspec-mocks (~> 3.13.0)
+    rspec-core (3.13.6)
+      rspec-support (~> 3.13.0)
+    rspec-expectations (3.13.5)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.13.0)
+    rspec-mocks (3.13.8)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.13.0)
+    rspec-rails (7.1.1)
+      actionpack (>= 7.0)
+      activesupport (>= 7.0)
+      railties (>= 7.0)
+      rspec-core (~> 3.13)
+      rspec-expectations (~> 3.13)
+      rspec-mocks (~> 3.13)
+      rspec-support (~> 3.13)
+    rspec-support (3.13.7)
     rubocop (1.57.2)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
@@ -320,12 +284,8 @@ DEPENDENCIES
   appraisal!
   byebug
   rails!
-  rspec!
-  rspec-core!
-  rspec-expectations!
-  rspec-mocks!
-  rspec-rails!
-  rspec-support!
+  rspec (>= 3.0)
+  rspec-rails
   sidekiq (~> 7.0)
   sqlite3
   standard
