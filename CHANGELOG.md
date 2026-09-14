@@ -1,7 +1,7 @@
 Unreleased
 ----------
 
-* `config.require_tenant` callables can accept the relation being queried as an argument. [#349](https://github.com/ErwinM/acts_as_tenant/pull/349)
+* `config.require_tenant` callables can accept the relation being queried as an argument. [#362](https://github.com/ErwinM/acts_as_tenant/pull/362)
 
 ```ruby
 ActsAsTenant.configure do |config|
