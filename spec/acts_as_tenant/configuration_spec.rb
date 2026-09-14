@@ -87,5 +87,12 @@ describe ActsAsTenant::Configuration do
 
       expect(truthy).to eq(true)
     end
+
+    it "sets current_tenant before anything is configured" do
+      ActsAsTenant.class_variable_set(:@@configuration, nil)
+
+      expect { ActsAsTenant.current_tenant = "foobar" }.not_to raise_error
+      expect(ActsAsTenant.current_tenant).to eq("foobar")
+    end
   end
 end
