@@ -276,6 +276,18 @@ ActsAsTenant.configure do |config|
 end
 ```
 
+The lambda can also optionally receive the ar_relation currently being evaluated as an argument. This is useful for finer control over tenant requirements.
+
+For example, if you wanted to require the tenant for every model except `User`, you could do the following:
+
+```ruby
+ActsAsTenant.configure do |config|
+  config.require_tenant = lambda do |relation|
+    relation.klass.name != "User"
+  end
+end
+```
+
 `ActsAsTenant.should_require_tenant?` is used to determine if a tenant is required in the current context, either by evaluating the lambda provided, or by returning the boolean value assigned to `config.require_tenant`.
 
 When using `config.require_tenant` alongside the `rails console`, a nice quality of life tweak is to set the tenant in the console session in your initializer script. For example in `config/initializers/acts_as_tenant.rb`:
