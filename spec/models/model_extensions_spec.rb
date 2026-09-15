@@ -364,6 +364,16 @@ describe ActsAsTenant do
     it "should raise an error when no block is provided" do
       expect { ActsAsTenant.with_tenant(nil) }.to raise_error(ArgumentError, /block required/)
     end
+
+    it "does not bleed test_tenant into current_tenant" do
+      ActsAsTenant.current_tenant = nil
+      ActsAsTenant.test_tenant = account
+
+      ActsAsTenant.with_tenant(accounts(:bar)) {}
+
+      ActsAsTenant.test_tenant = nil
+      expect(ActsAsTenant.current_tenant).to eq(nil)
+    end
   end
 
   describe "::without_tenant" do
@@ -410,6 +420,16 @@ describe ActsAsTenant do
       ActsAsTenant.test_tenant = account
       ActsAsTenant.without_tenant {}
       expect(ActsAsTenant.test_tenant).to eq(account)
+    end
+
+    it "does not bleed test_tenant into current_tenant" do
+      ActsAsTenant.current_tenant = nil
+      ActsAsTenant.test_tenant = account
+
+      ActsAsTenant.without_tenant {}
+
+      ActsAsTenant.test_tenant = nil
+      expect(ActsAsTenant.current_tenant).to eq(nil)
     end
 
     it "should return the value of the block" do
