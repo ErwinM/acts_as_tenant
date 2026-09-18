@@ -85,7 +85,22 @@ module ActsAsTenant
               a.primary_key
             end.to_sym
             scope = a.scope || ->(relation) { relation }
-            record.errors.add attr, "association is invalid [ActsAsTenant]" unless a.klass.class_eval(&scope).where(primary_key => value).any?
+            unless a.klass.class_eval(&scope).where(primary_key => value).any?
+              record.errors.add attr, "association is invalid [ActsAsTenant]"
+              next
+            end
+
+            # Without a current tenant the lookup above isn't scoped, so compare the tenants directly
+            next if ActsAsTenant.current_tenant || !a.klass.respond_to?(:scoped_by_tenant?)
+
+            tenant_id = record.read_attribute(fkey)
+            associated_fkey = a.klass.reflect_on_association(tenant)&.foreign_key&.to_s
+            next if tenant_id.nil? || !a.klass.column_names.include?(associated_fkey)
+
+            associated_tenant_id = record.association(a.name).reader&.read_attribute(associated_fkey)
+            next if associated_tenant_id.nil?
+
+            record.errors.add attr, "association is invalid [ActsAsTenant]" unless associated_tenant_id == tenant_id
           end
         end
 

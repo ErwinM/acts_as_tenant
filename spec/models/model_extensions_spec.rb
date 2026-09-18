@@ -253,6 +253,55 @@ describe ActsAsTenant do
     expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
   end
 
+  describe "validating associations without a current tenant" do
+    it "is invalid when the associated record belongs to another tenant" do
+      project = accounts(:bar).projects.create!(name: "other_tenant_project")
+      task = Task.new(name: "bar", account: account, project: project)
+
+      expect(task.valid?).to eq(false)
+      expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
+    end
+
+    it "is invalid when only the foreign key is assigned" do
+      project = accounts(:bar).projects.create!(name: "other_tenant_project")
+      task = Task.new(name: "bar", account: account, project_id: project.id)
+
+      expect(task.valid?).to eq(false)
+      expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
+    end
+
+    it "is invalid inside without_tenant" do
+      project = accounts(:bar).projects.create!(name: "other_tenant_project")
+      task = Task.new(name: "bar", account: account, project: project)
+
+      expect(ActsAsTenant.without_tenant { task.valid? }).to eq(false)
+    end
+
+    it "is valid when the associated record belongs to the same tenant" do
+      project = account.projects.create!(name: "same_tenant_project")
+
+      expect(Task.new(name: "bar", account: account, project: project).valid?).to eq(true)
+    end
+
+    it "is valid when the associated record has no tenant" do
+      project = Project.create!(name: "global_project")
+
+      expect(Task.new(name: "bar", account: account, project: project).valid?).to eq(true)
+    end
+
+    it "is valid when the record has no tenant" do
+      project = account.projects.create!(name: "same_tenant_project")
+
+      expect(Task.new(name: "bar", project: project).valid?).to eq(true)
+    end
+
+    it "skips associated models scoped through another association" do
+      user = User.create!(email: "user@example.com")
+
+      expect(UsersAccount.new(user: user, account: account).valid?).to eq(true)
+    end
+  end
+
   it "can create and save an AaT-enabled child without it having a parent" do
     ActsAsTenant.current_tenant = account
     expect(Task.new(name: "bar").valid?).to eq(true)
