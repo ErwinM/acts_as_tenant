@@ -310,6 +310,25 @@ describe ActsAsTenant do
         end
       end
 
+      context "with an STI tenant" do
+        let(:article) { FeaturedArticle.create!(title: "featured") }
+
+        it "stores the tenant's polymorphic_name" do
+          ActsAsTenant.current_tenant = article
+          comment = PolymorphicTenantComment.create!
+
+          expect(comment.polymorphic_tenant_commentable_type).to eq("Article")
+          expect(article.polymorphic_tenant_comments).to eq([comment])
+        end
+
+        it "scopes to records saved with the tenant's class name" do
+          comment = PolymorphicTenantComment.create!(polymorphic_tenant_commentable_id: article.id, polymorphic_tenant_commentable_type: "FeaturedArticle")
+          ActsAsTenant.current_tenant = article
+
+          expect(PolymorphicTenantComment.all).to eq([comment])
+        end
+      end
+
       it "sets the tenant on records built before the tenant was set" do
         ActsAsTenant.current_tenant = nil
         comment = PolymorphicTenantComment.new(account: account)

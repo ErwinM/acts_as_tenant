@@ -15,6 +15,20 @@ module ActsAsTenant
         polymorphic_type = valid_options[:foreign_type] || ActsAsTenant.polymorphic_type
         belongs_to tenant, scope, **valid_options
 
+        # Polymorphic tenants are stored with polymorphic_name, like Rails does. Records saved before
+        # that used the class name, which differs for STI tenants, so match both when scoping.
+        # An OR is used because Rails 6.0 would assign an IN condition to new records as their type.
+        polymorphic_condition = lambda do |table|
+          polymorphic_name = ActsAsTenant.current_tenant.class.polymorphic_name
+          class_name = ActsAsTenant.current_tenant.class.name
+
+          if polymorphic_name == class_name
+            {polymorphic_type.to_sym => polymorphic_name}
+          else
+            table[polymorphic_type].eq(polymorphic_name).or(table[polymorphic_type].eq(class_name))
+          end
+        end
+
         default_scope lambda {
           if ActsAsTenant.should_require_tenant?(self) && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
             raise ActsAsTenant::Errors::NoTenantSet
@@ -24,15 +38,13 @@ module ActsAsTenant
             keys = [ActsAsTenant.current_tenant.send(pkey)].compact
             keys.push(nil) if options[:has_global_records]
 
-            if options[:through]
-              query_criteria = {options[:through] => {fkey.to_sym => keys}}
-              query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
-              joins(options[:through]).where(query_criteria)
+            relation = if options[:through]
+              joins(options[:through]).where(options[:through] => {fkey.to_sym => keys})
             else
-              query_criteria = {fkey.to_sym => keys}
-              query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
-              where(query_criteria)
+              where(fkey.to_sym => keys)
             end
+
+            options[:polymorphic] ? relation.where(polymorphic_condition.call(arel_table)) : relation
           else
             all
           end
@@ -46,7 +58,7 @@ module ActsAsTenant
           if ActsAsTenant.current_tenant
             if options[:polymorphic]
               m.send(:"#{fkey}=", ActsAsTenant.current_tenant.send(pkey)) if m.send(fkey.to_s).nil?
-              m.send(:"#{polymorphic_type}=", ActsAsTenant.current_tenant.class.to_s) if m.send(polymorphic_type.to_s).nil?
+              m.send(:"#{polymorphic_type}=", ActsAsTenant.current_tenant.class.polymorphic_name) if m.send(polymorphic_type.to_s).nil?
             else
               m.send :"#{fkey}=", ActsAsTenant.current_tenant.send(pkey)
             end
