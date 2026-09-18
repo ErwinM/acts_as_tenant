@@ -322,6 +322,13 @@ describe ActsAsTenant do
     end
   end
 
+  it "looks up associations by the associated model's primary key" do
+    project = account.projects.create!(name: "keyed_project")
+    ActsAsTenant.current_tenant = account
+
+    expect(KeyedTask.new(project: project).valid?).to eq(true)
+  end
+
   it "can create and save an AaT-enabled child without it having a parent" do
     ActsAsTenant.current_tenant = account
     expect(Task.new(name: "bar").valid?).to eq(true)

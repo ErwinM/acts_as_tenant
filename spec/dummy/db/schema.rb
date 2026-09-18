@@ -72,6 +72,11 @@ ActiveRecord::Schema.define(version: 1) do
     t.column :accountID, :integer
   end
 
+  create_table :keyed_tasks, primary_key: :task_uid, force: true do |t|
+    t.column :account_id, :integer
+    t.column :project_id, :integer
+  end
+
   create_table :custom_primary_key_tasks, force: true do |t|
     t.column :name, :string
   end

@@ -20,14 +20,14 @@ module ActsAsTenant
         # Polymorphic tenants are stored with polymorphic_name, like Rails does. Records saved before
         # that used the class name, which differs for STI tenants, so match both when scoping.
         # An OR is used because Rails 6.0 would assign an IN condition to new records as their type.
-        polymorphic_condition = lambda do |table, current_tenant|
+        polymorphic_condition = lambda do |current_tenant|
           polymorphic_name = current_tenant.class.polymorphic_name
           class_name = current_tenant.class.name
 
           if polymorphic_name == class_name
             {polymorphic_type => polymorphic_name}
           else
-            table[polymorphic_type].eq(polymorphic_name).or(table[polymorphic_type].eq(class_name))
+            arel_table[polymorphic_type].eq(polymorphic_name).or(arel_table[polymorphic_type].eq(class_name))
           end
         end
 
@@ -44,7 +44,7 @@ module ActsAsTenant
               where(fkey => keys)
             end
 
-            options[:polymorphic] ? relation.where(polymorphic_condition.call(arel_table, current_tenant)) : relation
+            options[:polymorphic] ? relation.where(polymorphic_condition.call(current_tenant)) : relation
           elsif !ActsAsTenant.unscoped? && ActsAsTenant.should_require_tenant?(self)
             raise ActsAsTenant::Errors::NoTenantSet
           else
@@ -109,7 +109,7 @@ module ActsAsTenant
             next if value.nil?
 
             relation = a.scope ? a.klass.class_eval(&a.scope) : a.klass
-            associated = relation.find_by(a.active_record_primary_key => value)
+            associated = relation.find_by(a.association_primary_key => value)
 
             if associated.nil? || tenant_mismatch.call(record, associated)
               record.errors.add attr, "association is invalid [ActsAsTenant]"
@@ -117,27 +117,24 @@ module ActsAsTenant
           end
         end
 
-        # Dynamically generate the following methods:
-        # - Rewrite the accessors to make tenant immutable
-        # - Add an override to prevent unnecessary db hits
-        # - Add a helper method to verify if a model has been scoped by AaT
+        # Tenant writers raise if the tenant changes on a persisted record
         to_include = Module.new {
           define_method :"#{fkey}=" do |integer|
             write_attribute(fkey, integer)
-            ensure_tenant_immutable!
+            raise_if_tenant_changed
             integer
           end
 
           define_method :"#{tenant}=" do |model|
             super(model)
-            ensure_tenant_immutable!
+            raise_if_tenant_changed
             model
           end
 
-          define_method :ensure_tenant_immutable! do
+          define_method :raise_if_tenant_changed do
             raise ActsAsTenant::Errors::TenantIsImmutable if !ActsAsTenant.mutable_tenant? && tenant_modified?
           end
-          private :ensure_tenant_immutable!
+          private :raise_if_tenant_changed
 
           define_method :tenant_modified? do
             will_save_change_to_attribute?(fkey) && persisted? && attribute_in_database(fkey).present?
@@ -170,18 +167,18 @@ module ActsAsTenant
         if ActsAsTenant.models_with_global_records.include?(self)
           arg_if = args.delete(:if)
           arg_condition = args.delete(:conditions)
-          user_if = ->(instance) { arg_if.blank? || arg_if.call(instance) }
+          arg_if_passes = ->(instance) { arg_if.blank? || arg_if.call(instance) }
 
           # if tenant is not set (instance is global) - validating globally
           global_validation_args = args.merge(
-            if: ->(instance) { instance[fkey].blank? && user_if.call(instance) }
+            if: ->(instance) { instance[fkey].blank? && arg_if_passes.call(instance) }
           )
           validates_uniqueness_of(fields, global_validation_args)
 
           # if tenant is set (instance is not global) and records can be global - validating within records with blank tenant
           blank_tenant_validation_args = args.merge(
             conditions: -> { arg_condition.blank? ? where(fkey => nil) : arg_condition.call.where(fkey => nil) },
-            if: ->(instance) { instance[fkey].present? && user_if.call(instance) }
+            if: ->(instance) { instance[fkey].present? && arg_if_passes.call(instance) }
           )
 
           validates_uniqueness_of(fields, blank_tenant_validation_args)
