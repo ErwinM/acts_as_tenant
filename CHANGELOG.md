@@ -1,6 +1,41 @@
 Unreleased
 ----------
 
+* Fix polymorphic tenant id being set to the tenant's class name (saved as `0`) for records built before the current tenant was set. [#365](https://github.com/ErwinM/acts_as_tenant/pull/365)
+* Document setting the current tenant in ActionCable with `around_command`.
+* `with_tenant` and `without_tenant` no longer copy `test_tenant` or `default_tenant` into `current_tenant` when restoring it. [#337](https://github.com/ErwinM/acts_as_tenant/pull/337)
+* Validate `belongs_to` associations declared after `acts_as_tenant`. Previously these were not checked for cross-tenant records. [#363](https://github.com/ErwinM/acts_as_tenant/pull/363)
+* `config.require_tenant` callables can accept the relation being queried as an argument. [#362](https://github.com/ErwinM/acts_as_tenant/pull/362)
+
+```ruby
+ActsAsTenant.configure do |config|
+  config.require_tenant = lambda do |relation|
+    relation.klass.name != "User"
+  end
+end
+```
+
+* Add support for Rails 7.2, 8.0, 8.1 and Sidekiq 8. [#361](https://github.com/ErwinM/acts_as_tenant/pull/361)
+
+* Resolve the tenant when performing a job instead of when deserializing it. [#358](https://github.com/ErwinM/acts_as_tenant/pull/358)
+
+Deserializing a job no longer loads the tenant record, so a job dashboard can list a job whose tenant was deleted instead of raising `ActiveRecord::RecordNotFound`. Performing such a job still raises, and `discard_on ActiveRecord::RecordNotFound` can now handle it. The tenant is set for the duration of `perform` and restored afterwards.
+
+* Add `config.tenant_change_hook` callback when a tenant changes. [#333](https://github.com/ErwinM/acts_as_tenant/pull/333)
+
+This can be used to implement Postgres's row-level security for example
+
+```ruby
+ActsAsTenant.configure do |config|
+  config.tenant_change_hook = lambda do |tenant|
+    if tenant.present?
+      ActiveRecord::Base.connection.execute(ActiveRecord::Base.sanitize_sql_array(["SET rls.account_id = ?;", tenant.id]))
+      Rails.logger.info "Changed tenant to " + [tenant.id, tenant.name].to_json
+    end
+  end
+end
+```
+
 1.0.1
 -----
 

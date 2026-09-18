@@ -26,6 +26,18 @@ jobs:
         exclude:
           - ruby: '3.2'
             gemfile: rails_6
+        # Rails 7.2 requires Ruby 3.1+, Rails 8 and Sidekiq 8 require Ruby 3.2+
+        include:
+          - ruby: '3.1'
+            gemfile: rails_7_2
+          - ruby: '3.2'
+            gemfile: rails_7_2
+          - ruby: '3.2'
+            gemfile: rails_8_0
+          - ruby: '3.2'
+            gemfile: rails_8_1
+          - ruby: '3.2'
+            gemfile: sidekiq_8
 
     env:
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile

@@ -158,14 +158,14 @@ Scoping your models
 -------------------
 
 ```ruby
-class AddAccountToUsers < ActiveRecord::Migration
+class AddAccountToProjects < ActiveRecord::Migration
   def up
-    add_column :users, :account_id, :integer
-    add_index  :users, :account_id
+    add_column :projects, :account_id, :integer
+    add_index  :projects, :account_id
   end
 end
 
-class User < ActiveRecord::Base
+class Project < ActiveRecord::Base
   acts_as_tenant(:account)
 end
 ```
@@ -196,6 +196,8 @@ Project.tasks.all #  => all tasks with account_id => 3
 ```
 
 Acts_as_tenant uses Rails' `default_scope` method to scope models. Rails 3.1 changed the way `default_scope` works in a good way. A user defined `default_scope` should integrate seamlessly with the one added by `acts_as_tenant`.
+
+`belongs_to` associations are validated against the current tenant regardless of whether they are declared before or after `acts_as_tenant`.
 
 ### Validating attribute uniqueness
 
@@ -269,6 +271,19 @@ ActsAsTenant.configure do |config|
     if $request_env.present?
       return false if $request_env["REQUEST_PATH"].start_with?("/admin/")
     end
+    return true
+  end
+end
+```
+
+The lambda can also optionally receive the ar_relation currently being evaluated as an argument. This is useful for finer control over tenant requirements.
+
+For example, if you wanted to require the tenant for every model except `User`, you could do the following:
+
+```ruby
+ActsAsTenant.configure do |config|
+  config.require_tenant = lambda do |relation|
+    relation.klass.name != "User"
   end
 end
 ```
@@ -278,23 +293,13 @@ end
 When using `config.require_tenant` alongside the `rails console`, a nice quality of life tweak is to set the tenant in the console session in your initializer script. For example in `config/initializers/acts_as_tenant.rb`:
 
 ```ruby
-SET_TENANT_PROC = lambda do
-  if defined?(Rails::Console)
-    puts "> ActsAsTenant.current_tenant = Account.first"
-    ActsAsTenant.current_tenant = Account.first
-  end
-end
-
 Rails.application.configure do
-  if Rails.env.development?
-    # Set the tenant to the first account in development on load
-    config.after_initialize do
-      SET_TENANT_PROC.call
-    end
-
-    # Reset the tenant after calling 'reload!' in the console
-    ActiveSupport::Reloader.to_complete do
-      SET_TENANT_PROC.call
+  if Rails.env.development? && defined?(Rails::Console)
+    # set the current_tenant during console startup and after calling reload!
+    # note: reload! calls the to_prepare callback twice
+    ActiveSupport::Reloader.to_prepare do
+      puts ">>> Setting ActsAsTenant.current_tenant = Account.first"
+      ActsAsTenant.current_tenant = Account.first
     end
   end
 end
@@ -318,6 +323,32 @@ You can add the following `belongs_to` options to `acts_as_tenant`:
 
 Example: `acts_as_tenant(:account, counter_cache: true)`
 
+ActionCable
+-----------
+
+The controller helpers aren't available in ActionCable channels. Instead, find the tenant when the connection is made and set it around each command (subscribe, unsubscribe, and channel actions) with `around_command` (Rails 7.1+):
+
+```ruby
+module ApplicationCable
+  class Connection < ActionCable::Connection::Base
+    identified_by :current_account
+    around_command :set_current_tenant
+
+    def connect
+      self.current_account = Account.find_by(subdomain: request.subdomain) || reject_unauthorized_connection
+    end
+
+    private
+
+    def set_current_tenant(&block)
+      ActsAsTenant.with_tenant(current_account, &block)
+    end
+  end
+end
+```
+
+Setting the tenant in a channel's `before_subscribe` won't work, because Rails resets `current_tenant` after the subscription is created and before each channel action runs. Blocks passed to `stream_from` also run outside of commands, so wrap their contents in `ActsAsTenant.with_tenant(current_account) { ... }` if they query tenant-scoped models.
+
 Background Processing libraries
 -------------------------------
 
@@ -339,7 +370,7 @@ Testing
 
 If you set the `current_tenant` in your tests, make sure to clean up the tenant after each test by calling `ActsAsTenant.current_tenant = nil`. Integration tests are more difficult: manually setting the `current_tenant` value will not survive across multiple requests, even if they take place within the same test. This can result in undesired boilerplate to set the desired tenant. Moreover, the efficacy of the test can be compromised because the set `current_tenant` value will carry over into the request-response cycle.
 
-To address this issue, ActsAsTenant provides for a `test_tenant` value that can be set to allow for setup and post-request expectation testing. It should be used in conjunction with middleware that clears out this value while an integration test is processing. A typical Rails and RSpec setup might look like:
+To address this issue, ActsAsTenant provides for a `test_tenant` value that can be set to allow for setup and post-request expectation testing. It should be used in conjunction with middleware that clears out this value while an integration test is processing. `test_tenant` is only intended for request/integration tests; in model and unit tests, set `current_tenant` or use `with_tenant` instead. A typical Rails and RSpec setup might look like:
 
 ```ruby
 # test.rb

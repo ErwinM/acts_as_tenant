@@ -233,6 +233,26 @@ describe ActsAsTenant do
     expect(task.update(project_id: project1.id)).to eq(false)
   end
 
+  it "validates associations declared after acts_as_tenant" do
+    project1 = accounts(:bar).projects.create!(name: "inaccessible_project")
+    ActsAsTenant.current_tenant = account
+
+    task = LateAssociationTask.new(name: "bar", project_id: project1.id)
+
+    expect(task.valid?).to eq(false)
+    expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
+  end
+
+  it "validates associations declared on an STI subclass" do
+    project1 = accounts(:bar).projects.create!(name: "inaccessible_project")
+    ActsAsTenant.current_tenant = account
+
+    task = StiProjectTask.new(name: "bar", project_id: project1.id)
+
+    expect(task.valid?).to eq(false)
+    expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
+  end
+
   it "can create and save an AaT-enabled child without it having a parent" do
     ActsAsTenant.current_tenant = account
     expect(Task.new(name: "bar").valid?).to eq(true)
@@ -288,6 +308,16 @@ describe ActsAsTenant do
           expect(PolymorphicTenantComment.count).to eql(1)
           expect(PolymorphicTenantComment.all.first.attributes).to eql(@comment.attributes)
         end
+      end
+
+      it "sets the tenant on records built before the tenant was set" do
+        ActsAsTenant.current_tenant = nil
+        comment = PolymorphicTenantComment.new(account: account)
+        ActsAsTenant.current_tenant = @project
+        comment.save!
+
+        expect(comment.polymorphic_tenant_commentable_id).to eql(@project.id)
+        expect(comment.polymorphic_tenant_commentable_type).to eql("Project")
       end
     end
   end
@@ -364,6 +394,28 @@ describe ActsAsTenant do
     it "should raise an error when no block is provided" do
       expect { ActsAsTenant.with_tenant(nil) }.to raise_error(ArgumentError, /block required/)
     end
+
+    it "does not bleed test_tenant into current_tenant" do
+      ActsAsTenant.current_tenant = nil
+      ActsAsTenant.test_tenant = account
+
+      ActsAsTenant.with_tenant(accounts(:bar)) {}
+
+      ActsAsTenant.test_tenant = nil
+      expect(ActsAsTenant.current_tenant).to eq(nil)
+    end
+
+    it "does not bleed default_tenant into current_tenant" do
+      old_default_tenant = ActsAsTenant.default_tenant
+      ActsAsTenant.default_tenant = account
+
+      ActsAsTenant.with_tenant(accounts(:bar)) {}
+
+      ActsAsTenant.default_tenant = nil
+      expect(ActsAsTenant.current_tenant).to eq(nil)
+    ensure
+      ActsAsTenant.default_tenant = old_default_tenant
+    end
   end
 
   describe "::without_tenant" do
@@ -410,6 +462,28 @@ describe ActsAsTenant do
       ActsAsTenant.test_tenant = account
       ActsAsTenant.without_tenant {}
       expect(ActsAsTenant.test_tenant).to eq(account)
+    end
+
+    it "does not bleed test_tenant into current_tenant" do
+      ActsAsTenant.current_tenant = nil
+      ActsAsTenant.test_tenant = account
+
+      ActsAsTenant.without_tenant {}
+
+      ActsAsTenant.test_tenant = nil
+      expect(ActsAsTenant.current_tenant).to eq(nil)
+    end
+
+    it "does not bleed default_tenant into current_tenant" do
+      old_default_tenant = ActsAsTenant.default_tenant
+      ActsAsTenant.default_tenant = account
+
+      ActsAsTenant.without_tenant {}
+
+      ActsAsTenant.default_tenant = nil
+      expect(ActsAsTenant.current_tenant).to eq(nil)
+    ensure
+      ActsAsTenant.default_tenant = old_default_tenant
     end
 
     it "should return the value of the block" do

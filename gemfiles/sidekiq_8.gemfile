@@ -6,9 +6,8 @@ gem "rspec", ">=3.0"
 gem "rspec-rails"
 gem "sqlite3"
 gem "standard"
-gem "sidekiq", "~> 7.0"
+gem "sidekiq", "~> 8.0"
 gem "appraisal", git: "https://github.com/thoughtbot/appraisal.git"
 gem "byebug", group: [:development, :test]
-gem "rails", branch: :main, git: "https://github.com/rails/rails.git"
 
 gemspec path: "../"
