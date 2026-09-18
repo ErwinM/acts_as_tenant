@@ -1,7 +1,7 @@
 Unreleased
 ----------
 
-* `with_mutable_tenant` is now thread-safe and restores the previous mutability when nested.
+* `with_mutable_tenant` is now thread-safe and restores the previous mutability when nested. [#368](https://github.com/ErwinM/acts_as_tenant/pull/368)
 * Fix polymorphic tenant id being set to the tenant's class name (saved as `0`) for records built before the current tenant was set. [#365](https://github.com/ErwinM/acts_as_tenant/pull/365)
 * Document setting the current tenant in ActionCable with `around_command`.
 * `with_tenant` and `without_tenant` no longer copy `test_tenant` or `default_tenant` into `current_tenant` when restoring it. [#337](https://github.com/ErwinM/acts_as_tenant/pull/337)
