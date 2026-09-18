@@ -1,6 +1,7 @@
 Unreleased
 ----------
 
+* Fix polymorphic tenant id being set to the tenant's class name (saved as `0`) for records built before the current tenant was set. [#365](https://github.com/ErwinM/acts_as_tenant/pull/365)
 * Document setting the current tenant in ActionCable with `around_command`.
 * `with_tenant` and `without_tenant` no longer copy `test_tenant` or `default_tenant` into `current_tenant` when restoring it. [#337](https://github.com/ErwinM/acts_as_tenant/pull/337)
 * Validate `belongs_to` associations declared after `acts_as_tenant`. Previously these were not checked for cross-tenant records. [#363](https://github.com/ErwinM/acts_as_tenant/pull/363)
