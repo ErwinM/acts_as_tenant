@@ -65,6 +65,21 @@ module ActsAsTenant
           end
         }, on: :create
 
+        # Returns [tenant id, tenant class] for a record, or nil if it has no tenant.
+        # Classes are normalized with polymorphic_name so STI tenants compare equal.
+        tenant_key = lambda do |model, reflection|
+          id = model&.read_attribute(reflection.foreign_key)
+          next if id.nil?
+
+          type = if reflection.polymorphic?
+            stored_type = model.read_attribute(reflection.foreign_type)
+            stored_type&.safe_constantize&.polymorphic_name || stored_type
+          else
+            reflection.klass.polymorphic_name
+          end
+          [id, type]
+        end
+
         # Associations are looked up at validation time so belongs_to associations
         # declared after acts_as_tenant are validated too
         validate do |record|
@@ -93,14 +108,17 @@ module ActsAsTenant
             # Without a current tenant the lookup above isn't scoped, so compare the tenants directly
             next if ActsAsTenant.current_tenant || !a.klass.respond_to?(:scoped_by_tenant?)
 
-            tenant_id = record.read_attribute(fkey)
-            associated_fkey = a.klass.reflect_on_association(tenant)&.foreign_key&.to_s
-            next if tenant_id.nil? || !a.klass.column_names.include?(associated_fkey)
+            tenant_reflection = record.class.reflect_on_association(tenant)
+            associated_reflection = a.klass.reflect_on_association(tenant)
+            next if associated_reflection.nil? || !a.klass.column_names.include?(associated_reflection.foreign_key.to_s)
 
-            associated_tenant_id = record.association(a.name).reader&.read_attribute(associated_fkey)
-            next if associated_tenant_id.nil?
+            record_tenant = tenant_key.call(record, tenant_reflection)
+            next if record_tenant.nil?
 
-            record.errors.add attr, "association is invalid [ActsAsTenant]" unless associated_tenant_id == tenant_id
+            associated_tenant = tenant_key.call(record.association(a.name).reader, associated_reflection)
+            next if associated_tenant.nil?
+
+            record.errors.add attr, "association is invalid [ActsAsTenant]" unless associated_tenant == record_tenant
           end
         end
 

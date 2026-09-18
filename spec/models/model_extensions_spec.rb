@@ -295,6 +295,26 @@ describe ActsAsTenant do
       expect(Task.new(name: "bar", project: project).valid?).to eq(true)
     end
 
+    context "with polymorphic tenants" do
+      let(:project) { Project.create!(name: "polymorphic project") }
+      let(:article) { Article.create!(id: project.id, title: "same id article") }
+
+      it "is invalid when the tenants have the same id but a different type" do
+        comment = PolymorphicTenantComment.create!(polymorphic_tenant_commentable: article)
+        reply = PolymorphicTenantReply.new(polymorphic_tenant_commentable: project, polymorphic_tenant_comment: comment)
+
+        expect(reply.valid?).to eq(false)
+        expect(reply.errors[:polymorphic_tenant_comment_id]).to include("association is invalid [ActsAsTenant]")
+      end
+
+      it "is valid when the tenants have the same id and type" do
+        comment = PolymorphicTenantComment.create!(polymorphic_tenant_commentable: project)
+        reply = PolymorphicTenantReply.new(polymorphic_tenant_commentable: project, polymorphic_tenant_comment: comment)
+
+        expect(reply.valid?).to eq(true)
+      end
+    end
+
     it "skips associated models scoped through another association" do
       user = User.create!(email: "user@example.com")
 

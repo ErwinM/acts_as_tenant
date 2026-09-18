@@ -93,6 +93,12 @@ ActiveRecord::Schema.define(version: 1) do
     t.column :account_id, :integer
   end
 
+  create_table :polymorphic_tenant_replies, force: true do |t|
+    t.column :polymorphic_tenant_comment_id, :integer
+    t.column :polymorphic_tenant_commentable_id, :integer
+    t.column :polymorphic_tenant_commentable_type, :string
+  end
+
   create_table :users, force: true do |t|
     t.column :email, :string
     t.column :name, :string
