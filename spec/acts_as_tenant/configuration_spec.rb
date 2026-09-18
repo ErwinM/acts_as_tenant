@@ -131,6 +131,47 @@ describe ActsAsTenant::Configuration do
       expect(truthy).to eq(true)
     end
 
+    it "runs the hook with nil when Current is reset" do
+      tenants = []
+      ActsAsTenant.configure do |config|
+        config.tenant_change_hook = ->(tenant) { tenants << tenant }
+      end
+
+      ActsAsTenant.current_tenant = "foobar"
+      ActsAsTenant::Current.reset
+
+      expect(tenants).to eq(["foobar", nil])
+    end
+
+    it "accepts any callable as a hook" do
+      hook = Class.new do
+        def self.call(tenant)
+          @tenant = tenant
+        end
+
+        def self.tenant
+          @tenant
+        end
+      end
+
+      ActsAsTenant.configure do |config|
+        config.tenant_change_hook = hook
+      end
+
+      ActsAsTenant.current_tenant = "foobar"
+
+      expect(hook.tenant).to eq("foobar")
+    end
+
+    it "can remove the hook" do
+      ActsAsTenant.configure do |config|
+        config.tenant_change_hook = ->(tenant) { raise "should not be called" }
+        config.tenant_change_hook = nil
+      end
+
+      expect { ActsAsTenant.current_tenant = "foobar" }.not_to raise_error
+    end
+
     it "sets current_tenant before anything is configured" do
       ActsAsTenant.class_variable_set(:@@configuration, nil)
 

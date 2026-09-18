@@ -1,43 +1,59 @@
 Unreleased
 ----------
 
+### Upgrading
+
+These changes can make previously passing code or tests fail:
+
+* When no tenant is set, a `belongs_to` association to a record from a different tenant than the record itself now fails validation. This affects admin tools, scripts and test factories that build records for mismatched tenants. [#367](https://github.com/ErwinM/acts_as_tenant/pull/367)
+* `belongs_to` associations declared after `acts_as_tenant` are now validated against the current tenant, so assigning another tenant's record to them fails validation. [#363](https://github.com/ErwinM/acts_as_tenant/pull/363)
+* ActiveJob resolves the tenant when the job is performed instead of when it's deserialized, and restores the previous tenant afterwards. [#358](https://github.com/ErwinM/acts_as_tenant/pull/358)
+* `with_tenant` and `without_tenant` restore `current_tenant` to exactly what it was, without copying `test_tenant` or `default_tenant` into it. [#337](https://github.com/ErwinM/acts_as_tenant/pull/337)
+* Polymorphic tenant types are written with `polymorphic_name`. For STI tenants this is the base class instead of the subclass. Existing rows are still found, but can be updated with `Comment.where(commentable_type: "FeaturedArticle").update_all(commentable_type: "Article")`. Matching the old class name will be removed in 2.0. [#369](https://github.com/ErwinM/acts_as_tenant/pull/369)
+* `mutable_tenant!` is stored per request or job in `ActsAsTenant::Current` instead of globally, so calling `ActsAsTenant.mutable_tenant!(true)` once (e.g. in an initializer) no longer makes tenants mutable everywhere. Use `ActsAsTenant.with_mutable_tenant { ... }` instead. [#368](https://github.com/ErwinM/acts_as_tenant/pull/368)
+* `config.require_tenant` callables are only called when no tenant is set and the query isn't inside `without_tenant`, instead of on every query. [#370](https://github.com/ErwinM/acts_as_tenant/pull/370)
+
+### Changes
+
+* Fix `belongs_to` validation looking up the associated record by the owner's primary key instead of the associated model's, which failed when either used a primary key other than `id`. [#370](https://github.com/ErwinM/acts_as_tenant/pull/370)
+* `with_tenant`, `without_tenant` and `with_mutable_tenant` no longer clear the current tenant when called without a block. They still raise `ArgumentError`. [#370](https://github.com/ErwinM/acts_as_tenant/pull/370)
 * Validate that `belongs_to` associations belong to the record's tenant when no current tenant is set. [#367](https://github.com/ErwinM/acts_as_tenant/pull/367)
 * Store polymorphic tenant types with `polymorphic_name`, matching Rails, so STI tenants can find their records through `has_many` associations. Records saved with the tenant's class name are still scoped to the tenant. [#369](https://github.com/ErwinM/acts_as_tenant/pull/369)
 * `with_mutable_tenant` is now thread-safe and restores the previous mutability when nested. [#368](https://github.com/ErwinM/acts_as_tenant/pull/368)
 * Fix polymorphic tenant id being set to the tenant's class name (saved as `0`) for records built before the current tenant was set. [#365](https://github.com/ErwinM/acts_as_tenant/pull/365)
-* Document setting the current tenant in ActionCable with `around_command`.
+* Document setting the current tenant in ActionCable with `around_command`. [#366](https://github.com/ErwinM/acts_as_tenant/pull/366)
 * `with_tenant` and `without_tenant` no longer copy `test_tenant` or `default_tenant` into `current_tenant` when restoring it. [#337](https://github.com/ErwinM/acts_as_tenant/pull/337)
 * Validate `belongs_to` associations declared after `acts_as_tenant`. Previously these were not checked for cross-tenant records. [#363](https://github.com/ErwinM/acts_as_tenant/pull/363)
 * `config.require_tenant` callables can accept the relation being queried as an argument. [#362](https://github.com/ErwinM/acts_as_tenant/pull/362)
 
-```ruby
-ActsAsTenant.configure do |config|
-  config.require_tenant = lambda do |relation|
-    relation.klass.name != "User"
-  end
-end
-```
-
-* Add support for Rails 7.2, 8.0, 8.1 and Sidekiq 8. [#361](https://github.com/ErwinM/acts_as_tenant/pull/361)
-
-* Resolve the tenant when performing a job instead of when deserializing it. [#358](https://github.com/ErwinM/acts_as_tenant/pull/358)
-
-Deserializing a job no longer loads the tenant record, so a job dashboard can list a job whose tenant was deleted instead of raising `ActiveRecord::RecordNotFound`. Performing such a job still raises, and `discard_on ActiveRecord::RecordNotFound` can now handle it. The tenant is set for the duration of `perform` and restored afterwards.
-
-* Add `config.tenant_change_hook` callback when a tenant changes. [#333](https://github.com/ErwinM/acts_as_tenant/pull/333)
-
-This can be used to implement Postgres's row-level security for example
-
-```ruby
-ActsAsTenant.configure do |config|
-  config.tenant_change_hook = lambda do |tenant|
-    if tenant.present?
-      ActiveRecord::Base.connection.execute(ActiveRecord::Base.sanitize_sql_array(["SET rls.account_id = ?;", tenant.id]))
-      Rails.logger.info "Changed tenant to " + [tenant.id, tenant.name].to_json
+  ```ruby
+  ActsAsTenant.configure do |config|
+    config.require_tenant = lambda do |relation|
+      relation.klass.name != "User"
     end
   end
-end
-```
+  ```
+
+* Add support for Rails 7.2, 8.0, 8.1 and Sidekiq 8. [#361](https://github.com/ErwinM/acts_as_tenant/pull/361)
+* Resolve the tenant when performing a job instead of when deserializing it. [#358](https://github.com/ErwinM/acts_as_tenant/pull/358)
+
+  Deserializing a job no longer loads the tenant record, so a job dashboard can list a job whose tenant was deleted instead of raising `ActiveRecord::RecordNotFound`. Performing such a job still raises, and `discard_on ActiveRecord::RecordNotFound` can now handle it. The tenant is set for the duration of `perform` and restored afterwards.
+
+* Add `config.tenant_change_hook`, called with the new tenant whenever `current_tenant` is set and with `nil` when Rails resets it at the end of a request or job. It accepts any callable. [#333](https://github.com/ErwinM/acts_as_tenant/pull/333)
+
+  This can be used to implement Postgres's row-level security, for example:
+
+  ```ruby
+  ActsAsTenant.configure do |config|
+    config.tenant_change_hook = lambda do |tenant|
+      if tenant
+        ActiveRecord::Base.connection.execute(ActiveRecord::Base.sanitize_sql_array(["SET rls.account_id = ?", tenant.id]))
+      else
+        ActiveRecord::Base.connection.execute("RESET rls.account_id")
+      end
+    end
+  end
+  ```
 
 1.0.1
 -----

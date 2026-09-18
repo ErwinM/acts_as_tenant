@@ -322,6 +322,13 @@ describe ActsAsTenant do
     end
   end
 
+  it "looks up associations by the associated model's primary key" do
+    project = account.projects.create!(name: "keyed_project")
+    ActsAsTenant.current_tenant = account
+
+    expect(KeyedTask.new(project: project).valid?).to eq(true)
+  end
+
   it "can create and save an AaT-enabled child without it having a parent" do
     ActsAsTenant.current_tenant = account
     expect(Task.new(name: "bar").valid?).to eq(true)
@@ -481,6 +488,14 @@ describe ActsAsTenant do
 
     it "should raise an error when no block is provided" do
       expect { ActsAsTenant.with_tenant(nil) }.to raise_error(ArgumentError, /block required/)
+    end
+
+    it "keeps the current tenant when called without a block" do
+      ActsAsTenant.current_tenant = account
+
+      expect { ActsAsTenant.with_tenant(accounts(:bar)) }.to raise_error(ArgumentError)
+      expect { ActsAsTenant.without_tenant }.to raise_error(ArgumentError)
+      expect(ActsAsTenant.current_tenant).to eq(account)
     end
 
     it "does not bleed test_tenant into current_tenant" do
