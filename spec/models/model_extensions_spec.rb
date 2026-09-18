@@ -309,6 +309,16 @@ describe ActsAsTenant do
           expect(PolymorphicTenantComment.all.first.attributes).to eql(@comment.attributes)
         end
       end
+
+      it "sets the tenant on records built before the tenant was set" do
+        ActsAsTenant.current_tenant = nil
+        comment = PolymorphicTenantComment.new(account: account)
+        ActsAsTenant.current_tenant = @project
+        comment.save!
+
+        expect(comment.polymorphic_tenant_commentable_id).to eql(@project.id)
+        expect(comment.polymorphic_tenant_commentable_type).to eql("Project")
+      end
     end
   end
 
