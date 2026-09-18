@@ -1,6 +1,7 @@
 Unreleased
 ----------
 
+* `with_tenant` and `without_tenant` no longer copy `test_tenant` or `default_tenant` into `current_tenant` when restoring it. [#337](https://github.com/ErwinM/acts_as_tenant/pull/337)
 * Validate `belongs_to` associations declared after `acts_as_tenant`. Previously these were not checked for cross-tenant records. [#363](https://github.com/ErwinM/acts_as_tenant/pull/363)
 * `config.require_tenant` callables can accept the relation being queried as an argument. [#362](https://github.com/ErwinM/acts_as_tenant/pull/362)
 

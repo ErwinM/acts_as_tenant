@@ -394,6 +394,18 @@ describe ActsAsTenant do
       ActsAsTenant.test_tenant = nil
       expect(ActsAsTenant.current_tenant).to eq(nil)
     end
+
+    it "does not bleed default_tenant into current_tenant" do
+      old_default_tenant = ActsAsTenant.default_tenant
+      ActsAsTenant.default_tenant = account
+
+      ActsAsTenant.with_tenant(accounts(:bar)) {}
+
+      ActsAsTenant.default_tenant = nil
+      expect(ActsAsTenant.current_tenant).to eq(nil)
+    ensure
+      ActsAsTenant.default_tenant = old_default_tenant
+    end
   end
 
   describe "::without_tenant" do
@@ -450,6 +462,18 @@ describe ActsAsTenant do
 
       ActsAsTenant.test_tenant = nil
       expect(ActsAsTenant.current_tenant).to eq(nil)
+    end
+
+    it "does not bleed default_tenant into current_tenant" do
+      old_default_tenant = ActsAsTenant.default_tenant
+      ActsAsTenant.default_tenant = account
+
+      ActsAsTenant.without_tenant {}
+
+      ActsAsTenant.default_tenant = nil
+      expect(ActsAsTenant.current_tenant).to eq(nil)
+    ensure
+      ActsAsTenant.default_tenant = old_default_tenant
     end
 
     it "should return the value of the block" do
