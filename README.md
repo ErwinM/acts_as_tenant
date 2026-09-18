@@ -197,7 +197,7 @@ Project.tasks.all #  => all tasks with account_id => 3
 
 Acts_as_tenant uses Rails' `default_scope` method to scope models. Rails 3.1 changed the way `default_scope` works in a good way. A user defined `default_scope` should integrate seamlessly with the one added by `acts_as_tenant`.
 
-You should call `acts_as_tenant` after any `belongs_to` associations in your model.
+`belongs_to` associations are validated against the current tenant regardless of whether they are declared before or after `acts_as_tenant`.
 
 ### Validating attribute uniqueness
 
