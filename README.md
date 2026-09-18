@@ -344,7 +344,7 @@ Testing
 
 If you set the `current_tenant` in your tests, make sure to clean up the tenant after each test by calling `ActsAsTenant.current_tenant = nil`. Integration tests are more difficult: manually setting the `current_tenant` value will not survive across multiple requests, even if they take place within the same test. This can result in undesired boilerplate to set the desired tenant. Moreover, the efficacy of the test can be compromised because the set `current_tenant` value will carry over into the request-response cycle.
 
-To address this issue, ActsAsTenant provides for a `test_tenant` value that can be set to allow for setup and post-request expectation testing. It should be used in conjunction with middleware that clears out this value while an integration test is processing. A typical Rails and RSpec setup might look like:
+To address this issue, ActsAsTenant provides for a `test_tenant` value that can be set to allow for setup and post-request expectation testing. It should be used in conjunction with middleware that clears out this value while an integration test is processing. `test_tenant` is only intended for request/integration tests; in model and unit tests, set `current_tenant` or use `with_tenant` instead. A typical Rails and RSpec setup might look like:
 
 ```ruby
 # test.rb
