@@ -65,6 +65,33 @@ module ActsAsTenant
           end
         }, on: :create
 
+        # Returns [tenant id, tenant class] for a record, or nil if it has no tenant.
+        # Classes are normalized with polymorphic_name so STI tenants compare equal.
+        tenant_identity = lambda do |model|
+          reflection = model.class.reflect_on_association(tenant)
+          id = model.read_attribute(reflection.foreign_key) if reflection
+
+          if id
+            type = if reflection.polymorphic?
+              stored_type = model.read_attribute(reflection.foreign_type)
+              stored_type&.safe_constantize&.polymorphic_name || stored_type
+            else
+              reflection.klass.polymorphic_name
+            end
+            [id, type]
+          end
+        end
+
+        # Without a current tenant the association lookup isn't scoped, so compare the tenants directly
+        tenant_mismatch = lambda do |record, associated|
+          if ActsAsTenant.current_tenant.nil? && associated.class.respond_to?(:scoped_by_tenant?)
+            record_tenant = tenant_identity.call(record)
+            associated_tenant = tenant_identity.call(associated)
+
+            record_tenant && associated_tenant && record_tenant != associated_tenant
+          end
+        end
+
         # Associations are looked up at validation time so belongs_to associations
         # declared after acts_as_tenant are validated too
         validate do |record|
@@ -85,7 +112,11 @@ module ActsAsTenant
               a.primary_key
             end.to_sym
             scope = a.scope || ->(relation) { relation }
-            record.errors.add attr, "association is invalid [ActsAsTenant]" unless a.klass.class_eval(&scope).where(primary_key => value).any?
+            associated = a.klass.class_eval(&scope).find_by(primary_key => value)
+
+            if associated.nil? || tenant_mismatch.call(record, associated)
+              record.errors.add attr, "association is invalid [ActsAsTenant]"
+            end
           end
         end
 

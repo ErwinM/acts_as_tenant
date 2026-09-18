@@ -199,6 +199,8 @@ Acts_as_tenant uses Rails' `default_scope` method to scope models. Rails 3.1 cha
 
 `belongs_to` associations are validated against the current tenant regardless of whether they are declared before or after `acts_as_tenant`.
 
+When no tenant is set (for example in an admin panel or inside `without_tenant`), `belongs_to` associations to tenanted models are validated to belong to the same tenant as the record. Associated records without a tenant, such as global records, are allowed.
+
 ### Validating attribute uniqueness
 
 If you need to validate for uniqueness, chances are that you want to scope this validation to a tenant. You can do so by using:
