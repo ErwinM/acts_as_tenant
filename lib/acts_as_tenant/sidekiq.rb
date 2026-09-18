@@ -10,12 +10,8 @@ module ActsAsTenant::Sidekiq
     include Sidekiq::ClientMiddleware if sidekiq_7_and_up?
 
     def call(worker_class, msg, queue, redis_pool)
-      if ActsAsTenant.current_tenant.present?
-        msg["acts_as_tenant"] ||=
-          {
-            "class" => ActsAsTenant.current_tenant.class.name,
-            "id" => ActsAsTenant.current_tenant.id
-          }
+      if (tenant = ActsAsTenant.current_tenant)
+        msg["acts_as_tenant"] ||= {"class" => tenant.class.name, "id" => tenant.id}
       end
 
       yield
@@ -31,9 +27,7 @@ module ActsAsTenant::Sidekiq
         klass = msg["acts_as_tenant"]["class"].constantize
         id = msg["acts_as_tenant"]["id"]
         account = klass.class_eval(&ActsAsTenant.configuration.job_scope).find(id)
-        ActsAsTenant.with_tenant account do
-          yield
-        end
+        ActsAsTenant.with_tenant(account) { yield }
       else
         yield
       end

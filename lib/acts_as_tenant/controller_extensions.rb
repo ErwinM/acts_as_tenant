@@ -15,7 +15,6 @@ module ActsAsTenant
       self.subdomain_lookup = subdomain_lookup
     end
 
-    # 01/27/2014 Christian Yerena / @preth00nker
     # this method adds the possibility of use the domain as a possible second argument to find
     # the current_tenant.
     def set_current_tenant_by_subdomain_or_domain(tenant = :account, primary_column = :subdomain, second_column = :domain, subdomain_lookup: :last)
@@ -28,7 +27,7 @@ module ActsAsTenant
     end
 
     # This method sets up a method that allows manual setting of the current_tenant. This method should
-    # be used in a before_action. In addition, a helper is setup that returns the current_tenant
+    # be used in a before_action.
     def set_current_tenant_through_filter
       include Filter
     end

@@ -483,6 +483,14 @@ describe ActsAsTenant do
       expect { ActsAsTenant.with_tenant(nil) }.to raise_error(ArgumentError, /block required/)
     end
 
+    it "keeps the current tenant when called without a block" do
+      ActsAsTenant.current_tenant = account
+
+      expect { ActsAsTenant.with_tenant(accounts(:bar)) }.to raise_error(ArgumentError)
+      expect { ActsAsTenant.without_tenant }.to raise_error(ArgumentError)
+      expect(ActsAsTenant.current_tenant).to eq(account)
+    end
+
     it "does not bleed test_tenant into current_tenant" do
       ActsAsTenant.current_tenant = nil
       ActsAsTenant.test_tenant = account

@@ -107,44 +107,25 @@ module ActsAsTenant
   end
 
   def self.with_tenant(tenant, &block)
-    if block.nil?
-      raise ArgumentError, "block required"
-    end
+    raise ArgumentError, "block required" if block.nil?
 
-    old_tenant = Current.current_tenant
-    self.current_tenant = tenant
-    value = block.call
-    value
-  ensure
-    self.current_tenant = old_tenant
+    Current.set(current_tenant: tenant, &block)
   end
 
   def self.without_tenant(&block)
-    if block.nil?
-      raise ArgumentError, "block required"
-    end
+    raise ArgumentError, "block required" if block.nil?
 
-    old_tenant = Current.current_tenant
     old_test_tenant = test_tenant
-    old_unscoped = unscoped
-
-    self.current_tenant = nil
     self.test_tenant = nil
-    self.unscoped = true
-    value = block.call
-    value
-  ensure
-    self.current_tenant = old_tenant
-    self.test_tenant = old_test_tenant
-    self.unscoped = old_unscoped
+    begin
+      Current.set(current_tenant: nil, acts_as_tenant_unscoped: true, &block)
+    ensure
+      self.test_tenant = old_test_tenant
+    end
   end
 
   def self.with_mutable_tenant(&block)
-    old_mutable_tenant = mutable_tenant?
-    mutable_tenant!(true)
-    without_tenant(&block)
-  ensure
-    mutable_tenant!(old_mutable_tenant)
+    Current.set(acts_as_tenant_mutable: true) { without_tenant(&block) }
   end
 
   def self.should_require_tenant?(relation = nil)
