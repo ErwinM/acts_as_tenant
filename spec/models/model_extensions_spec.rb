@@ -233,6 +233,16 @@ describe ActsAsTenant do
     expect(task.update(project_id: project1.id)).to eq(false)
   end
 
+  it "validates associations declared after acts_as_tenant" do
+    project1 = accounts(:bar).projects.create!(name: "inaccessible_project")
+    ActsAsTenant.current_tenant = account
+
+    task = LateAssociationTask.new(name: "bar", project_id: project1.id)
+
+    expect(task.valid?).to eq(false)
+    expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
+  end
+
   it "can create and save an AaT-enabled child without it having a parent" do
     ActsAsTenant.current_tenant = account
     expect(Task.new(name: "bar").valid?).to eq(true)
