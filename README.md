@@ -323,6 +323,32 @@ You can add the following `belongs_to` options to `acts_as_tenant`:
 
 Example: `acts_as_tenant(:account, counter_cache: true)`
 
+ActionCable
+-----------
+
+The controller helpers aren't available in ActionCable channels. Instead, find the tenant when the connection is made and set it around each command (subscribe, unsubscribe, and channel actions) with `around_command` (Rails 7.1+):
+
+```ruby
+module ApplicationCable
+  class Connection < ActionCable::Connection::Base
+    identified_by :current_account
+    around_command :set_current_tenant
+
+    def connect
+      self.current_account = Account.find_by(subdomain: request.subdomain) || reject_unauthorized_connection
+    end
+
+    private
+
+    def set_current_tenant(&block)
+      ActsAsTenant.with_tenant(current_account, &block)
+    end
+  end
+end
+```
+
+Setting the tenant in a channel's `before_subscribe` won't work, because Rails resets `current_tenant` after the subscription is created and before each channel action runs. Blocks passed to `stream_from` also run outside of commands, so wrap their contents in `ActsAsTenant.with_tenant(current_account) { ... }` if they query tenant-scoped models.
+
 Background Processing libraries
 -------------------------------
 
