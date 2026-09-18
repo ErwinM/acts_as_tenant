@@ -16,14 +16,11 @@ module ActsAsTenant
   class Current < ActiveSupport::CurrentAttributes
     attribute :current_tenant, :acts_as_tenant_unscoped, :acts_as_tenant_mutable
 
-    def current_tenant=(tenant)
-      super.tap do
-        configuration.tenant_change_hook.call(tenant) if configuration.tenant_change_hook.present?
-      end
-    end
+    # Rails resets attributes directly at the end of a request or job, bypassing the writer below
+    resets { ActsAsTenant.configuration.tenant_change_hook&.call(nil) }
 
-    def configuration
-      ActsAsTenant.configuration
+    def current_tenant=(tenant)
+      super.tap { ActsAsTenant.configuration.tenant_change_hook&.call(tenant) }
     end
   end
 
@@ -150,12 +147,12 @@ module ActsAsTenant
     mutable_tenant!(old_mutable_tenant)
   end
 
-  def self.should_require_tenant?(context = nil)
+  def self.should_require_tenant?(relation = nil)
     config = configuration.require_tenant
     return !!config unless config.respond_to?(:call)
 
     arity = config.respond_to?(:arity) ? config.arity : config.method(:call).arity
-    arity.zero? ? !!config.call : !!config.call(context)
+    arity.zero? ? !!config.call : !!config.call(relation)
   end
 end
 

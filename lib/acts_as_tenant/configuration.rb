@@ -1,7 +1,7 @@
 module ActsAsTenant
   class Configuration
     attr_writer :require_tenant, :pkey
-    attr_reader :tenant_change_hook
+    attr_accessor :tenant_change_hook
 
     def require_tenant
       @require_tenant ||= false
@@ -27,11 +27,6 @@ module ActsAsTenant
       else
         scope
       end
-    end
-
-    def tenant_change_hook=(hook)
-      raise(ArgumentError, "tenant_change_hook must be a Proc") unless hook.is_a?(Proc)
-      @tenant_change_hook = hook
     end
   end
 end

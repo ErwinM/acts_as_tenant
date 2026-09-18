@@ -278,7 +278,7 @@ ActsAsTenant.configure do |config|
 end
 ```
 
-The lambda can also optionally receive the ar_relation currently being evaluated as an argument. This is useful for finer control over tenant requirements.
+The lambda can also optionally receive the relation being queried as an argument. This is useful for finer control over tenant requirements.
 
 For example, if you wanted to require the tenant for every model except `User`, you could do the following:
 
@@ -290,7 +290,7 @@ ActsAsTenant.configure do |config|
 end
 ```
 
-`ActsAsTenant.should_require_tenant?` is used to determine if a tenant is required in the current context, either by evaluating the lambda provided, or by returning the boolean value assigned to `config.require_tenant`.
+`ActsAsTenant.should_require_tenant?` is used to determine if a tenant is required in the current context, either by evaluating the lambda provided, or by returning the boolean value assigned to `config.require_tenant`. It accepts the relation as an optional argument, which is passed to the lambda as `nil` when omitted.
 
 When using `config.require_tenant` alongside the `rails console`, a nice quality of life tweak is to set the tenant in the console session in your initializer script. For example in `config/initializers/acts_as_tenant.rb`:
 
@@ -306,6 +306,24 @@ Rails.application.configure do
   end
 end
 ```
+
+### Tenant change hook
+
+`config.tenant_change_hook` is called with the new tenant whenever `current_tenant` is set, and with `nil` when Rails resets it at the end of a request or job. For example, to use Postgres row-level security:
+
+```ruby
+ActsAsTenant.configure do |config|
+  config.tenant_change_hook = lambda do |tenant|
+    if tenant
+      ActiveRecord::Base.connection.execute(ActiveRecord::Base.sanitize_sql_array(["SET rls.account_id = ?", tenant.id]))
+    else
+      ActiveRecord::Base.connection.execute("RESET rls.account_id")
+    end
+  end
+end
+```
+
+Always handle `nil`, otherwise the setting stays on the database connection and the next request using it runs as the previous tenant. The hook isn't called for `default_tenant` or `test_tenant`.
 
 belongs_to options
 ------------------
