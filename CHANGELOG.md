@@ -1,6 +1,7 @@
 Unreleased
 ----------
 
+* Store polymorphic tenant types with `polymorphic_name`, matching Rails, so STI tenants can find their records through `has_many` associations. Records saved with the tenant's class name are still scoped to the tenant.
 * `with_mutable_tenant` is now thread-safe and restores the previous mutability when nested. [#368](https://github.com/ErwinM/acts_as_tenant/pull/368)
 * Fix polymorphic tenant id being set to the tenant's class name (saved as `0`) for records built before the current tenant was set. [#365](https://github.com/ErwinM/acts_as_tenant/pull/365)
 * Document setting the current tenant in ActionCable with `around_command`.

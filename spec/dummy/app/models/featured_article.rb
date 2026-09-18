@@ -1,0 +1,2 @@
+class FeaturedArticle < Article
+end

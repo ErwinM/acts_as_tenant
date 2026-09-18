@@ -78,6 +78,7 @@ ActiveRecord::Schema.define(version: 1) do
 
   create_table :articles, force: true do |t|
     t.column :title, :string
+    t.column :type, :string
   end
 
   create_table :comments, force: true do |t|

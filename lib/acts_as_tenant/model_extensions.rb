@@ -15,6 +15,10 @@ module ActsAsTenant
         polymorphic_type = valid_options[:foreign_type] || ActsAsTenant.polymorphic_type
         belongs_to tenant, scope, **valid_options
 
+        # Polymorphic tenants are stored with polymorphic_name, like Rails does. Records saved before
+        # that used the class name, which differs for STI tenants, so match both when scoping.
+        polymorphic_names = -> { [ActsAsTenant.current_tenant.class.polymorphic_name, ActsAsTenant.current_tenant.class.name].uniq }
+
         default_scope lambda {
           if ActsAsTenant.should_require_tenant?(self) && ActsAsTenant.current_tenant.nil? && !ActsAsTenant.unscoped?
             raise ActsAsTenant::Errors::NoTenantSet
@@ -26,11 +30,11 @@ module ActsAsTenant
 
             if options[:through]
               query_criteria = {options[:through] => {fkey.to_sym => keys}}
-              query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
+              query_criteria[polymorphic_type.to_sym] = polymorphic_names.call if options[:polymorphic]
               joins(options[:through]).where(query_criteria)
             else
               query_criteria = {fkey.to_sym => keys}
-              query_criteria[polymorphic_type.to_sym] = ActsAsTenant.current_tenant.class.to_s if options[:polymorphic]
+              query_criteria[polymorphic_type.to_sym] = polymorphic_names.call if options[:polymorphic]
               where(query_criteria)
             end
           else
@@ -46,7 +50,7 @@ module ActsAsTenant
           if ActsAsTenant.current_tenant
             if options[:polymorphic]
               m.send(:"#{fkey}=", ActsAsTenant.current_tenant.send(pkey)) if m.send(fkey.to_s).nil?
-              m.send(:"#{polymorphic_type}=", ActsAsTenant.current_tenant.class.to_s) if m.send(polymorphic_type.to_s).nil?
+              m.send(:"#{polymorphic_type}=", ActsAsTenant.current_tenant.class.polymorphic_name) if m.send(polymorphic_type.to_s).nil?
             else
               m.send :"#{fkey}=", ActsAsTenant.current_tenant.send(pkey)
             end
