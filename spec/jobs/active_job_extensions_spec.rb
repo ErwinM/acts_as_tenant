@@ -108,6 +108,11 @@ RSpec.describe ApplicationTestJob, type: :job do
   describe "#serialize" do
     let(:other_account) { accounts(:bar) }
 
+    it "serializes the tenant as a GlobalID string" do
+      job_data = ActsAsTenant.with_tenant(account) { described_class.new(expected_tenant: account).serialize }
+      expect(job_data["current_tenant"]).to eq(account.to_global_id.to_s)
+    end
+
     it "keeps the tenant of a deserialized job when it is enqueued again" do
       job_data = ActsAsTenant.with_tenant(account) { described_class.new(expected_tenant: account).serialize }
       job = ActiveJob::Base.deserialize(job_data)
