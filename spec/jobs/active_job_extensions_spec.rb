@@ -44,13 +44,6 @@ RSpec.describe ApplicationTestJob, type: :job do
         expect { described_class.perform_later(expected_tenant: nil) }.to have_enqueued_job.on_queue("default")
         expect { perform_enqueued_jobs }.to raise_error(ActsAsTenant::Errors::NoTenantSet)
       end
-
-      it "serializes tenant to a JSON-compatible format" do
-        ActsAsTenant.current_tenant = account
-        job = described_class.perform_later(expected_tenant: account)
-        serialized_data = job.serialize
-        expect(serialized_data["current_tenant"]).to be_a_kind_of String
-      end
     end
 
     context "when tenant is not required" do
@@ -114,6 +107,11 @@ RSpec.describe ApplicationTestJob, type: :job do
 
   describe "#serialize" do
     let(:other_account) { accounts(:bar) }
+
+    it "serializes the tenant as a GlobalID string" do
+      job_data = ActsAsTenant.with_tenant(account) { described_class.new(expected_tenant: account).serialize }
+      expect(job_data["current_tenant"]).to eq(account.to_global_id.to_s)
+    end
 
     it "keeps the tenant of a deserialized job when it is enqueued again" do
       job_data = ActsAsTenant.with_tenant(account) { described_class.new(expected_tenant: account).serialize }
