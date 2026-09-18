@@ -47,6 +47,13 @@ ActiveRecord::Schema.define(version: 1) do
     t.column :name, :string
   end
 
+  create_table :sti_tasks, force: true do |t|
+    t.column :type, :string
+    t.column :name, :string
+    t.column :account_id, :integer
+    t.column :project_id, :integer
+  end
+
   create_table :aliased_tasks, force: true do |t|
     t.column :name, :string
     t.column :project_alias_id, :integer

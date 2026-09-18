@@ -54,24 +54,27 @@ module ActsAsTenant
           end
         }, on: :create
 
-        polymorphic_foreign_keys = reflect_on_all_associations(:belongs_to).select { |a|
-          a.options[:polymorphic]
-        }.map { |a| a.foreign_key }
+        # Associations are looked up at validation time so belongs_to associations
+        # declared after acts_as_tenant are validated too
+        validate do |record|
+          associations = record.class.reflect_on_all_associations(:belongs_to)
+          polymorphic_foreign_keys = associations.select { |a| a.options[:polymorphic] }.map(&:foreign_key)
 
-        reflect_on_all_associations(:belongs_to).each do |a|
-          unless a == reflect_on_association(tenant) || polymorphic_foreign_keys.include?(a.foreign_key)
-            validates_each a.foreign_key.to_sym do |record, attr, value|
-              next if value.nil?
-              next unless record.will_save_change_to_attribute?(attr)
+          associations.each do |a|
+            next if a.name == tenant.to_sym || polymorphic_foreign_keys.include?(a.foreign_key)
 
-              primary_key = if a.respond_to?(:active_record_primary_key)
-                a.active_record_primary_key
-              else
-                a.primary_key
-              end.to_sym
-              scope = a.scope || ->(relation) { relation }
-              record.errors.add attr, "association is invalid [ActsAsTenant]" unless a.klass.class_eval(&scope).where(primary_key => value).any?
-            end
+            attr = a.foreign_key.to_sym
+            value = record.read_attribute_for_validation(attr)
+            next if value.nil?
+            next unless record.will_save_change_to_attribute?(attr)
+
+            primary_key = if a.respond_to?(:active_record_primary_key)
+              a.active_record_primary_key
+            else
+              a.primary_key
+            end.to_sym
+            scope = a.scope || ->(relation) { relation }
+            record.errors.add attr, "association is invalid [ActsAsTenant]" unless a.klass.class_eval(&scope).where(primary_key => value).any?
           end
         end
 
