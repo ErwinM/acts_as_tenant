@@ -67,17 +67,29 @@ module ActsAsTenant
 
         # Returns [tenant id, tenant class] for a record, or nil if it has no tenant.
         # Classes are normalized with polymorphic_name so STI tenants compare equal.
-        tenant_key = lambda do |model, reflection|
-          id = model&.read_attribute(reflection.foreign_key)
-          next if id.nil?
+        tenant_identity = lambda do |model|
+          reflection = model.class.reflect_on_association(tenant)
+          id = model.read_attribute(reflection.foreign_key) if reflection
 
-          type = if reflection.polymorphic?
-            stored_type = model.read_attribute(reflection.foreign_type)
-            stored_type&.safe_constantize&.polymorphic_name || stored_type
-          else
-            reflection.klass.polymorphic_name
+          if id
+            type = if reflection.polymorphic?
+              stored_type = model.read_attribute(reflection.foreign_type)
+              stored_type&.safe_constantize&.polymorphic_name || stored_type
+            else
+              reflection.klass.polymorphic_name
+            end
+            [id, type]
           end
-          [id, type]
+        end
+
+        # Without a current tenant the association lookup isn't scoped, so compare the tenants directly
+        tenant_mismatch = lambda do |record, associated|
+          if ActsAsTenant.current_tenant.nil? && associated.class.respond_to?(:scoped_by_tenant?)
+            record_tenant = tenant_identity.call(record)
+            associated_tenant = tenant_identity.call(associated)
+
+            record_tenant && associated_tenant && record_tenant != associated_tenant
+          end
         end
 
         # Associations are looked up at validation time so belongs_to associations
@@ -100,25 +112,11 @@ module ActsAsTenant
               a.primary_key
             end.to_sym
             scope = a.scope || ->(relation) { relation }
-            unless a.klass.class_eval(&scope).where(primary_key => value).any?
+            associated = a.klass.class_eval(&scope).find_by(primary_key => value)
+
+            if associated.nil? || tenant_mismatch.call(record, associated)
               record.errors.add attr, "association is invalid [ActsAsTenant]"
-              next
             end
-
-            # Without a current tenant the lookup above isn't scoped, so compare the tenants directly
-            next if ActsAsTenant.current_tenant || !a.klass.respond_to?(:scoped_by_tenant?)
-
-            tenant_reflection = record.class.reflect_on_association(tenant)
-            associated_reflection = a.klass.reflect_on_association(tenant)
-            next if associated_reflection.nil? || !a.klass.column_names.include?(associated_reflection.foreign_key.to_s)
-
-            record_tenant = tenant_key.call(record, tenant_reflection)
-            next if record_tenant.nil?
-
-            associated_tenant = tenant_key.call(record.association(a.name).reader, associated_reflection)
-            next if associated_tenant.nil?
-
-            record.errors.add attr, "association is invalid [ActsAsTenant]" unless associated_tenant == record_tenant
           end
         end
 
