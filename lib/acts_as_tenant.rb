@@ -12,10 +12,9 @@ module ActsAsTenant
   @@configuration = nil
   @@tenant_klass = nil
   @@models_with_global_records = []
-  @@mutable_tenant = false
 
   class Current < ActiveSupport::CurrentAttributes
-    attribute :current_tenant, :acts_as_tenant_unscoped
+    attribute :current_tenant, :acts_as_tenant_unscoped, :acts_as_tenant_mutable
 
     def current_tenant=(tenant)
       super.tap do
@@ -103,11 +102,11 @@ module ActsAsTenant
   end
 
   def self.mutable_tenant!(toggle)
-    @@mutable_tenant = toggle
+    Current.acts_as_tenant_mutable = toggle
   end
 
   def self.mutable_tenant?
-    @@mutable_tenant
+    !!Current.acts_as_tenant_mutable
   end
 
   def self.with_tenant(tenant, &block)
@@ -144,10 +143,11 @@ module ActsAsTenant
   end
 
   def self.with_mutable_tenant(&block)
-    ActsAsTenant.mutable_tenant!(true)
+    old_mutable_tenant = mutable_tenant?
+    mutable_tenant!(true)
     without_tenant(&block)
   ensure
-    ActsAsTenant.mutable_tenant!(false)
+    mutable_tenant!(old_mutable_tenant)
   end
 
   def self.should_require_tenant?(context = nil)

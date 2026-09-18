@@ -5,7 +5,6 @@ module ActsAsTenant
     class_methods do
       def acts_as_tenant(tenant = :account, scope = nil, **options)
         ActsAsTenant.set_tenant_klass(tenant)
-        ActsAsTenant.mutable_tenant!(false)
 
         ActsAsTenant.add_global_record_model(self) if options[:has_global_records]
 

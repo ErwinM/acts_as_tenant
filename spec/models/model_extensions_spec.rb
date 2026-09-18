@@ -513,6 +513,20 @@ describe ActsAsTenant do
       expect(ActsAsTenant.mutable_tenant?).to eq false
     end
 
+    it "should keep the tenant mutable after a nested block" do
+      ActsAsTenant.with_mutable_tenant do
+        ActsAsTenant.with_mutable_tenant { "something" }
+        expect(ActsAsTenant.mutable_tenant?).to eq true
+      end
+      expect(ActsAsTenant.mutable_tenant?).to eq false
+    end
+
+    it "should not make the tenant mutable in other threads" do
+      ActsAsTenant.with_mutable_tenant do
+        expect(Thread.new { ActsAsTenant.mutable_tenant? }.value).to eq false
+      end
+    end
+
     describe "mutability" do
       before do
         @account = Account.create!(name: "foo")
