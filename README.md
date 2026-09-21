@@ -452,6 +452,21 @@ config.after(:each) do |example|
   ActsAsTenant.test_tenant = nil
 end
 ```
+
+### Jobs performed inline
+
+Rails resets `CurrentAttributes`, including `current_tenant`, after it performs a job inline ([rails/rails#49227](https://github.com/rails/rails/issues/49227)). The job runs with the tenant it was enqueued with, but the test loses its tenant afterwards when the job is performed inside a `perform_enqueued_jobs` block or with the `:inline` adapter. Call `perform_enqueued_jobs` without a block instead:
+
+```ruby
+ActsAsTenant.current_tenant = account
+ProcessOrderJob.perform_later(order)
+perform_enqueued_jobs
+
+expect(ActsAsTenant.current_tenant).to eq(account)
+```
+
+`perform_now` also keeps the tenant.
+
 Bug reports & suggested improvements
 ------------------------------------
 
