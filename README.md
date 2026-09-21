@@ -383,6 +383,18 @@ Add the following code to `config/initializers/acts_as_tenant.rb`:
 require 'acts_as_tenant/sidekiq'
 ```
 
+The tenant is set while the job runs, but not in `sidekiq_retries_exhausted` or death handlers, because Sidekiq calls them outside the middleware. The tenant is saved in the job hash, so you can set it yourself:
+
+```ruby
+sidekiq_retries_exhausted do |job, exception|
+  tenant = Account.find_by(id: job.dig("acts_as_tenant", "id"))
+
+  ActsAsTenant.with_tenant(tenant) do
+    # ...
+  end
+end
+```
+
 - DelayedJob - [acts_as_tenant-delayed_job](https://github.com/nunommc/acts_as_tenant-delayed_job)
 
 Testing

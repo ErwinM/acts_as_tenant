@@ -15,6 +15,7 @@ These changes can make previously passing code or tests fail:
 
 ### Changes
 
+* Document setting the tenant in `sidekiq_retries_exhausted`, and remove the Sidekiq middleware check for `RetryJobs`, which was removed in Sidekiq 5. [#356](https://github.com/ErwinM/acts_as_tenant/issues/356)
 * Fix `validates_uniqueness_to_tenant` using the tenant of whichever model last called `acts_as_tenant`, which raised `NoMethodError` or scoped by the wrong column when models use different tenant names, e.g. when it's called in a subclass. [#372](https://github.com/ErwinM/acts_as_tenant/pull/372)
 * Fix `validates_uniqueness_to_tenant` raising `TypeError` when given multiple fields, like `validates_uniqueness_to_tenant :email, :username`. [#292](https://github.com/ErwinM/acts_as_tenant/issues/292)
 * Fix `belongs_to` validation looking up the associated record by the owner's primary key instead of the associated model's, which failed when either used a primary key other than `id`. [#370](https://github.com/ErwinM/acts_as_tenant/pull/370)
