@@ -359,6 +359,56 @@ describe ActsAsTenant do
     expect(manager.valid?).to eq(true)
   end
 
+  describe "assigning the tenant when creating records" do
+    before { ActsAsTenant.current_tenant = account }
+
+    it "sets the current tenant when none is assigned" do
+      expect(Project.create!(name: "new").account).to eq(account)
+    end
+
+    it "is invalid when assigned another tenant" do
+      [
+        Project.new(name: "by id", account_id: accounts(:bar).id),
+        Project.new(name: "by association", account: accounts(:bar)),
+        accounts(:bar).projects.build(name: "through the tenant")
+      ].each do |project|
+        expect(project).not_to be_valid
+        expect(project.errors[:account_id]).to include("must be the current tenant [ActsAsTenant]")
+      end
+    end
+
+    it "is valid when assigned the current tenant" do
+      expect(Project.new(name: "mine", account: account)).to be_valid
+    end
+
+    it "is invalid when a record without a tenant is assigned another tenant" do
+      project = projects(:without_account)
+      project.account = accounts(:bar)
+
+      expect(project).not_to be_valid
+    end
+
+    it "allows creating records for another tenant in with_tenant" do
+      project = ActsAsTenant.with_tenant(accounts(:bar)) { Project.create!(name: "theirs") }
+
+      expect(project.account).to eq(accounts(:bar))
+    end
+
+    it "allows creating records for any tenant without a tenant" do
+      ActsAsTenant.current_tenant = nil
+
+      expect(Project.create!(name: "any", account: accounts(:bar)).account).to eq(accounts(:bar))
+    end
+
+    it "is invalid when a polymorphic tenant is another record" do
+      ActsAsTenant.current_tenant = projects(:foo)
+
+      expect(PolymorphicTenantComment.new(polymorphic_tenant_commentable: account)).not_to be_valid
+      expect(PolymorphicTenantComment.new(polymorphic_tenant_commentable: projects(:bar))).not_to be_valid
+      expect(PolymorphicTenantComment.new(polymorphic_tenant_commentable: projects(:foo))).to be_valid
+    end
+  end
+
   describe "It should be possible to use associations with foreign_key from polymorphic" do
     it "tenanted objects have a polymorphic association" do
       ActsAsTenant.current_tenant = account
@@ -377,19 +427,12 @@ describe ActsAsTenant do
         expect(@comment.polymorphic_tenant_commentable_type).to eql(@project.class.to_s)
       end
 
-      context "with another type of tenant, same id" do
-        before do
-          @comment.save!
-          @article = Article.create!(id: @project.id, title: "article title")
-          @comment_on_article = @article.polymorphic_tenant_comments.create!
-        end
+      it "doesn't return another tenant type's records with the same id" do
+        project_comment = PolymorphicTenantComment.create!
+        article = Article.create!(id: @project.id, title: "article title")
+        ActsAsTenant.with_tenant(article) { article.polymorphic_tenant_comments.create! }
 
-        it "correctly scopes to the current tenant type" do
-          expect(@comment_on_article).to be_persisted
-          expect(@comment).to be_persisted
-          expect(PolymorphicTenantComment.count).to eql(1)
-          expect(PolymorphicTenantComment.all.first.attributes).to eql(@comment.attributes)
-        end
+        expect(PolymorphicTenantComment.all).to eq([project_comment])
       end
 
       context "with an STI tenant" do
@@ -404,7 +447,9 @@ describe ActsAsTenant do
         end
 
         it "scopes to records saved with the tenant's class name" do
-          comment = PolymorphicTenantComment.create!(polymorphic_tenant_commentable_id: article.id, polymorphic_tenant_commentable_type: "FeaturedArticle")
+          comment = ActsAsTenant.without_tenant do
+            PolymorphicTenantComment.create!(polymorphic_tenant_commentable_id: article.id, polymorphic_tenant_commentable_type: "FeaturedArticle")
+          end
           ActsAsTenant.current_tenant = article
 
           expect(PolymorphicTenantComment.all).to eq([comment])
