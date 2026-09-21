@@ -1,6 +1,13 @@
 Unreleased
 ----------
 
+2.0.0
+-----
+
+### Security
+
+* Fix models with polymorphic tenants allowing records to be created for another tenant while a tenant is set, for example by passing the polymorphic type and id in form params. Records assigned to a tenant other than the current one now fail validation. [#378](https://github.com/ErwinM/acts_as_tenant/pull/378)
+
 ### Upgrading
 
 These changes can make previously passing code or tests fail:
@@ -9,7 +16,7 @@ These changes can make previously passing code or tests fail:
 * `belongs_to` associations declared after `acts_as_tenant` are now validated against the current tenant, so assigning another tenant's record to them fails validation. [#363](https://github.com/ErwinM/acts_as_tenant/pull/363)
 * ActiveJob resolves the tenant when the job is performed instead of when it's deserialized, and restores the previous tenant afterwards. [#358](https://github.com/ErwinM/acts_as_tenant/pull/358)
 * `with_tenant` and `without_tenant` restore `current_tenant` to exactly what it was, without copying `test_tenant` or `default_tenant` into it. [#337](https://github.com/ErwinM/acts_as_tenant/pull/337)
-* Polymorphic tenant types are written with `polymorphic_name`. For STI tenants this is the base class instead of the subclass. Existing rows are still found, but can be updated with `Comment.where(commentable_type: "FeaturedArticle").update_all(commentable_type: "Article")`. Matching the old class name will be removed in 2.0. [#369](https://github.com/ErwinM/acts_as_tenant/pull/369)
+* Polymorphic tenant types are written with `polymorphic_name`. For STI tenants this is the base class instead of the subclass. Existing rows are still found, but can be updated with `Comment.where(commentable_type: "FeaturedArticle").update_all(commentable_type: "Article")`. Matching the old class name will be removed in 3.0. [#369](https://github.com/ErwinM/acts_as_tenant/pull/369)
 * `mutable_tenant!` is stored per request or job in `ActsAsTenant::Current` instead of globally, so calling `ActsAsTenant.mutable_tenant!(true)` once (e.g. in an initializer) no longer makes tenants mutable everywhere. Use `ActsAsTenant.with_mutable_tenant { ... }` instead. [#368](https://github.com/ErwinM/acts_as_tenant/pull/368)
 * When a tenant is set, creating a record for a different tenant now fails validation. Previously the tenant was silently replaced with the current tenant, or kept for polymorphic tenants, which let records be written to another tenant. Create records for another tenant inside `ActsAsTenant.with_tenant(other_tenant) { ... }`. [#329](https://github.com/ErwinM/acts_as_tenant/issues/329)
 * `config.require_tenant` callables are only called when no tenant is set and the query isn't inside `without_tenant`, instead of on every query. [#370](https://github.com/ErwinM/acts_as_tenant/pull/370)

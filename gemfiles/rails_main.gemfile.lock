@@ -111,7 +111,7 @@ GIT
 PATH
   remote: ..
   specs:
-    acts_as_tenant (1.0.1)
+    acts_as_tenant (2.0.0)
       rails (>= 6.0)
 
 GEM
