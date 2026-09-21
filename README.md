@@ -197,6 +197,13 @@ Project.tasks.all #  => all tasks with account_id => 3
 
 Acts_as_tenant uses Rails' `default_scope` method to scope models. Rails 3.1 changed the way `default_scope` works in a good way. A user defined `default_scope` should integrate seamlessly with the one added by `acts_as_tenant`.
 
+Because the scoping comes from `default_scope`, queries built from the model are scoped when a tenant is set. This includes `update_all`, `delete_all` and `destroy_all`, and `insert_all` and `upsert_all` set the current tenant. These are **not** scoped or checked:
+
+* Any query when no tenant is set, unless `require_tenant` is enabled
+* Queries that remove the default scope, such as `unscoped`
+* Raw SQL, such as `find_by_sql`, `connection.execute` and `exec_query`
+* `update_column` and `update_columns`, which skip the check that prevents changing a record's tenant
+
 `belongs_to` associations are validated against the current tenant regardless of whether they are declared before or after `acts_as_tenant`.
 
 When no tenant is set (for example in an admin panel or inside `without_tenant`), `belongs_to` associations to tenanted models are validated to belong to the same tenant as the record. Associated records without a tenant, such as global records, are allowed.
