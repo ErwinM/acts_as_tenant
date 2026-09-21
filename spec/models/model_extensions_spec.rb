@@ -172,6 +172,12 @@ describe ActsAsTenant do
         )
         expect(duplicate.valid?).to be(false)
       end
+
+      it "is invalid if any of multiple fields conflicts with a global record" do
+        expect(GlobalProjectWithMultipleFields.new(name: "global", user_defined_scope: "new").valid?).to be(false)
+        expect(GlobalProjectWithMultipleFields.new(name: "new", user_defined_scope: "abc").valid?).to be(false)
+        expect(GlobalProjectWithMultipleFields.new(name: "new", user_defined_scope: "new").valid?).to be(true)
+      end
     end
 
     context "should validate global records against global & tenant records" do
@@ -457,6 +463,18 @@ describe ActsAsTenant do
     UniqueTask.create!(name: "foo", user_defined_scope: "unique_scope")
     expect(UniqueTask.create(name: "foo", user_defined_scope: "another_scope")).to be_valid
     expect(UniqueTask.create(name: "foo", user_defined_scope: "unique_scope")).not_to be_valid
+  end
+
+  it "validates the uniqueness of multiple fields" do
+    ActsAsTenant.current_tenant = account
+    MultiFieldUniqueTask.create!(name: "foo", user_defined_scope: "bar")
+
+    expect(MultiFieldUniqueTask.new(name: "foo", user_defined_scope: "baz")).not_to be_valid
+    expect(MultiFieldUniqueTask.new(name: "baz", user_defined_scope: "bar")).not_to be_valid
+    expect(MultiFieldUniqueTask.new(name: "baz", user_defined_scope: "baz")).to be_valid
+
+    ActsAsTenant.current_tenant = accounts(:bar)
+    expect(MultiFieldUniqueTask.new(name: "foo", user_defined_scope: "bar")).to be_valid
   end
 
   context "When using validates_uniqueness_of in a NON-aat model" do
