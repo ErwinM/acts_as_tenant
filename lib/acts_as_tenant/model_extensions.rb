@@ -149,7 +149,8 @@ module ActsAsTenant
         end
       end
 
-      def validates_uniqueness_to_tenant(fields, args = {})
+      def validates_uniqueness_to_tenant(*fields)
+        args = fields.extract_options!
         raise ActsAsTenant::Errors::ModelNotScopedByTenant unless respond_to?(:scoped_by_tenant?)
 
         fkey = reflect_on_association(ActsAsTenant.tenant_klass).foreign_key
@@ -162,7 +163,7 @@ module ActsAsTenant
         end
 
         # validating within tenant scope
-        validates_uniqueness_of(fields, validation_args)
+        validates_uniqueness_of(*fields, validation_args)
 
         if ActsAsTenant.models_with_global_records.include?(self)
           arg_if = args.delete(:if)
@@ -173,7 +174,7 @@ module ActsAsTenant
           global_validation_args = args.merge(
             if: ->(instance) { instance[fkey].blank? && arg_if_passes.call(instance) }
           )
-          validates_uniqueness_of(fields, global_validation_args)
+          validates_uniqueness_of(*fields, global_validation_args)
 
           # if tenant is set (instance is not global) and records can be global - validating within records with blank tenant
           blank_tenant_validation_args = args.merge(
@@ -181,7 +182,7 @@ module ActsAsTenant
             if: ->(instance) { instance[fkey].present? && arg_if_passes.call(instance) }
           )
 
-          validates_uniqueness_of(fields, blank_tenant_validation_args)
+          validates_uniqueness_of(*fields, blank_tenant_validation_args)
         end
       end
     end
