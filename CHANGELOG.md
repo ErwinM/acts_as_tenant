@@ -15,6 +15,7 @@ These changes can make previously passing code or tests fail:
 
 ### Changes
 
+* Document that tests lose the current tenant after jobs are performed inline. [#335](https://github.com/ErwinM/acts_as_tenant/issues/335)
 * Document using `CurrentAttributes` to access the request in a `require_tenant` lambda. [#299](https://github.com/ErwinM/acts_as_tenant/issues/299)
 * Document which queries aren't scoped to the current tenant. [#354](https://github.com/ErwinM/acts_as_tenant/issues/354)
 * Document setting the tenant in `sidekiq_retries_exhausted`, and remove the Sidekiq middleware check for `RetryJobs`, which was removed in Sidekiq 5. [#356](https://github.com/ErwinM/acts_as_tenant/issues/356)
