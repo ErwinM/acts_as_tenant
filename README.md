@@ -309,6 +309,17 @@ end
 
 `ActsAsTenant.should_require_tenant?` is used to determine if a tenant is required in the current context, either by evaluating the lambda provided, or by returning the boolean value assigned to `config.require_tenant`. It accepts the relation as an optional argument, which is passed to the lambda as `nil` when omitted.
 
+With `require_tenant` enabled, ActiveStorage can raise `NoTenantSet` when it generates a preview or variant. After processing, Rails touches the attachment records, which loads their tenant-scoped models, and ActiveStorage requests don't set a tenant. Blobs are looked up by signed IDs, so it's safe to run these requests without a tenant:
+
+```ruby
+# config/initializers/acts_as_tenant.rb
+Rails.application.config.to_prepare do
+  ActiveStorage::Representations::BaseController.prepend_around_action do |_controller, action|
+    ActsAsTenant.without_tenant(&action)
+  end
+end
+```
+
 When using `config.require_tenant` alongside the `rails console`, a nice quality of life tweak is to set the tenant in the console session in your initializer script. For example in `config/initializers/acts_as_tenant.rb`:
 
 ```ruby
