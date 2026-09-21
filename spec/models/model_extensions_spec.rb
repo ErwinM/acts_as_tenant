@@ -459,6 +459,21 @@ describe ActsAsTenant do
     end
   end
 
+  it "validates uniqueness with the model's tenant when another model's tenant was declared last" do
+    previous_tenant_klass = ActsAsTenant.tenant_klass
+    ActsAsTenant.set_tenant_klass(:polymorphic_tenant_commentable)
+    stub_const("SubclassedProject", Class.new(Project) { validates_uniqueness_to_tenant :user_defined_scope })
+
+    ActsAsTenant.current_tenant = account
+    SubclassedProject.create!(name: "one", user_defined_scope: "taken")
+
+    expect(SubclassedProject.new(name: "two", user_defined_scope: "taken")).not_to be_valid
+    ActsAsTenant.current_tenant = accounts(:bar)
+    expect(SubclassedProject.new(name: "two", user_defined_scope: "taken")).to be_valid
+  ensure
+    ActsAsTenant.set_tenant_klass(previous_tenant_klass)
+  end
+
   it "handles user defined scopes" do
     UniqueTask.create!(name: "foo", user_defined_scope: "unique_scope")
     expect(UniqueTask.create(name: "foo", user_defined_scope: "another_scope")).to be_valid

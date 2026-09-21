@@ -142,6 +142,10 @@ module ActsAsTenant
         }
         include to_include
 
+        # Stored per model since ActsAsTenant.tenant_klass is whichever model called acts_as_tenant last
+        class_attribute :acts_as_tenant_foreign_key, instance_accessor: false
+        self.acts_as_tenant_foreign_key = fkey
+
         class << self
           def scoped_by_tenant?
             true
@@ -153,7 +157,7 @@ module ActsAsTenant
         args = fields.extract_options!
         raise ActsAsTenant::Errors::ModelNotScopedByTenant unless respond_to?(:scoped_by_tenant?)
 
-        fkey = reflect_on_association(ActsAsTenant.tenant_klass).foreign_key
+        fkey = acts_as_tenant_foreign_key
 
         validation_args = args.deep_dup
         validation_args[:scope] = if args[:scope]
