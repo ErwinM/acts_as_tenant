@@ -270,20 +270,30 @@ ActsAsTenant.configure do |config|
 end
 ```
 
-* `config.require_tenant` when set to true will raise an ActsAsTenant::NoTenant error whenever a query is made without a tenant set.
+* `config.require_tenant` when set to true will raise an `ActsAsTenant::Errors::NoTenantSet` error whenever a query is made without a tenant set.
 
-`config.require_tenant` can also be assigned a lambda that is evaluated at run time. For example:
+`config.require_tenant` can also be assigned a lambda that is evaluated at run time. The lambda doesn't have access to the request, so store what it needs in `CurrentAttributes`, which Rails resets after each request. For example, to not require a tenant under `/admin`:
 
 ```ruby
+# app/models/current.rb
+class Current < ActiveSupport::CurrentAttributes
+  attribute :request
+end
+
+# app/controllers/application_controller.rb
+class ApplicationController < ActionController::Base
+  before_action { Current.request = request }
+end
+
+# config/initializers/acts_as_tenant.rb
 ActsAsTenant.configure do |config|
   config.require_tenant = lambda do
-    if $request_env.present?
-      return false if $request_env["REQUEST_PATH"].start_with?("/admin/")
-    end
-    return true
+    !Current.request&.path&.start_with?("/admin/")
   end
 end
 ```
+
+Outside of a request, such as in jobs or the console, `Current.request` is `nil` and a tenant is required.
 
 The lambda can also optionally receive the relation being queried as an argument. This is useful for finer control over tenant requirements.
 
