@@ -56,14 +56,12 @@ module ActsAsTenant
         # - new instances should have the tenant set
         # - validate that associations belong to the tenant, currently only for belongs_to
         #
+        # New records without a tenant get the current tenant. A record assigned to
+        # another tenant keeps it and fails the validation below.
         before_validation proc { |m|
           if (current_tenant = ActsAsTenant.current_tenant)
-            if options[:polymorphic]
-              m.public_send(:"#{fkey}=", current_tenant.public_send(pkey)) if m.public_send(fkey).nil?
-              m.public_send(:"#{polymorphic_type}=", current_tenant.class.polymorphic_name) if m.public_send(polymorphic_type).nil?
-            else
-              m.public_send(:"#{fkey}=", current_tenant.public_send(pkey))
-            end
+            m.public_send(:"#{fkey}=", current_tenant.public_send(pkey)) if m.public_send(fkey).nil?
+            m.public_send(:"#{polymorphic_type}=", current_tenant.class.polymorphic_name) if options[:polymorphic] && m.public_send(polymorphic_type).nil?
           end
         }, on: :create
 
@@ -92,6 +90,24 @@ module ActsAsTenant
 
             record_tenant && associated_tenant && record_tenant != associated_tenant
           end
+        end
+
+        # Records must belong to the current tenant, matching what the default scope would find
+        validate do |record|
+          current_tenant = ActsAsTenant.current_tenant
+          next unless current_tenant
+
+          tenant_attributes = [fkey, polymorphic_type].compact
+          next unless record.new_record? || tenant_attributes.any? { |attr| record.will_save_change_to_attribute?(attr) }
+
+          record_tenant = tenant_identity.call(record)
+          next if record_tenant.nil?
+
+          record_id, record_type = record_tenant
+          matches = record_id.to_s == current_tenant.public_send(pkey).to_s
+          matches &&= record_type == current_tenant.class.polymorphic_name if options[:polymorphic]
+
+          record.errors.add(fkey, "must be the current tenant [ActsAsTenant]") unless matches
         end
 
         # Associations are looked up at validation time so belongs_to associations

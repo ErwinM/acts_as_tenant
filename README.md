@@ -204,6 +204,8 @@ Because the scoping comes from `default_scope`, queries built from the model are
 * Raw SQL, such as `find_by_sql`, `connection.execute` and `exec_query`
 * `update_column` and `update_columns`, which skip the check that prevents changing a record's tenant
 
+New records are assigned the current tenant unless they already have one. A record assigned to a different tenant fails validation, so to create records for another tenant, wrap them in `ActsAsTenant.with_tenant(other_tenant) { ... }`.
+
 `belongs_to` associations are validated against the current tenant regardless of whether they are declared before or after `acts_as_tenant`.
 
 When no tenant is set (for example in an admin panel or inside `without_tenant`), `belongs_to` associations to tenanted models are validated to belong to the same tenant as the record. Associated records without a tenant, such as global records, are allowed.
