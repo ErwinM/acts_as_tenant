@@ -1,6 +1,10 @@
 Unreleased
 ----------
 
+### Changes
+
+* Fix `belongs_to` validation evaluating an association scope that takes the owner (`->(record) { ... }`) with the associated class instead of the record, which raised `NoMethodError` or silently rejected valid records. The scope now receives the record, as it does in Rails.
+
 2.0.0
 -----
 

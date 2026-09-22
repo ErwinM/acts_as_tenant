@@ -124,7 +124,7 @@ module ActsAsTenant
             value = record.read_attribute_for_validation(attr)
             next if value.nil?
 
-            relation = a.scope ? a.klass.class_eval(&a.scope) : a.klass
+            relation = a.scope ? a.scope_for(a.klass.all, record) : a.klass
             associated = relation.find_by(a.association_primary_key => value)
 
             if associated.nil? || tenant_mismatch.call(record, associated)
