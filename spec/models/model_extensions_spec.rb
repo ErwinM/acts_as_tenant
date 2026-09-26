@@ -259,6 +259,24 @@ describe ActsAsTenant do
     expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
   end
 
+  describe "validating an association whose scope takes the owner" do
+    before { ActsAsTenant.current_tenant = account }
+
+    it "is valid when the associated record matches the scope" do
+      project = account.projects.create!(name: "scoped")
+
+      expect(InstanceScopedTask.new(name: "scoped", project: project).valid?).to eq(true)
+    end
+
+    it "is invalid when the associated record does not match the scope" do
+      project = account.projects.create!(name: "other")
+      task = InstanceScopedTask.new(name: "scoped", project: project)
+
+      expect(task.valid?).to eq(false)
+      expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
+    end
+  end
+
   describe "validating associations without a current tenant" do
     it "is invalid when the associated record belongs to another tenant" do
       project = accounts(:bar).projects.create!(name: "other_tenant_project")
