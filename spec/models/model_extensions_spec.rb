@@ -582,6 +582,10 @@ describe ActsAsTenant do
       expect(value).to eq "something"
     end
 
+    it "should not pass arguments to the block" do
+      expect(ActsAsTenant.with_tenant(account, &-> { "something" })).to eq "something"
+    end
+
     it "should raise an error when no block is provided" do
       expect { ActsAsTenant.with_tenant(nil) }.to raise_error(ArgumentError, /block required/)
     end
@@ -690,6 +694,10 @@ describe ActsAsTenant do
       expect(value).to eq "something"
     end
 
+    it "should not pass arguments to the block" do
+      expect(ActsAsTenant.without_tenant(&-> { "something" })).to eq "something"
+    end
+
     it "should raise an error when no block is provided" do
       expect { ActsAsTenant.without_tenant }.to raise_error(ArgumentError, /block required/)
     end
@@ -699,6 +707,10 @@ describe ActsAsTenant do
     it "should return the value of the block" do
       value = ActsAsTenant.with_mutable_tenant { "something" }
       expect(value).to eq "something"
+    end
+
+    it "should not pass arguments to the block" do
+      expect(ActsAsTenant.with_mutable_tenant(&-> { "something" })).to eq "something"
     end
 
     it "should raise an error when no block is provided" do

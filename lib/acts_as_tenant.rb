@@ -109,7 +109,7 @@ module ActsAsTenant
   def self.with_tenant(tenant, &block)
     raise ArgumentError, "block required" if block.nil?
 
-    Current.set(current_tenant: tenant, &block)
+    Current.set(current_tenant: tenant) { block.call }
   end
 
   def self.without_tenant(&block)
@@ -118,7 +118,7 @@ module ActsAsTenant
     old_test_tenant = test_tenant
     self.test_tenant = nil
     begin
-      Current.set(current_tenant: nil, acts_as_tenant_unscoped: true, &block)
+      Current.set(current_tenant: nil, acts_as_tenant_unscoped: true) { block.call }
     ensure
       self.test_tenant = old_test_tenant
     end
