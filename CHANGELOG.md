@@ -1,8 +1,11 @@
 Unreleased
 ----------
 
-* Fix `with_tenant`, `without_tenant` and `with_mutable_tenant` passing `ActsAsTenant::Current` to the block on Rails 7.2+, which raised `ArgumentError` for lambdas passed with `&`. The block is called with no arguments again, as in 1.x. #381
-* Fix `belongs_to` validation evaluating an association scope that takes the owner (`->(record) { ... }`) with the associated class instead of the record, which raised `NoMethodError` or silently rejected valid records. The scope now receives the record, as it does in Rails.
+2.0.1
+-----
+
+* Fix `with_tenant`, `without_tenant` and `with_mutable_tenant` passing `ActsAsTenant::Current` to the block on Rails 7.2+, which raised `ArgumentError` for lambdas passed with `&`. The block is called with no arguments again, as in 1.x. [#381](https://github.com/ErwinM/acts_as_tenant/issues/381)
+* Fix `belongs_to` validation evaluating an association scope that takes the owner (`->(record) { ... }`) with the associated class instead of the record, which raised `NoMethodError` or silently rejected valid records. The scope now receives the record, as it does in Rails. [#380](https://github.com/ErwinM/acts_as_tenant/pull/380)
 
 2.0.0
 -----
