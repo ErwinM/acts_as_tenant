@@ -1,6 +1,10 @@
 Unreleased
 ----------
 
+### Security
+
+* Fix optional polymorphic `belongs_to` associations allowing a reference to another tenant's record to be saved. They were skipped by association validation, so the record saved and the association read back as `nil`. Polymorphic associations are now validated against the class in their type column, and a type that isn't a model fails validation.
+
 2.0.1
 -----
 
