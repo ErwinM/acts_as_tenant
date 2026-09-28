@@ -118,14 +118,30 @@ module ActsAsTenant
 
           associations.each do |a|
             attr = a.foreign_key.to_sym
-            next unless record.will_save_change_to_attribute?(attr)
-            next if a.name == tenant.to_sym || polymorphic_foreign_keys.include?(a.foreign_key)
+            next if a.name == tenant.to_sym
+
+            if a.polymorphic?
+              next unless record.will_save_change_to_attribute?(attr) || record.will_save_change_to_attribute?(a.foreign_type)
+            else
+              # Associations sharing a polymorphic foreign key are checked through the polymorphic association
+              next if polymorphic_foreign_keys.include?(a.foreign_key)
+              next unless record.will_save_change_to_attribute?(attr)
+            end
 
             value = record.read_attribute_for_validation(attr)
             next if value.nil?
 
-            relation = a.scope ? a.scope_for(a.klass.all, record) : a.klass
-            associated = relation.find_by(a.association_primary_key => value)
+            klass = if a.polymorphic?
+              type = record.read_attribute(a.foreign_type)&.safe_constantize
+              type if type.is_a?(Class) && type < ActiveRecord::Base
+            else
+              a.klass
+            end
+
+            associated = if klass
+              relation = a.scope ? a.scope_for(klass.all, record) : klass
+              relation.find_by(a.association_primary_key(klass) => value)
+            end
 
             if associated.nil? || tenant_mismatch.call(record, associated)
               record.errors.add attr, "association is invalid [ActsAsTenant]"

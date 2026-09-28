@@ -433,6 +433,46 @@ describe ActsAsTenant do
       expect { Comment.create!(commentable: account.projects.first) }.not_to raise_error
     end
 
+    describe "validating polymorphic associations" do
+      let!(:other_project) { accounts(:bar).projects.create!(name: "other_tenant_project") }
+
+      it "is invalid when the associated record belongs to another tenant" do
+        ActsAsTenant.current_tenant = account
+        comment = Comment.new(commentable_type: "Project", commentable_id: other_project.id)
+
+        expect(comment.valid?).to eq(false)
+        expect(comment.errors[:commentable_id]).to include("association is invalid [ActsAsTenant]")
+      end
+
+      it "is invalid when only the type changes to another tenant's record" do
+        ActsAsTenant.current_tenant = account
+        comment = Comment.create!(commentable: Article.create!(id: other_project.id, title: "article"))
+        comment.commentable_type = "Project"
+
+        expect(comment.valid?).to eq(false)
+      end
+
+      it "is invalid when the type can't be resolved" do
+        ActsAsTenant.current_tenant = account
+        comment = Comment.new(commentable_type: "Kernel", commentable_id: 1)
+
+        expect(comment.valid?).to eq(false)
+        expect(comment.errors[:commentable_id]).to include("association is invalid [ActsAsTenant]")
+      end
+
+      it "is valid for untenanted records" do
+        ActsAsTenant.current_tenant = account
+
+        expect(Comment.new(commentable: Article.create!(title: "article")).valid?).to eq(true)
+      end
+
+      it "is invalid without a current tenant when the tenants differ" do
+        comment = Comment.new(account: account, commentable: other_project)
+
+        expect(comment.valid?).to eq(false)
+      end
+    end
+
     context "tenant is polymorphic" do
       before do
         @project = Project.create!(name: "polymorphic project")
