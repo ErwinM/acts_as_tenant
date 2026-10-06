@@ -1,6 +1,8 @@
 Unreleased
 ----------
 
+* Make the tenant and association validation error messages translatable. They are now added as `:"acts_as_tenant.tenant_mismatch"` and `:"acts_as_tenant.association_invalid"` and can be overridden under `activerecord.errors.messages.acts_as_tenant` in your locale files. The default messages are unchanged, but `errors.details` now returns these symbols instead of the message strings. [#386](https://github.com/ErwinM/acts_as_tenant/issues/386)
+
 2.0.2
 -----
 

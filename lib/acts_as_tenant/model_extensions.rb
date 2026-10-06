@@ -107,7 +107,7 @@ module ActsAsTenant
           matches = record_id.to_s == current_tenant.public_send(pkey).to_s
           matches &&= record_type == current_tenant.class.polymorphic_name if options[:polymorphic]
 
-          record.errors.add(fkey, "must be the current tenant [ActsAsTenant]") unless matches
+          record.errors.add(fkey, :"acts_as_tenant.tenant_mismatch") unless matches
         end
 
         # Associations are looked up at validation time so belongs_to associations
@@ -144,7 +144,7 @@ module ActsAsTenant
             end
 
             if associated.nil? || tenant_mismatch.call(record, associated)
-              record.errors.add attr, "association is invalid [ActsAsTenant]"
+              record.errors.add(attr, :"acts_as_tenant.association_invalid")
             end
           end
         end
