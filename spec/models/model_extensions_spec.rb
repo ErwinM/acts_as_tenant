@@ -278,7 +278,7 @@ describe ActsAsTenant do
       I18n.backend.store_translations(:en, activerecord: {errors: {models: {task: {attributes: {project_id: {acts_as_tenant: {association_invalid: "must be in this account"}}}}}}})
 
       expect(task).not_to be_valid
-      expect(task.errors[:project_id]).to include("must be in this account")
+      expect(task.errors[:project_id]).to eq(["must be in this account"])
     end
   end
 

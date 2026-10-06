@@ -222,6 +222,8 @@ en:
           association_invalid: "is invalid"
 ```
 
+Messages can also be overridden for one model or one attribute, such as `activerecord.errors.models.task.acts_as_tenant.association_invalid` or `activerecord.errors.models.task.attributes.project_id.acts_as_tenant.association_invalid`.
+
 ### Validating attribute uniqueness
 
 If you need to validate for uniqueness, chances are that you want to scope this validation to a tenant. You can do so by using:
