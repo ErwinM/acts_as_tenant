@@ -78,17 +78,30 @@ module ActsAsTenant
             else
               reflection.klass.polymorphic_name
             end
-            [id, type]
+            [id.to_s, type]
           end
         end
 
-        # Without a current tenant the association lookup isn't scoped, so compare the tenants directly
+        # Compared directly since the lookup scope may not filter by tenant.
+        # Records without a tenant, such as global records, are compared with the current tenant.
         tenant_mismatch = lambda do |record, associated|
-          if ActsAsTenant.current_tenant.nil? && associated.class.respond_to?(:scoped_by_tenant?)
+          if associated.class.respond_to?(:scoped_by_tenant?)
+            current_tenant = ActsAsTenant.current_tenant
             record_tenant = tenant_identity.call(record)
+            record_tenant ||= [current_tenant.public_send(pkey).to_s, current_tenant.class.polymorphic_name] if current_tenant
             associated_tenant = tenant_identity.call(associated)
 
             record_tenant && associated_tenant && record_tenant != associated_tenant
+          end
+        end
+
+        # Evaluates the validate_tenant option of belongs_to, like Rails if: conditions
+        validate_tenant_option = lambda do |record, condition|
+          case condition
+          when nil then true
+          when Symbol then record.send(condition)
+          when Proc then condition.arity.zero? ? record.instance_exec(&condition) : record.instance_exec(record, &condition)
+          else condition
           end
         end
 
@@ -131,6 +144,9 @@ module ActsAsTenant
             value = record.read_attribute_for_validation(attr)
             next if value.nil?
 
+            next unless validate_tenant_option.call(record, a.options[:validate_tenant])
+            next unless record.validate_tenant_association?(a)
+
             klass = if a.polymorphic?
               type = record.read_attribute(a.foreign_type)&.safe_constantize
               type if type.is_a?(Class) && type < ActiveRecord::Base
@@ -139,7 +155,8 @@ module ActsAsTenant
             end
 
             associated = if klass
-              relation = a.scope ? a.scope_for(klass.all, record) : klass
+              relation = a.scope ? a.scope_for(klass.all, record) : klass.all
+              relation = klass.tenant_validation_scope(relation)
               relation.find_by(a.association_primary_key(klass) => value)
             end
 
@@ -185,6 +202,12 @@ module ActsAsTenant
         end
       end
 
+      # The relation used to find associated records when validating belongs_to associations.
+      # Override to change the lookup for all associations to this model.
+      def tenant_validation_scope(relation)
+        relation.instance_exec(relation, &ActsAsTenant.configuration.association_validation_scope)
+      end
+
       def validates_uniqueness_to_tenant(*fields)
         args = fields.extract_options!
         raise ActsAsTenant::Errors::ModelNotScopedByTenant unless respond_to?(:scoped_by_tenant?)
@@ -221,6 +244,11 @@ module ActsAsTenant
           validates_uniqueness_of(*fields, blank_tenant_validation_args)
         end
       end
+    end
+
+    # Override to skip the tenant validation of a belongs_to association
+    def validate_tenant_association?(reflection)
+      true
     end
   end
 end

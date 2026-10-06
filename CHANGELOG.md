@@ -1,6 +1,11 @@
 Unreleased
 ----------
 
+* Make the `belongs_to` tenant validation configurable. [#388](https://github.com/ErwinM/acts_as_tenant/issues/388)
+  * `config.association_validation_scope` and a `tenant_validation_scope` class method change the query that finds associated records, for example to include soft-deleted records.
+  * The `validate_tenant` option of `belongs_to` and the `validate_tenant_association?` instance method skip the validation of an association.
+  * The tenants of the record and the associated record are now always compared, also when a tenant is set, so a lookup scope cannot accept records of another tenant. Records without a tenant are compared with the current tenant.
+
 2.1.0
 -----
 

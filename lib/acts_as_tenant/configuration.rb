@@ -22,7 +22,28 @@ module ActsAsTenant
     #   job_scope = ->(relation) {}
     #   job_scope = -> {}
     def job_scope=(scope)
-      @job_scope = if scope && scope.arity == 0
+      @job_scope = wrap_scope(scope)
+    end
+
+    def association_validation_scope
+      @association_validation_scope || ->(relation) { relation }
+    end
+
+    # Used for looking up associated records when validating belongs_to associations
+    #
+    # Format matches Rails scopes
+    #
+    #   association_validation_scope = ->(relation) {}
+    #   association_validation_scope = -> {}
+    def association_validation_scope=(scope)
+      @association_validation_scope = wrap_scope(scope)
+    end
+
+    private
+
+    # Scopes without arguments are evaluated on the relation
+    def wrap_scope(scope)
+      if scope && scope.arity == 0
         proc { instance_exec(&scope) }
       else
         scope
