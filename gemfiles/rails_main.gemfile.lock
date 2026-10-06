@@ -111,7 +111,7 @@ GIT
 PATH
   remote: ..
   specs:
-    acts_as_tenant (2.0.2)
+    acts_as_tenant (2.1.0)
       rails (>= 6.0)
 
 GEM
@@ -152,7 +152,9 @@ GEM
     marcel (1.0.2)
     mini_mime (1.1.5)
     mini_portile2 (2.8.5)
-    minitest (5.20.0)
+    minitest (6.0.6)
+      drb (~> 2.0)
+      prism (~> 1.5)
     net-imap (0.4.7)
       date
       net-protocol
@@ -166,14 +168,11 @@ GEM
     nokogiri (1.15.5)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
-    nokogiri (1.15.5-x86_64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.15.5-x86_64-linux)
-      racc (~> 1.4)
     parallel (1.23.0)
     parser (3.2.2.4)
       ast (~> 2.4.1)
       racc
+    prism (1.9.0)
     psych (5.1.1.1)
       stringio
     racc (1.7.3)
@@ -248,8 +247,6 @@ GEM
       redis-client (>= 0.14.0)
     sqlite3 (1.6.9)
       mini_portile2 (~> 2.8.0)
-    sqlite3 (1.6.9-x86_64-darwin)
-    sqlite3 (1.6.9-x86_64-linux)
     standard (1.32.1)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.0)
