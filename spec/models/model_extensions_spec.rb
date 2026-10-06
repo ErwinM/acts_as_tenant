@@ -259,6 +259,29 @@ describe ActsAsTenant do
     expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
   end
 
+  describe "validation error messages" do
+    let!(:task) { Task.new(name: "bar", project: accounts(:bar).projects.create!(name: "other_tenant_project")) }
+
+    before { ActsAsTenant.current_tenant = account }
+    after { I18n.backend.reload! }
+
+    it "adds the errors with symbol types" do
+      project = Project.new(name: "other", account: accounts(:bar))
+
+      expect(task).not_to be_valid
+      expect(project).not_to be_valid
+      expect(task.errors.details[:project_id]).to include(error: :"acts_as_tenant.association_invalid")
+      expect(project.errors.details[:account_id]).to include(error: :"acts_as_tenant.tenant_mismatch")
+    end
+
+    it "uses messages from the application's locale files" do
+      I18n.backend.store_translations(:en, activerecord: {errors: {models: {task: {attributes: {project_id: {acts_as_tenant: {association_invalid: "must be in this account"}}}}}}})
+
+      expect(task).not_to be_valid
+      expect(task.errors[:project_id]).to eq(["must be in this account"])
+    end
+  end
+
   describe "validating an association whose scope takes the owner" do
     before { ActsAsTenant.current_tenant = account }
 

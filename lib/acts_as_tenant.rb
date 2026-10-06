@@ -137,6 +137,10 @@ module ActsAsTenant
   end
 end
 
+ActiveSupport.on_load(:i18n) do
+  I18n.load_path << File.expand_path("acts_as_tenant/locale/en.yml", __dir__)
+end
+
 ActiveSupport.on_load(:active_record) do |base|
   base.include ActsAsTenant::ModelExtensions
 end

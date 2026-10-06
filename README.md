@@ -210,6 +210,20 @@ New records are assigned the current tenant unless they already have one. A reco
 
 When no tenant is set (for example in an admin panel or inside `without_tenant`), `belongs_to` associations to tenanted models are validated to belong to the same tenant as the record. Associated records without a tenant, such as global records, are allowed.
 
+The validation error messages can be overridden in your locale files, using the same lookup as other Active Record errors:
+
+```yaml
+en:
+  activerecord:
+    errors:
+      messages:
+        acts_as_tenant:
+          tenant_mismatch: "must be the current tenant"
+          association_invalid: "is invalid"
+```
+
+Messages can also be overridden for one model or one attribute, such as `activerecord.errors.models.task.acts_as_tenant.association_invalid` or `activerecord.errors.models.task.attributes.project_id.acts_as_tenant.association_invalid`.
+
 ### Validating attribute uniqueness
 
 If you need to validate for uniqueness, chances are that you want to scope this validation to a tenant. You can do so by using:

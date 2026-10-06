@@ -1,0 +1,7 @@
+en:
+  activerecord:
+    errors:
+      messages:
+        acts_as_tenant:
+          tenant_mismatch: "must be the current tenant [ActsAsTenant]"
+          association_invalid: "association is invalid [ActsAsTenant]"
