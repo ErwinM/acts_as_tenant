@@ -130,7 +130,6 @@ GEM
       net-smtp
     marcel (1.2.1)
     mini_mime (1.1.5)
-    mini_portile2 (2.8.9)
     minitest (5.27.0)
     net-imap (0.5.15)
       date
@@ -142,9 +141,6 @@ GEM
     net-smtp (0.5.1)
       net-protocol
     nio4r (2.7.5)
-    nokogiri (1.18.10)
-      mini_portile2 (~> 2.8.2)
-      racc (~> 1.4)
     nokogiri (1.18.10-aarch64-linux-gnu)
       racc (~> 1.4)
     nokogiri (1.18.10-aarch64-linux-musl)
@@ -270,8 +266,6 @@ GEM
       logger
       rack (>= 2.2.4, < 3.3)
       redis-client (>= 0.23.0, < 1)
-    sqlite3 (2.8.1)
-      mini_portile2 (~> 2.8.0)
     sqlite3 (2.8.1-aarch64-linux-gnu)
     sqlite3 (2.8.1-aarch64-linux-musl)
     sqlite3 (2.8.1-arm-linux-gnu)
