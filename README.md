@@ -208,7 +208,7 @@ New records are assigned the current tenant unless they already have one. A reco
 
 `belongs_to` associations are validated against the current tenant regardless of whether they are declared before or after `acts_as_tenant`.
 
-Associated records are looked up through the associated model's default scopes and the association's scope, and must belong to the same tenant as the record. This also applies when no tenant is set (for example in an admin panel or inside `without_tenant`). Associated records without a tenant, such as global records, are allowed. Records without a tenant are compared with the current tenant.
+Associated records are looked up through the associated model's default scopes and the association's scope, and must belong to the same tenant as the record. This also applies when no tenant is set (for example in an admin panel or inside `without_tenant`). Associated records without a tenant, such as global records, are allowed. A record without a tenant can only refer to records of the current tenant.
 
 If the associated model has other default scopes, such as soft deletes, records hidden by them fail the validation. Override `tenant_validation_scope` to change the lookup for all associations to that model:
 
@@ -229,8 +229,13 @@ To change the lookup for all models, override it in `ApplicationRecord`. The ten
 To skip the validation of an association, including ones declared elsewhere such as in a gem, override `validate_tenant_association?`:
 
 ```ruby
-def validate_tenant_association?(reflection)
-  reflection.name != :source
+class Comment < ApplicationRecord
+  acts_as_tenant :account
+  include Trackable # declares belongs_to :source
+
+  def validate_tenant_association?(reflection)
+    reflection.name != :source
+  end
 end
 ```
 
