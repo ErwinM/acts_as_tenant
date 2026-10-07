@@ -82,13 +82,17 @@ module ActsAsTenant
           end
         end
 
+        # Returns [tenant id, tenant class] for the current tenant, or nil if none is set
+        current_tenant_identity = lambda do
+          current_tenant = ActsAsTenant.current_tenant
+          [current_tenant.public_send(pkey).to_s, current_tenant.class.polymorphic_name] if current_tenant
+        end
+
         # Compared directly since the lookup scope may not filter by tenant.
         # Records without a tenant, such as global records, are compared with the current tenant.
         tenant_mismatch = lambda do |record, associated|
           if associated.class.respond_to?(:scoped_by_tenant?)
-            current_tenant = ActsAsTenant.current_tenant
-            record_tenant = tenant_identity.call(record)
-            record_tenant ||= [current_tenant.public_send(pkey).to_s, current_tenant.class.polymorphic_name] if current_tenant
+            record_tenant = tenant_identity.call(record) || current_tenant_identity.call
             associated_tenant = tenant_identity.call(associated)
 
             record_tenant && associated_tenant && record_tenant != associated_tenant
@@ -97,8 +101,8 @@ module ActsAsTenant
 
         # Records must belong to the current tenant, matching what the default scope would find
         validate do |record|
-          current_tenant = ActsAsTenant.current_tenant
-          next unless current_tenant
+          current_id, current_type = current_tenant_identity.call
+          next unless current_id
 
           tenant_attributes = [fkey, polymorphic_type].compact
           next unless record.new_record? || tenant_attributes.any? { |attr| record.will_save_change_to_attribute?(attr) }
@@ -107,8 +111,8 @@ module ActsAsTenant
           next if record_tenant.nil?
 
           record_id, record_type = record_tenant
-          matches = record_id == current_tenant.public_send(pkey).to_s
-          matches &&= record_type == current_tenant.class.polymorphic_name if options[:polymorphic]
+          matches = record_id == current_id
+          matches &&= record_type == current_type if options[:polymorphic]
 
           record.errors.add(fkey, :"acts_as_tenant.tenant_mismatch") unless matches
         end
@@ -148,7 +152,8 @@ module ActsAsTenant
             end
 
             associated = if klass
-              relation = association.scope ? association.scope_for(klass.all, record) : klass.all
+              # The class itself keeps Rails' cached find_by when there are no scopes
+              relation = association.scope ? association.scope_for(klass.all, record) : klass
               relation = klass.tenant_validation_scope(relation)
               relation.find_by(Array(association.association_primary_key(klass)).zip(values).to_h)
             end
@@ -161,7 +166,7 @@ module ActsAsTenant
           end
         end
 
-        # Tenant writers raise if the tenant changes on a persisted record. Included as a module so models can override these methods.
+        # Tenant writers raise if the tenant changes on a persisted record
         to_include = Module.new {
           define_method :"#{fkey}=" do |integer|
             write_attribute(fkey, integer)
@@ -182,11 +187,6 @@ module ActsAsTenant
 
           define_method :tenant_modified? do
             will_save_change_to_attribute?(fkey) && persisted? && attribute_in_database(fkey).present?
-          end
-
-          # Override to skip the tenant validation of a belongs_to association
-          define_method :validate_tenant_association? do |reflection|
-            true
           end
         }
         include to_include
@@ -244,6 +244,11 @@ module ActsAsTenant
           validates_uniqueness_of(*fields, blank_tenant_validation_args)
         end
       end
+    end
+
+    # Override to skip the tenant validation of a belongs_to association
+    def validate_tenant_association?(reflection)
+      true
     end
   end
 end
