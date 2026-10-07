@@ -304,6 +304,21 @@ describe ActsAsTenant do
         expect(line.errors[:account_id]).to be_empty
       end
     end
+
+    it "raises when the key column counts don't match, like loading the association would", if: ActiveRecord.version >= Gem::Version.new("7.2") do
+      mismatched = Class.new(ShipmentLine) do
+        def self.name
+          "ShipmentLine"
+        end
+
+        belongs_to :mismatched_parcel, class_name: "Parcel", foreign_key: [:account_id, :parcel_number, :region], primary_key: [:account_id, :number], optional: true
+      end
+      ActsAsTenant.current_tenant = account
+
+      line = mismatched.new(parcel_number: 1, region: "eu")
+
+      expect { line.valid? }.to raise_error(ActiveRecord::CompositePrimaryKeyMismatchError)
+    end
   end
 
   describe "validation error messages" do

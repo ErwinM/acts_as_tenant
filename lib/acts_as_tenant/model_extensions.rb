@@ -116,33 +116,35 @@ module ActsAsTenant
           associations = record.class.reflect_on_all_associations(:belongs_to)
           polymorphic_foreign_keys = associations.select(&:polymorphic?).map(&:foreign_key)
 
-          associations.each do |a|
-            attrs = Array(a.foreign_key).map(&:to_sym)
-            next if a.name == tenant.to_sym
+          associations.each do |association|
+            next if association.name == tenant.to_sym
 
-            if a.polymorphic?
-              next unless attrs.any? { |attr| record.will_save_change_to_attribute?(attr) } || record.will_save_change_to_attribute?(a.foreign_type)
+            attrs = Array(association.foreign_key).map(&:to_sym)
+            key_changed = attrs.any? { |attr| record.will_save_change_to_attribute?(attr) }
+
+            if association.polymorphic?
+              next unless key_changed || record.will_save_change_to_attribute?(association.foreign_type)
             else
               # Associations sharing a polymorphic foreign key are checked through the polymorphic association
-              next if polymorphic_foreign_keys.include?(a.foreign_key)
-              next unless attrs.any? { |attr| record.will_save_change_to_attribute?(attr) }
+              next if polymorphic_foreign_keys.include?(association.foreign_key)
+              next unless key_changed
             end
 
             values = attrs.map { |attr| record.read_attribute_for_validation(attr) }
             next if values.any?(&:nil?)
 
-            klass = if a.polymorphic?
-              type = record.read_attribute(a.foreign_type)&.safe_constantize
+            klass = if association.polymorphic?
+              type = record.read_attribute(association.foreign_type)&.safe_constantize
               type if type.is_a?(Class) && type < ActiveRecord::Base
             else
-              a.klass
+              # Raises for composite keys whose column counts don't match, like loading the association would
+              association.check_validity! if attrs.size > 1
+              association.klass
             end
 
             associated = if klass
-              relation = a.scope ? a.scope_for(klass.all, record) : klass
-              primary_keys = Array(a.association_primary_key(klass))
-              # A key count mismatch can never match a record, so it is treated as invalid
-              relation.find_by(primary_keys.zip(values).to_h) if primary_keys.size == values.size
+              relation = association.scope ? association.scope_for(klass.all, record) : klass
+              relation.find_by(Array(association.association_primary_key(klass)).zip(values).to_h)
             end
 
             if associated.nil? || tenant_mismatch.call(record, associated)
