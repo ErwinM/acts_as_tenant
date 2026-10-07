@@ -40,7 +40,9 @@ jobs:
 
           bundle config set --local deployment 'false'
           bundle
-          bundle exec appraisal
+          # Only bump our own version in the Appraisal lockfiles. Re-resolving them on the latest Ruby
+          # upgrades gems past what the older Rubies in the CI matrix support.
+          sed -i -E "s/^    acts_as_tenant \(.*\)$/    acts_as_tenant ($VERSION)/" gemfiles/*.gemfile.lock
           git config user.name 'GitHub Actions'
           git config user.email github-actions@github.com
           git add CHANGELOG.md gemfiles lib/acts_as_tenant/version.rb
