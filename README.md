@@ -208,7 +208,36 @@ New records are assigned the current tenant unless they already have one. A reco
 
 `belongs_to` associations are validated against the current tenant regardless of whether they are declared before or after `acts_as_tenant`.
 
-When no tenant is set (for example in an admin panel or inside `without_tenant`), `belongs_to` associations to tenanted models are validated to belong to the same tenant as the record. Associated records without a tenant, such as global records, are allowed.
+Associated records are looked up through the associated model's default scopes and the association's scope, and must belong to the same tenant as the record. This also applies when no tenant is set (for example in an admin panel or inside `without_tenant`). Associated records without a tenant, such as global records, are allowed. A record without a tenant can only refer to records of the current tenant.
+
+If the associated model has other default scopes, such as soft deletes, records hidden by them fail the validation. Override `tenant_validation_scope` to change the lookup for all associations to that model:
+
+```ruby
+class Project < ActiveRecord::Base
+  acts_as_tenant :account
+  default_scope { where(deleted_at: nil) }
+
+  # Tasks can refer to soft-deleted projects
+  def self.tenant_validation_scope(relation)
+    relation.unscope(where: :deleted_at)
+  end
+end
+```
+
+To change the lookup for all models, override it in `ApplicationRecord`. The tenants are always compared after the lookup, so a scope that removes the tenant condition can't accept records of another tenant.
+
+To skip the validation of an association, including ones declared elsewhere such as in a gem, override `validate_tenant_association?`:
+
+```ruby
+class Comment < ApplicationRecord
+  acts_as_tenant :account
+  include Trackable # declares belongs_to :source
+
+  def validate_tenant_association?(reflection)
+    reflection.name != :source
+  end
+end
+```
 
 The validation error messages can be overridden in your locale files, using the same lookup as other Active Record errors:
 

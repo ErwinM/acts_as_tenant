@@ -2,6 +2,10 @@ Unreleased
 ----------
 
 * Fix `belongs_to` association validation raising `NoMethodError` for associations with a composite foreign key, which Rails supports since 7.1. The associated record is now looked up by all key columns. [#390](https://github.com/ErwinM/acts_as_tenant/issues/390)
+* Make the `belongs_to` tenant validation customizable. [#388](https://github.com/ErwinM/acts_as_tenant/issues/388)
+  * Override the `tenant_validation_scope` class method to change the query that finds associated records, for example to include soft-deleted records.
+  * Override the `validate_tenant_association?` instance method to skip the validation of an association.
+  * The tenants of the record and the associated record are now always compared, also when a tenant is set, so a custom lookup scope cannot accept records of another tenant. A record without a tenant can only refer to records of the current tenant.
 
 2.1.0
 -----

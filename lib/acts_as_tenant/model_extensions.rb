@@ -78,14 +78,21 @@ module ActsAsTenant
             else
               reflection.klass.polymorphic_name
             end
-            [id, type]
+            [id.to_s, type]
           end
         end
 
-        # Without a current tenant the association lookup isn't scoped, so compare the tenants directly
+        # Returns [tenant id, tenant class] for the current tenant, or nil if none is set
+        current_tenant_identity = lambda do
+          current_tenant = ActsAsTenant.current_tenant
+          [current_tenant.public_send(pkey).to_s, current_tenant.class.polymorphic_name] if current_tenant
+        end
+
+        # Compared directly since the lookup scope may not filter by tenant.
+        # Records without a tenant, such as global records, are compared with the current tenant.
         tenant_mismatch = lambda do |record, associated|
-          if ActsAsTenant.current_tenant.nil? && associated.class.respond_to?(:scoped_by_tenant?)
-            record_tenant = tenant_identity.call(record)
+          if associated.class.respond_to?(:scoped_by_tenant?)
+            record_tenant = tenant_identity.call(record) || current_tenant_identity.call
             associated_tenant = tenant_identity.call(associated)
 
             record_tenant && associated_tenant && record_tenant != associated_tenant
@@ -94,8 +101,8 @@ module ActsAsTenant
 
         # Records must belong to the current tenant, matching what the default scope would find
         validate do |record|
-          current_tenant = ActsAsTenant.current_tenant
-          next unless current_tenant
+          current_id, current_type = current_tenant_identity.call
+          next unless current_id
 
           tenant_attributes = [fkey, polymorphic_type].compact
           next unless record.new_record? || tenant_attributes.any? { |attr| record.will_save_change_to_attribute?(attr) }
@@ -104,8 +111,8 @@ module ActsAsTenant
           next if record_tenant.nil?
 
           record_id, record_type = record_tenant
-          matches = record_id.to_s == current_tenant.public_send(pkey).to_s
-          matches &&= record_type == current_tenant.class.polymorphic_name if options[:polymorphic]
+          matches = record_id == current_id
+          matches &&= record_type == current_type if options[:polymorphic]
 
           record.errors.add(fkey, :"acts_as_tenant.tenant_mismatch") unless matches
         end
@@ -133,6 +140,8 @@ module ActsAsTenant
             values = attrs.map { |attr| record.read_attribute_for_validation(attr) }
             next if values.any?(&:nil?)
 
+            next unless record.validate_tenant_association?(association)
+
             klass = if association.polymorphic?
               type = record.read_attribute(association.foreign_type)&.safe_constantize
               type if type.is_a?(Class) && type < ActiveRecord::Base
@@ -143,7 +152,9 @@ module ActsAsTenant
             end
 
             associated = if klass
+              # The class itself keeps Rails' cached find_by when there are no scopes
               relation = association.scope ? association.scope_for(klass.all, record) : klass
+              relation = klass.tenant_validation_scope(relation)
               relation.find_by(Array(association.association_primary_key(klass)).zip(values).to_h)
             end
 
@@ -191,6 +202,12 @@ module ActsAsTenant
         end
       end
 
+      # The relation used to find associated records when validating belongs_to associations.
+      # Override to change the lookup for all associations to this model, for example to include soft-deleted records.
+      def tenant_validation_scope(relation)
+        relation
+      end
+
       def validates_uniqueness_to_tenant(*fields)
         args = fields.extract_options!
         raise ActsAsTenant::Errors::ModelNotScopedByTenant unless respond_to?(:scoped_by_tenant?)
@@ -227,6 +244,11 @@ module ActsAsTenant
           validates_uniqueness_of(*fields, blank_tenant_validation_args)
         end
       end
+    end
+
+    # Override to skip the tenant validation of a belongs_to association
+    def validate_tenant_association?(reflection)
+      true
     end
   end
 end

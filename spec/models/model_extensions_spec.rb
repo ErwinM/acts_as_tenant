@@ -462,6 +462,65 @@ describe ActsAsTenant do
     expect(manager.valid?).to eq(true)
   end
 
+  describe "customizing the association validation" do
+    let!(:other_project) { accounts(:bar).projects.create!(name: "other_tenant_project") }
+    let(:deleted_project) { account.projects.create!(name: "deleted_project", deleted_at: Time.now) }
+
+    before { ActsAsTenant.current_tenant = account }
+
+    it "applies the default scopes of the associated model" do
+      expect(Task.new(name: "bar", project_id: deleted_project.id)).not_to be_valid
+    end
+
+    it "uses the lookup scope of the associated model" do
+      allow(Project).to receive(:tenant_validation_scope) { |relation| relation.unscope(where: :deleted_at) }
+
+      expect(Task.new(name: "bar", project_id: deleted_project.id)).to be_valid
+    end
+
+    it "compares the tenants when the lookup scope removes the tenant condition" do
+      allow(Project).to receive(:tenant_validation_scope) { |relation| relation.unscoped }
+
+      task = Task.new(name: "bar", project_id: other_project.id)
+
+      expect(task).not_to be_valid
+      expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
+    end
+
+    it "compares records without a tenant with the current tenant" do
+      allow(Project).to receive(:tenant_validation_scope) { |relation| relation.unscoped }
+      task = ActsAsTenant.without_tenant { Task.create!(name: "global") }
+
+      task.project_id = other_project.id
+      expect(task).not_to be_valid
+
+      task.project_id = account.projects.create!(name: "own_project").id
+      expect(task).to be_valid
+    end
+
+    it "skips associations when validate_tenant_association? returns false" do
+      task = Task.new(name: "bar", project_id: other_project.id)
+      allow(task).to receive(:validate_tenant_association?) { |reflection| reflection.name != :project }
+
+      expect(task).to be_valid
+    end
+
+    describe "with an assigned record" do
+      it "applies the lookup scope" do
+        project = account.projects.create!(name: "assigned_project")
+        allow(Project).to receive(:tenant_validation_scope) { |relation| relation.where(name: "other") }
+
+        expect(Task.new(name: "bar", project: project)).not_to be_valid
+      end
+
+      it "uses the tenant of the record in the database" do
+        ActsAsTenant.with_mutable_tenant { other_project.account = account }
+
+        expect(Task.new(name: "bar", project: other_project)).not_to be_valid
+      end
+    end
+  end
+
   describe "assigning the tenant when creating records" do
     before { ActsAsTenant.current_tenant = account }
 
