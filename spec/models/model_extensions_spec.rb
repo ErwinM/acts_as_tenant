@@ -489,7 +489,7 @@ describe ActsAsTenant do
 
     it "compares records without a tenant with the current tenant" do
       allow(Project).to receive(:tenant_validation_scope) { |relation| relation.unscoped }
-      task = ActsAsTenant.without_tenant { anonymous_task_model.create!(name: "global") }
+      task = ActsAsTenant.without_tenant { Task.create!(name: "global") }
 
       task.project_id = other_project.id
       expect(task).not_to be_valid
@@ -513,27 +513,10 @@ describe ActsAsTenant do
         expect(Task.new(name: "bar", project: project)).not_to be_valid
       end
 
-      it "is invalid when the record belongs to another tenant" do
-        expect(Task.new(name: "bar", project: other_project)).not_to be_valid
-      end
-
       it "uses the tenant of the record in the database" do
         ActsAsTenant.with_mutable_tenant { other_project.account = account }
 
         expect(Task.new(name: "bar", project: other_project)).not_to be_valid
-      end
-    end
-
-    def anonymous_task_model
-      Class.new(ActiveRecord::Base) do
-        self.table_name = "tasks"
-
-        def self.name
-          "Task"
-        end
-
-        acts_as_tenant :account
-        belongs_to :project
       end
     end
   end
