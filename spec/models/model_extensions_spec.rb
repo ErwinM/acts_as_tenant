@@ -259,6 +259,68 @@ describe ActsAsTenant do
     expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
   end
 
+  describe "belongs_to with a composite foreign key", if: ActiveRecord.version >= Gem::Version.new("7.1") do
+    it "accepts a record from the current tenant" do
+      ActsAsTenant.current_tenant = account
+      shipment = Shipment.create!(number: 1, region: "eu")
+
+      expect(ShipmentLine.new(shipment: shipment)).to be_valid
+    end
+
+    it "rejects a record from another tenant" do
+      shipment = ActsAsTenant.with_tenant(accounts(:bar)) { Shipment.create!(number: 1, region: "eu") }
+      ActsAsTenant.current_tenant = account
+
+      line = ShipmentLine.new(shipment_number: shipment.number, region: shipment.region)
+
+      expect(line.valid?).to eq(false)
+      expect(line.errors[:shipment_number]).to include("association is invalid [ActsAsTenant]")
+    end
+
+    it "rejects a record that does not exist" do
+      ActsAsTenant.current_tenant = account
+
+      line = ShipmentLine.new(shipment_number: 1, region: "eu")
+
+      expect(line.valid?).to eq(false)
+    end
+
+    context "including the tenant column", if: ActiveRecord.version >= Gem::Version.new("7.2") do
+      it "accepts a record from the current tenant" do
+        ActsAsTenant.current_tenant = account
+        parcel = Parcel.create!(number: 1)
+
+        expect(ShipmentLine.new(parcel: parcel)).to be_valid
+      end
+
+      it "rejects a record from another tenant" do
+        ActsAsTenant.with_tenant(accounts(:bar)) { Parcel.create!(number: 1) }
+        ActsAsTenant.current_tenant = account
+
+        line = ShipmentLine.new(parcel_number: 1)
+
+        expect(line.valid?).to eq(false)
+        expect(line.errors[:parcel_number]).to include("association is invalid [ActsAsTenant]")
+        expect(line.errors[:account_id]).to be_empty
+      end
+    end
+
+    it "raises when the key column counts don't match, like loading the association would", if: ActiveRecord.version >= Gem::Version.new("7.2") do
+      mismatched = Class.new(ShipmentLine) do
+        def self.name
+          "ShipmentLine"
+        end
+
+        belongs_to :mismatched_parcel, class_name: "Parcel", foreign_key: [:account_id, :parcel_number, :region], primary_key: [:account_id, :number], optional: true
+      end
+      ActsAsTenant.current_tenant = account
+
+      line = mismatched.new(parcel_number: 1, region: "eu")
+
+      expect { line.valid? }.to raise_error(ActiveRecord::CompositePrimaryKeyMismatchError)
+    end
+  end
+
   describe "validation error messages" do
     let!(:task) { Task.new(name: "bar", project: accounts(:bar).projects.create!(name: "other_tenant_project")) }
 
@@ -400,27 +462,14 @@ describe ActsAsTenant do
     expect(manager.valid?).to eq(true)
   end
 
-  describe "configuring the association validation" do
+  describe "customizing the association validation" do
     let!(:other_project) { accounts(:bar).projects.create!(name: "other_tenant_project") }
     let(:deleted_project) { account.projects.create!(name: "deleted_project", deleted_at: Time.now) }
 
     before { ActsAsTenant.current_tenant = account }
-    after { ActsAsTenant.configure }
 
     it "applies the default scopes of the associated model" do
       expect(Task.new(name: "bar", project_id: deleted_project.id)).not_to be_valid
-    end
-
-    it "uses the configured lookup scope" do
-      ActsAsTenant.configure { |config| config.association_validation_scope = ->(relation) { relation.unscope(where: :deleted_at) } }
-
-      expect(Task.new(name: "bar", project_id: deleted_project.id)).to be_valid
-    end
-
-    it "evaluates a lookup scope without arguments on the relation" do
-      ActsAsTenant.configure { |config| config.association_validation_scope = -> { unscope(where: :deleted_at) } }
-
-      expect(Task.new(name: "bar", project_id: deleted_project.id)).to be_valid
     end
 
     it "uses the lookup scope of the associated model" do
@@ -430,7 +479,7 @@ describe ActsAsTenant do
     end
 
     it "compares the tenants when the lookup scope removes the tenant condition" do
-      ActsAsTenant.configure { |config| config.association_validation_scope = -> { unscoped } }
+      allow(Project).to receive(:tenant_validation_scope) { |relation| relation.unscoped }
 
       task = Task.new(name: "bar", project_id: other_project.id)
 
@@ -438,18 +487,15 @@ describe ActsAsTenant do
       expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
     end
 
-    it "skips associations with validate_tenant: false" do
-      expect(OptOutTask.new(name: "bar", project_id: other_project.id)).to be_valid
-    end
+    it "compares records without a tenant with the current tenant" do
+      allow(Project).to receive(:tenant_validation_scope) { |relation| relation.unscoped }
+      task = ActsAsTenant.without_tenant { anonymous_task_model.create!(name: "global") }
 
-    it "validates associations when the validate_tenant method returns true" do
-      expect(ConditionalTask.new(name: "bar", project_id: other_project.id, validate_project: true)).not_to be_valid
-      expect(ConditionalTask.new(name: "bar", project_id: other_project.id, validate_project: false)).to be_valid
-    end
+      task.project_id = other_project.id
+      expect(task).not_to be_valid
 
-    it "validates associations when the validate_tenant proc returns true" do
-      expect(ProcConditionalTask.new(name: "bar", project_id: other_project.id)).not_to be_valid
-      expect(ProcConditionalTask.new(name: "skip", project_id: other_project.id)).to be_valid
+      task.project_id = account.projects.create!(name: "own_project").id
+      expect(task).to be_valid
     end
 
     it "skips associations when validate_tenant_association? returns false" do
@@ -459,36 +505,10 @@ describe ActsAsTenant do
       expect(task).to be_valid
     end
 
-    it "skips associations only when validate_tenant returns false" do
-      expect(task_class { belongs_to :project, validate_tenant: nil }.new(name: "bar", project_id: other_project.id)).not_to be_valid
-    end
-
-    it "evaluates a validate_tenant proc with an argument on the record" do
-      klass = task_class { belongs_to :project, validate_tenant: ->(task) { task.equal?(self) && name != "skip" } }
-
-      expect(klass.new(name: "bar", project_id: other_project.id)).not_to be_valid
-      expect(klass.new(name: "skip", project_id: other_project.id)).to be_valid
-    end
-
-    it "raises when validate_tenant is passed to other associations" do
-      expect { task_class { has_many :comments, validate_tenant: false } }.to raise_error(ArgumentError, /validate_tenant/)
-    end
-
-    it "compares records without a tenant with the current tenant" do
-      ActsAsTenant.configure { |config| config.association_validation_scope = -> { unscoped } }
-      task = ActsAsTenant.without_tenant { task_class { belongs_to :project }.create!(name: "global") }
-
-      task.project_id = other_project.id
-      expect(task).not_to be_valid
-
-      task.project_id = account.projects.create!(name: "own_project").id
-      expect(task).to be_valid
-    end
-
     describe "with an assigned record" do
       it "applies the lookup scope" do
         project = account.projects.create!(name: "assigned_project")
-        ActsAsTenant.configure { |config| config.association_validation_scope = -> { where(name: "other") } }
+        allow(Project).to receive(:tenant_validation_scope) { |relation| relation.where(name: "other") }
 
         expect(Task.new(name: "bar", project: project)).not_to be_valid
       end
@@ -505,7 +525,7 @@ describe ActsAsTenant do
       end
     end
 
-    def task_class(&block)
+    def anonymous_task_model
       Class.new(ActiveRecord::Base) do
         self.table_name = "tasks"
 
@@ -514,7 +534,7 @@ describe ActsAsTenant do
         end
 
         acts_as_tenant :account
-        class_eval(&block)
+        belongs_to :project
       end
     end
   end

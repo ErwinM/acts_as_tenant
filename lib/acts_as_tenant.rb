@@ -8,7 +8,6 @@ module ActsAsTenant
   autoload :ModelExtensions, "acts_as_tenant/model_extensions"
   autoload :TenantHelper, "acts_as_tenant/tenant_helper"
   autoload :ActiveJobExtensions, "acts_as_tenant/active_job_extensions"
-  autoload :ValidateTenantOption, "acts_as_tenant/validate_tenant_option"
 
   @@configuration = nil
   @@tenant_klass = nil
@@ -144,7 +143,6 @@ end
 
 ActiveSupport.on_load(:active_record) do |base|
   base.include ActsAsTenant::ModelExtensions
-  ActiveRecord::Associations::Builder::Association.extensions << ActsAsTenant::ValidateTenantOption
 end
 
 ActiveSupport.on_load(:action_controller) do |base|

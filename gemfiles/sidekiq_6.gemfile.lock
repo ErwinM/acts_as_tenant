@@ -274,6 +274,7 @@ DEPENDENCIES
   acts_as_tenant!
   appraisal!
   byebug
+  minitest (< 5.26.2)
   rspec (>= 3.0)
   rspec-rails
   sidekiq (~> 6.0)

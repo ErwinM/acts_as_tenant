@@ -210,28 +210,23 @@ New records are assigned the current tenant unless they already have one. A reco
 
 Associated records are looked up through the associated model's default scopes and the association's scope, and must belong to the same tenant as the record. This also applies when no tenant is set (for example in an admin panel or inside `without_tenant`). Associated records without a tenant, such as global records, are allowed. Records without a tenant are compared with the current tenant.
 
-The lookup can be changed for all associations with `config.association_validation_scope` (see [Configuration options](#configuration-options)), or for associations to one model by overriding `tenant_validation_scope`:
+If the associated model has other default scopes, such as soft deletes, records hidden by them fail the validation. Override `tenant_validation_scope` to change the lookup for all associations to that model:
 
 ```ruby
 class Project < ActiveRecord::Base
   acts_as_tenant :account
-  default_scope { where(archived: false) }
+  default_scope { where(deleted_at: nil) }
 
-  # Tasks can refer to archived projects
+  # Tasks can refer to soft-deleted projects
   def self.tenant_validation_scope(relation)
-    relation.unscope(where: :archived)
+    relation.unscope(where: :deleted_at)
   end
 end
 ```
 
-To skip the validation of an association, pass `validate_tenant` to `belongs_to`. It accepts `false`, or a method name or a lambda that returns whether to validate, like Rails' `if:` option. The option is only accepted on `belongs_to`:
+To change the lookup for all models, override it in `ApplicationRecord`. The tenants are always compared after the lookup, so a scope that removes the tenant condition can't accept records of another tenant.
 
-```ruby
-belongs_to :template, class_name: "Project", validate_tenant: false
-belongs_to :imported_from, class_name: "Project", validate_tenant: :not_background_job?
-```
-
-Associations declared elsewhere, such as in a gem, can be skipped by overriding `validate_tenant_association?`:
+To skip the validation of an association, including ones declared elsewhere such as in a gem, override `validate_tenant_association?`:
 
 ```ruby
 def validate_tenant_association?(reflection)
@@ -312,9 +307,6 @@ ActsAsTenant.configure do |config|
 
   # Customize the query for loading the tenant in background jobs
   config.job_scope = ->{ all }
-
-  # Customize the query for finding associated records when validating belongs_to associations
-  config.association_validation_scope = ->{ all }
 end
 ```
 

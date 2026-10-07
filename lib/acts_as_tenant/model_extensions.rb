@@ -95,16 +95,6 @@ module ActsAsTenant
           end
         end
 
-        # Evaluates the validate_tenant option of belongs_to, like Rails if: conditions
-        validate_tenant_option = lambda do |record, condition|
-          case condition
-          when nil then true
-          when Symbol then record.send(condition)
-          when Proc then condition.arity.zero? ? record.instance_exec(&condition) : record.instance_exec(record, &condition)
-          else condition
-          end
-        end
-
         # Records must belong to the current tenant, matching what the default scope would find
         validate do |record|
           current_tenant = ActsAsTenant.current_tenant
@@ -129,39 +119,44 @@ module ActsAsTenant
           associations = record.class.reflect_on_all_associations(:belongs_to)
           polymorphic_foreign_keys = associations.select(&:polymorphic?).map(&:foreign_key)
 
-          associations.each do |a|
-            attr = a.foreign_key.to_sym
-            next if a.name == tenant.to_sym
+          associations.each do |association|
+            next if association.name == tenant.to_sym
 
-            if a.polymorphic?
-              next unless record.will_save_change_to_attribute?(attr) || record.will_save_change_to_attribute?(a.foreign_type)
+            attrs = Array(association.foreign_key).map(&:to_sym)
+            key_changed = attrs.any? { |attr| record.will_save_change_to_attribute?(attr) }
+
+            if association.polymorphic?
+              next unless key_changed || record.will_save_change_to_attribute?(association.foreign_type)
             else
               # Associations sharing a polymorphic foreign key are checked through the polymorphic association
-              next if polymorphic_foreign_keys.include?(a.foreign_key)
-              next unless record.will_save_change_to_attribute?(attr)
+              next if polymorphic_foreign_keys.include?(association.foreign_key)
+              next unless key_changed
             end
 
-            value = record.read_attribute_for_validation(attr)
-            next if value.nil?
+            values = attrs.map { |attr| record.read_attribute_for_validation(attr) }
+            next if values.any?(&:nil?)
 
-            next unless validate_tenant_option.call(record, a.options[:validate_tenant])
-            next unless record.validate_tenant_association?(a)
+            next unless record.validate_tenant_association?(association)
 
-            klass = if a.polymorphic?
-              type = record.read_attribute(a.foreign_type)&.safe_constantize
+            klass = if association.polymorphic?
+              type = record.read_attribute(association.foreign_type)&.safe_constantize
               type if type.is_a?(Class) && type < ActiveRecord::Base
             else
-              a.klass
+              # Raises for composite keys whose column counts don't match, like loading the association would
+              association.check_validity! if attrs.size > 1
+              association.klass
             end
 
             associated = if klass
-              relation = a.scope ? a.scope_for(klass.all, record) : klass.all
+              relation = association.scope ? association.scope_for(klass.all, record) : klass.all
               relation = klass.tenant_validation_scope(relation)
-              relation.find_by(a.association_primary_key(klass) => value)
+              relation.find_by(Array(association.association_primary_key(klass)).zip(values).to_h)
             end
 
             if associated.nil? || tenant_mismatch.call(record, associated)
-              record.errors.add(attr, :"acts_as_tenant.association_invalid")
+              # Composite keys often include the tenant column, which is not the one to blame
+              error_attr = (attrs - [fkey]).first || attrs.first
+              record.errors.add(error_attr, :"acts_as_tenant.association_invalid")
             end
           end
         end
@@ -203,9 +198,9 @@ module ActsAsTenant
       end
 
       # The relation used to find associated records when validating belongs_to associations.
-      # Override to change the lookup for all associations to this model.
+      # Override to change the lookup for all associations to this model, for example to include soft-deleted records.
       def tenant_validation_scope(relation)
-        relation.instance_exec(relation, &ActsAsTenant.configuration.association_validation_scope)
+        relation
       end
 
       def validates_uniqueness_to_tenant(*fields)
