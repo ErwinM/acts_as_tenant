@@ -117,19 +117,19 @@ module ActsAsTenant
           polymorphic_foreign_keys = associations.select(&:polymorphic?).map(&:foreign_key)
 
           associations.each do |a|
-            attr = a.foreign_key.to_sym
+            attrs = Array(a.foreign_key).map(&:to_sym)
             next if a.name == tenant.to_sym
 
             if a.polymorphic?
-              next unless record.will_save_change_to_attribute?(attr) || record.will_save_change_to_attribute?(a.foreign_type)
+              next unless attrs.any? { |attr| record.will_save_change_to_attribute?(attr) } || record.will_save_change_to_attribute?(a.foreign_type)
             else
               # Associations sharing a polymorphic foreign key are checked through the polymorphic association
               next if polymorphic_foreign_keys.include?(a.foreign_key)
-              next unless record.will_save_change_to_attribute?(attr)
+              next unless attrs.any? { |attr| record.will_save_change_to_attribute?(attr) }
             end
 
-            value = record.read_attribute_for_validation(attr)
-            next if value.nil?
+            values = attrs.map { |attr| record.read_attribute_for_validation(attr) }
+            next if values.any?(&:nil?)
 
             klass = if a.polymorphic?
               type = record.read_attribute(a.foreign_type)&.safe_constantize
@@ -140,11 +140,15 @@ module ActsAsTenant
 
             associated = if klass
               relation = a.scope ? a.scope_for(klass.all, record) : klass
-              relation.find_by(a.association_primary_key(klass) => value)
+              primary_keys = Array(a.association_primary_key(klass))
+              # A key count mismatch can never match a record, so it is treated as invalid
+              relation.find_by(primary_keys.zip(values).to_h) if primary_keys.size == values.size
             end
 
             if associated.nil? || tenant_mismatch.call(record, associated)
-              record.errors.add(attr, :"acts_as_tenant.association_invalid")
+              # Composite keys often include the tenant column, which is not the one to blame
+              error_attr = (attrs - [fkey]).first || attrs.first
+              record.errors.add(error_attr, :"acts_as_tenant.association_invalid")
             end
           end
         end
