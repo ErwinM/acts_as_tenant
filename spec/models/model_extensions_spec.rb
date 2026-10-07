@@ -505,6 +505,25 @@ describe ActsAsTenant do
       expect(task).to be_valid
     end
 
+    it "uses validate_tenant_association? defined before acts_as_tenant" do
+      klass = Class.new(ActiveRecord::Base) do
+        self.table_name = "tasks"
+
+        def self.name
+          "Task"
+        end
+
+        def validate_tenant_association?(reflection)
+          reflection.name != :project
+        end
+
+        acts_as_tenant :account
+        belongs_to :project
+      end
+
+      expect(klass.new(name: "bar", project_id: other_project.id)).to be_valid
+    end
+
     describe "with an assigned record" do
       it "applies the lookup scope" do
         project = account.projects.create!(name: "assigned_project")

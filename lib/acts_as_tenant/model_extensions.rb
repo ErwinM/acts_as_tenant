@@ -107,7 +107,7 @@ module ActsAsTenant
           next if record_tenant.nil?
 
           record_id, record_type = record_tenant
-          matches = record_id.to_s == current_tenant.public_send(pkey).to_s
+          matches = record_id == current_tenant.public_send(pkey).to_s
           matches &&= record_type == current_tenant.class.polymorphic_name if options[:polymorphic]
 
           record.errors.add(fkey, :"acts_as_tenant.tenant_mismatch") unless matches
@@ -161,7 +161,7 @@ module ActsAsTenant
           end
         end
 
-        # Tenant writers raise if the tenant changes on a persisted record
+        # Tenant writers raise if the tenant changes on a persisted record. Included as a module so models can override these methods.
         to_include = Module.new {
           define_method :"#{fkey}=" do |integer|
             write_attribute(fkey, integer)
@@ -182,6 +182,11 @@ module ActsAsTenant
 
           define_method :tenant_modified? do
             will_save_change_to_attribute?(fkey) && persisted? && attribute_in_database(fkey).present?
+          end
+
+          # Override to skip the tenant validation of a belongs_to association
+          define_method :validate_tenant_association? do |reflection|
+            true
           end
         }
         include to_include
@@ -239,11 +244,6 @@ module ActsAsTenant
           validates_uniqueness_of(*fields, blank_tenant_validation_args)
         end
       end
-    end
-
-    # Override to skip the tenant validation of a belongs_to association
-    def validate_tenant_association?(reflection)
-      true
     end
   end
 end
