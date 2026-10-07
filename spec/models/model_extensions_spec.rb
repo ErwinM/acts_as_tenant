@@ -259,6 +259,33 @@ describe ActsAsTenant do
     expect(task.errors[:project_id]).to include("association is invalid [ActsAsTenant]")
   end
 
+  describe "belongs_to with a composite foreign key" do
+    it "accepts a record from the current tenant" do
+      ActsAsTenant.current_tenant = account
+      shipment = Shipment.create!(number: 1, region: "eu")
+
+      expect(ShipmentLine.new(shipment: shipment)).to be_valid
+    end
+
+    it "rejects a record from another tenant" do
+      shipment = ActsAsTenant.with_tenant(accounts(:bar)) { Shipment.create!(number: 1, region: "eu") }
+      ActsAsTenant.current_tenant = account
+
+      line = ShipmentLine.new(shipment_number: shipment.number, region: shipment.region)
+
+      expect(line.valid?).to eq(false)
+      expect(line.errors[:shipment_number]).to include("association is invalid [ActsAsTenant]")
+    end
+
+    it "rejects a record that does not exist" do
+      ActsAsTenant.current_tenant = account
+
+      line = ShipmentLine.new(shipment_number: 1, region: "eu")
+
+      expect(line.valid?).to eq(false)
+    end
+  end
+
   describe "validation error messages" do
     let!(:task) { Task.new(name: "bar", project: accounts(:bar).projects.create!(name: "other_tenant_project")) }
 
