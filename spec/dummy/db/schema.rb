@@ -86,7 +86,13 @@ ActiveRecord::Schema.define(version: 1) do
   create_table :shipment_lines, force: true do |t|
     t.column :shipment_number, :integer
     t.column :region, :string
+    t.column :parcel_number, :integer
     t.column :account_id, :integer
+  end
+
+  create_table :parcels, primary_key: [:account_id, :number], force: true do |t|
+    t.column :account_id, :integer, null: false
+    t.column :number, :integer, null: false
   end
 
   create_table :custom_primary_key_tasks, force: true do |t|

@@ -140,11 +140,15 @@ module ActsAsTenant
 
             associated = if klass
               relation = a.scope ? a.scope_for(klass.all, record) : klass
-              relation.find_by(Array(a.association_primary_key(klass)).zip(values).to_h)
+              primary_keys = Array(a.association_primary_key(klass))
+              # A key count mismatch can never match a record, so it is treated as invalid
+              relation.find_by(primary_keys.zip(values).to_h) if primary_keys.size == values.size
             end
 
             if associated.nil? || tenant_mismatch.call(record, associated)
-              record.errors.add(attrs.first, :"acts_as_tenant.association_invalid")
+              # Composite keys often include the tenant column, which is not the one to blame
+              error_attr = (attrs - [fkey]).first || attrs.first
+              record.errors.add(error_attr, :"acts_as_tenant.association_invalid")
             end
           end
         end
