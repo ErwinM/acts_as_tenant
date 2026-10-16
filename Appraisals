@@ -32,7 +32,6 @@ end
 
 appraise "rails-main" do
   gem "rails", github: "rails/rails", branch: :main
-  gem "minitest", "< 5.26.2" # 5.26.2+ requires Ruby 3.1, CI runs this on Ruby 2.7
 end
 
 appraise "sidekiq-6" do
