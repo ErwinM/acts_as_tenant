@@ -9,6 +9,14 @@ end
 
 class ApplicationTestJobTenantError < StandardError; end
 
+class ProjectTestJob < ApplicationJob
+  cattr_accessor :performed_project
+
+  def perform(project)
+    self.class.performed_project = project
+  end
+end
+
 class DiscardingTestJob < ApplicationTestJob
   discard_on ActiveRecord::RecordNotFound
 end
@@ -44,6 +52,23 @@ RSpec.describe ApplicationTestJob, type: :job do
         expect { described_class.perform_later(expected_tenant: nil) }.to have_enqueued_job.on_queue("default")
         expect { perform_enqueued_jobs }.to raise_error(ActsAsTenant::Errors::NoTenantSet)
       end
+
+      context "when GlobalID loads the job's arguments with their default scope" do
+        around do |example|
+          GlobalID::Locator.use(:dummy) { |gid| gid.model_class.find(gid.model_id) }
+          example.run
+        ensure
+          GlobalID::Locator.use(:dummy, GlobalID::Locator::UnscopedLocator.new)
+        end
+
+        it "performs a job with a tenant-scoped argument" do
+          ActsAsTenant.current_tenant = account
+          ProjectTestJob.perform_later(projects(:foo))
+          perform_enqueued_jobs
+
+          expect(ProjectTestJob.performed_project).to eq(projects(:foo))
+        end
+      end
     end
 
     context "when tenant is not required" do
@@ -73,6 +98,14 @@ RSpec.describe ApplicationTestJob, type: :job do
     it "sets the tenant before the job's own callbacks run" do
       ActiveJob::Base.execute(ActsAsTenant.with_tenant(account) { CallbackTestJob.new(expected_tenant: account).serialize })
       expect(CallbackTestJob.tenant_in_callback).to eq(account)
+    end
+
+    it "looks the tenant up again when the same job instance is performed again" do
+      job = ActiveJob::Base.deserialize(job_data)
+      job.perform_now
+
+      account.destroy
+      expect { job.perform_now }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     it "does not run a job enqueued without a tenant under the tenant of the performing thread" do
