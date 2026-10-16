@@ -1,7 +1,7 @@
 Unreleased
 ----------
 
-* Set the job's tenant while ActiveJob deserializes its arguments, not only in `before_perform`. When a tenant is required, loading a tenant-scoped argument raised `ActsAsTenant::Errors::NoTenantSet` (wrapped in `ActiveJob::DeserializationError`) with a GlobalID locator that applies default scopes, or with the default locator when the argument's model runs tenant-scoped queries in an `after_find` or `after_initialize` callback, as the arguments were loaded before the tenant was set. 1.x did not raise.
+* Set the job's tenant while ActiveJob deserializes its arguments, not only in `before_perform`. When a tenant is required, loading a tenant-scoped argument raised `ActsAsTenant::Errors::NoTenantSet` (wrapped in `ActiveJob::DeserializationError`) with a GlobalID locator that applies default scopes, or with the default locator when the argument's model runs tenant-scoped queries in an `after_find` or `after_initialize` callback, as the arguments were loaded before the tenant was set. 1.x did not raise. [#394](https://github.com/ErwinM/acts_as_tenant/pull/394)
 
 2.2.0
 -----
