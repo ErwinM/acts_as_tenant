@@ -59,7 +59,7 @@ RSpec.describe ApplicationTestJob, type: :job do
           GlobalID::Locator.use(:dummy) { |gid| gid.model_class.find(gid.model_id) }
           example.run
         ensure
-          GlobalID::Locator.use(:dummy, GlobalID::Locator.default_locator)
+          GlobalID::Locator.use(:dummy, GlobalID::Locator::UnscopedLocator.new)
         end
 
         before { ProjectTestJob.performed_project = nil }
@@ -101,6 +101,14 @@ RSpec.describe ApplicationTestJob, type: :job do
     it "sets the tenant before the job's own callbacks run" do
       ActiveJob::Base.execute(ActsAsTenant.with_tenant(account) { CallbackTestJob.new(expected_tenant: account).serialize })
       expect(CallbackTestJob.tenant_in_callback).to eq(account)
+    end
+
+    it "looks the tenant up again when the same job instance is performed again" do
+      job = ActiveJob::Base.deserialize(ActsAsTenant.with_tenant(account) { described_class.new(expected_tenant: account).serialize })
+      job.perform_now
+
+      account.destroy
+      expect { job.perform_now }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     it "does not run a job enqueued without a tenant under the tenant of the performing thread" do

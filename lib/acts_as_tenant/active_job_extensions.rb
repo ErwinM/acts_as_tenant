@@ -4,7 +4,7 @@ module ActsAsTenant
       # Resolve the tenant inside the perform callbacks so `rescue_from`, `retry_on`
       # and `discard_on` can handle a tenant that no longer exists.
       base.before_perform do
-        ActsAsTenant.current_tenant = acts_as_tenant_job_tenant if @acts_as_tenant_global_id
+        ActsAsTenant.current_tenant = @acts_as_tenant_job_tenant if @acts_as_tenant_global_id
       end
     end
 
@@ -34,11 +34,8 @@ module ActsAsTenant
     def deserialize_arguments_if_needed
       return super unless @acts_as_tenant_global_id
 
-      ActsAsTenant.with_tenant(acts_as_tenant_job_tenant) { super }
-    end
-
-    def acts_as_tenant_job_tenant
-      @acts_as_tenant_job_tenant ||= GlobalID::Locator.locate(@acts_as_tenant_global_id)
+      @acts_as_tenant_job_tenant = GlobalID::Locator.locate(@acts_as_tenant_global_id)
+      ActsAsTenant.with_tenant(@acts_as_tenant_job_tenant) { super }
     end
   end
 end
