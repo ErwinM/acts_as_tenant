@@ -1,6 +1,8 @@
 Unreleased
 ----------
 
+* Set the job's tenant while ActiveJob deserializes its arguments, not only in `before_perform`. A GlobalID locator that applies default scopes raised `ActsAsTenant::Errors::NoTenantSet` (wrapped in `ActiveJob::DeserializationError`) for tenant-scoped arguments when a tenant is required, as it ran before the tenant was set. 1.x did not raise.
+
 2.2.0
 -----
 

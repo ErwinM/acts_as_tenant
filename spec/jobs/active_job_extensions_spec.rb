@@ -9,6 +9,12 @@ end
 
 class ApplicationTestJobTenantError < StandardError; end
 
+class ProjectTestJob < ApplicationJob
+  def perform(project)
+    raise ApplicationTestJobTenantError unless ActsAsTenant.current_tenant == project.account
+  end
+end
+
 class DiscardingTestJob < ApplicationTestJob
   discard_on ActiveRecord::RecordNotFound
 end
@@ -73,6 +79,22 @@ RSpec.describe ApplicationTestJob, type: :job do
     it "sets the tenant before the job's own callbacks run" do
       ActiveJob::Base.execute(ActsAsTenant.with_tenant(account) { CallbackTestJob.new(expected_tenant: account).serialize })
       expect(CallbackTestJob.tenant_in_callback).to eq(account)
+    end
+
+    context "when the job's arguments are loaded with tenant scoping" do
+      around do |example|
+        GlobalID::Locator.use(:dummy) { |gid| gid.model_class.find(gid.model_id) }
+        example.run
+      ensure
+        GlobalID::Locator.use(:dummy, GlobalID::Locator.default_locator)
+      end
+
+      before { allow(ActsAsTenant.configuration).to receive_messages(require_tenant: true) }
+
+      it "loads them under the job's tenant" do
+        job_data = ActsAsTenant.with_tenant(account) { ProjectTestJob.new(projects(:foo)).serialize }
+        expect { ActiveJob::Base.execute(job_data) }.not_to raise_error
+      end
     end
 
     it "does not run a job enqueued without a tenant under the tenant of the performing thread" do
