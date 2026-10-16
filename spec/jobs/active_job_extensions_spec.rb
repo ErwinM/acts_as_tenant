@@ -10,8 +10,11 @@ end
 class ApplicationTestJobTenantError < StandardError; end
 
 class ProjectTestJob < ApplicationJob
+  cattr_accessor :performed_project
+  discard_on ActiveJob::DeserializationError
+
   def perform(project)
-    raise ApplicationTestJobTenantError unless ActsAsTenant.current_tenant == project.account
+    self.class.performed_project = project
   end
 end
 
@@ -50,6 +53,25 @@ RSpec.describe ApplicationTestJob, type: :job do
         expect { described_class.perform_later(expected_tenant: nil) }.to have_enqueued_job.on_queue("default")
         expect { perform_enqueued_jobs }.to raise_error(ActsAsTenant::Errors::NoTenantSet)
       end
+
+      context "when GlobalID loads the job's arguments with their default scope" do
+        around do |example|
+          GlobalID::Locator.use(:dummy) { |gid| gid.model_class.find(gid.model_id) }
+          example.run
+        ensure
+          GlobalID::Locator.use(:dummy, GlobalID::Locator.default_locator)
+        end
+
+        before { ProjectTestJob.performed_project = nil }
+
+        it "performs a job with a tenant-scoped argument" do
+          ActsAsTenant.current_tenant = account
+          ProjectTestJob.perform_later(projects(:foo))
+          perform_enqueued_jobs
+
+          expect(ProjectTestJob.performed_project).to eq(projects(:foo))
+        end
+      end
     end
 
     context "when tenant is not required" do
@@ -79,22 +101,6 @@ RSpec.describe ApplicationTestJob, type: :job do
     it "sets the tenant before the job's own callbacks run" do
       ActiveJob::Base.execute(ActsAsTenant.with_tenant(account) { CallbackTestJob.new(expected_tenant: account).serialize })
       expect(CallbackTestJob.tenant_in_callback).to eq(account)
-    end
-
-    context "when the job's arguments are loaded with tenant scoping" do
-      around do |example|
-        GlobalID::Locator.use(:dummy) { |gid| gid.model_class.find(gid.model_id) }
-        example.run
-      ensure
-        GlobalID::Locator.use(:dummy, GlobalID::Locator.default_locator)
-      end
-
-      before { allow(ActsAsTenant.configuration).to receive_messages(require_tenant: true) }
-
-      it "loads them under the job's tenant" do
-        job_data = ActsAsTenant.with_tenant(account) { ProjectTestJob.new(projects(:foo)).serialize }
-        expect { ActiveJob::Base.execute(job_data) }.not_to raise_error
-      end
     end
 
     it "does not run a job enqueued without a tenant under the tenant of the performing thread" do
