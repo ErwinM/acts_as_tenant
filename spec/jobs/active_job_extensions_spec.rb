@@ -11,7 +11,6 @@ class ApplicationTestJobTenantError < StandardError; end
 
 class ProjectTestJob < ApplicationJob
   cattr_accessor :performed_project
-  discard_on ActiveJob::DeserializationError
 
   def perform(project)
     self.class.performed_project = project
@@ -62,8 +61,6 @@ RSpec.describe ApplicationTestJob, type: :job do
           GlobalID::Locator.use(:dummy, GlobalID::Locator::UnscopedLocator.new)
         end
 
-        before { ProjectTestJob.performed_project = nil }
-
         it "performs a job with a tenant-scoped argument" do
           ActsAsTenant.current_tenant = account
           ProjectTestJob.perform_later(projects(:foo))
@@ -104,7 +101,7 @@ RSpec.describe ApplicationTestJob, type: :job do
     end
 
     it "looks the tenant up again when the same job instance is performed again" do
-      job = ActiveJob::Base.deserialize(ActsAsTenant.with_tenant(account) { described_class.new(expected_tenant: account).serialize })
+      job = ActiveJob::Base.deserialize(job_data)
       job.perform_now
 
       account.destroy
