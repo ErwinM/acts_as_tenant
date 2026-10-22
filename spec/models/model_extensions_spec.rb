@@ -36,6 +36,35 @@ describe ActsAsTenant do
     expect { project.account_id = nil }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
   end
 
+  it "restores the tenant after raising" do
+    project = account.projects.create!(name: "bar")
+
+    expect { project.update_attribute(:account_id, accounts(:bar).id) }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
+    expect(project.account_id).to eq(account.id)
+    expect(project).not_to be_changed
+
+    expect { project.account = accounts(:bar) }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
+    expect(project.account_id).to eq(account.id)
+
+    project.update_attribute(:name, "renamed")
+    expect(project.reload.account_id).to eq(account.id)
+  end
+
+  describe "polymorphic tenant type" do
+    let(:comment) { ActsAsTenant.with_tenant(projects(:foo)) { PolymorphicTenantComment.create!(polymorphic_tenant_commentable: projects(:foo)) } }
+
+    it "should be immutable, if already set" do
+      expect { comment.polymorphic_tenant_commentable_type = "Article" }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
+      expect(comment.polymorphic_tenant_commentable_type).to eq("Project")
+      expect { comment.update_attribute(:polymorphic_tenant_commentable_type, "Article") }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
+      expect(comment.reload.polymorphic_tenant_commentable_type).to eq("Project")
+    end
+
+    it "setting it to the same value should not error" do
+      expect { comment.polymorphic_tenant_commentable_type = "Project" }.not_to raise_error
+    end
+  end
+
   it "tenant_id should be mutable, if not already set" do
     project = projects(:without_account)
     expect(project.account_id).to be_nil
