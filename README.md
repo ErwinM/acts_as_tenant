@@ -128,6 +128,8 @@ end
 This approach is useful when running background processes for a specified tenant. For example, by putting this in your worker's run method,
 any code in this block will be scoped to the current tenant. All methods that set the current tenant are thread safe.
 
+The tenant is stored in `ActiveSupport::CurrentAttributes`, which is isolated per thread. On servers that run requests in fibers, such as Falcon, set `config.active_support.isolation_level = :fiber` so each request keeps its own tenant.
+
 **Note:** If the current tenant is not set by one of these methods, Acts_as_tenant will be unable to apply the proper scope to your models. So make sure you use one of the two methods to tell acts_as_tenant about the current tenant.
 
 ### Disabling tenant checking for a block
@@ -197,11 +199,12 @@ Project.tasks.all #  => all tasks with account_id => 3
 
 Acts_as_tenant uses Rails' `default_scope` method to scope models. Rails 3.1 changed the way `default_scope` works in a good way. A user defined `default_scope` should integrate seamlessly with the one added by `acts_as_tenant`.
 
-Because the scoping comes from `default_scope`, queries built from the model are scoped when a tenant is set. This includes `update_all`, `delete_all` and `destroy_all`, and `insert_all` and `upsert_all` set the current tenant. These are **not** scoped or checked:
+Because the scoping comes from `default_scope`, queries built from the model are scoped when a tenant is set. This includes `update_all`, `delete_all` and `destroy_all`. `insert_all` and `upsert_all` set the current tenant on the rows they write, but they skip validations. `upsert_all` also matches existing rows by primary key across all tenants, so passing another tenant's id overwrites that record and moves it to the current tenant. Never pass ids from user input to `upsert_all`. These are **not** scoped or checked:
 
 * Any query when no tenant is set, unless `require_tenant` is enabled
 * Queries that remove the default scope, such as `unscoped`
 * Raw SQL, such as `find_by_sql`, `connection.execute` and `exec_query`
+* `update_counters`, `increment_counter` and `decrement_counter`, which Rails runs without default scopes
 * `update_column` and `update_columns`, which skip the check that prevents changing a record's tenant
 
 New records are assigned the current tenant unless they already have one. A record assigned to a different tenant fails validation, so to create records for another tenant, wrap them in `ActsAsTenant.with_tenant(other_tenant) { ... }`.
