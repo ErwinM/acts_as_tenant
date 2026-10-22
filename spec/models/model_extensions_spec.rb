@@ -36,7 +36,7 @@ describe ActsAsTenant do
     expect { project.account_id = nil }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
   end
 
-  it "undoes a tenant change that raised, so a later save doesn't save it" do
+  it "restores the tenant after raising" do
     project = account.projects.create!(name: "bar")
 
     expect { project.update_attribute(:account_id, accounts(:bar).id) }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
@@ -50,21 +50,19 @@ describe ActsAsTenant do
     expect(project.reload.account_id).to eq(account.id)
   end
 
-  it "polymorphic tenant type should be immutable, if already set" do
-    project = projects(:foo)
-    comment = ActsAsTenant.with_tenant(project) { PolymorphicTenantComment.create!(polymorphic_tenant_commentable: project) }
+  describe "polymorphic tenant type" do
+    let(:comment) { ActsAsTenant.with_tenant(projects(:foo)) { PolymorphicTenantComment.create!(polymorphic_tenant_commentable: projects(:foo)) } }
 
-    expect { comment.polymorphic_tenant_commentable_type = "Article" }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
-    expect(comment.polymorphic_tenant_commentable_type).to eq("Project")
-    expect { comment.update_attribute(:polymorphic_tenant_commentable_type, "Article") }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
-    expect(comment.reload.polymorphic_tenant_commentable_type).to eq("Project")
-  end
+    it "should be immutable, if already set" do
+      expect { comment.polymorphic_tenant_commentable_type = "Article" }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
+      expect(comment.polymorphic_tenant_commentable_type).to eq("Project")
+      expect { comment.update_attribute(:polymorphic_tenant_commentable_type, "Article") }.to raise_error(ActsAsTenant::Errors::TenantIsImmutable)
+      expect(comment.reload.polymorphic_tenant_commentable_type).to eq("Project")
+    end
 
-  it "setting the polymorphic tenant type to the same value should not error" do
-    project = projects(:foo)
-    comment = ActsAsTenant.with_tenant(project) { PolymorphicTenantComment.create!(polymorphic_tenant_commentable: project) }
-
-    expect { comment.polymorphic_tenant_commentable_type = "Project" }.not_to raise_error
+    it "setting it to the same value should not error" do
+      expect { comment.polymorphic_tenant_commentable_type = "Project" }.not_to raise_error
+    end
   end
 
   it "tenant_id should be mutable, if not already set" do

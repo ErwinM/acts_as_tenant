@@ -16,6 +16,7 @@ module ActsAsTenant
         tenant_reflection = reflect_on_association(tenant)
         fkey = tenant_reflection.foreign_key.to_sym
         polymorphic_type = tenant_reflection.foreign_type&.to_sym
+        tenant_attributes = [fkey, polymorphic_type].compact
 
         # Polymorphic tenants are stored with polymorphic_name, like Rails does. Records saved before
         # that used the class name, which differs for STI tenants, so match both when scoping.
@@ -111,7 +112,6 @@ module ActsAsTenant
           current_id, current_type = current_tenant_identity.call
           next unless current_id
 
-          tenant_attributes = [fkey, polymorphic_type].compact
           next unless record.new_record? || tenant_attributes.any? { |attr| record.will_save_change_to_attribute?(attr) }
 
           record_tenant = tenant_identity.call(record)
@@ -174,20 +174,12 @@ module ActsAsTenant
 
         # Tenant writers raise if the tenant changes on a persisted record. The change is
         # undone before raising so it isn't saved later, for example by update_attribute.
-        tenant_attributes = [fkey, polymorphic_type].compact
-
         to_include = Module.new {
-          define_method :"#{fkey}=" do |integer|
-            write_attribute(fkey, integer)
-            raise_if_tenant_changed
-            integer
-          end
-
-          if polymorphic_type
-            define_method :"#{polymorphic_type}=" do |type|
-              write_attribute(polymorphic_type, type)
+          tenant_attributes.each do |attr|
+            define_method :"#{attr}=" do |value|
+              write_attribute(attr, value)
               raise_if_tenant_changed
-              type
+              value
             end
           end
 
@@ -198,10 +190,10 @@ module ActsAsTenant
           end
 
           define_method :raise_if_tenant_changed do
-            return if ActsAsTenant.mutable_tenant? || !tenant_modified?
-
-            restore_attributes(tenant_attributes)
-            raise ActsAsTenant::Errors::TenantIsImmutable
+            if tenant_modified? && !ActsAsTenant.mutable_tenant?
+              restore_attributes(tenant_attributes)
+              raise ActsAsTenant::Errors::TenantIsImmutable
+            end
           end
           private :raise_if_tenant_changed
 
