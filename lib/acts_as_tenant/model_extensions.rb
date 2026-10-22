@@ -65,6 +65,13 @@ module ActsAsTenant
           end
         }, on: :create
 
+        # Returns the model class named by a polymorphic type column, or nil when the name
+        # is not a model, such as "Kernel" or "String" submitted in form params
+        polymorphic_class = lambda do |name|
+          klass = name&.safe_constantize
+          klass if klass.is_a?(Class) && klass < ActiveRecord::Base
+        end
+
         # Returns [tenant id, tenant class] for a record, or nil if it has no tenant.
         # Classes are normalized with polymorphic_name so STI tenants compare equal.
         tenant_identity = lambda do |model|
@@ -74,7 +81,7 @@ module ActsAsTenant
           if id
             type = if reflection.polymorphic?
               stored_type = model.read_attribute(reflection.foreign_type)
-              stored_type&.safe_constantize&.polymorphic_name || stored_type
+              polymorphic_class.call(stored_type)&.polymorphic_name || stored_type
             else
               reflection.klass.polymorphic_name
             end
@@ -143,8 +150,7 @@ module ActsAsTenant
             next unless record.validate_tenant_association?(association)
 
             klass = if association.polymorphic?
-              type = record.read_attribute(association.foreign_type)&.safe_constantize
-              type if type.is_a?(Class) && type < ActiveRecord::Base
+              polymorphic_class.call(record.read_attribute(association.foreign_type))
             else
               # Raises for composite keys whose column counts don't match, like loading the association would
               association.check_validity! if attrs.size > 1

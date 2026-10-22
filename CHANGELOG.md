@@ -2,6 +2,7 @@ Unreleased
 ----------
 
 * Fix `set_current_tenant_by_subdomain_or_domain` raising `NoMethodError` when the host is an IP address, for which `request.domain` is `nil`. No tenant is set for such hosts. Reported by [@mariokam](https://github.com/mariokam). [#398](https://github.com/ErwinM/acts_as_tenant/pull/398)
+* Fix the tenant validation raising `NoMethodError` when a polymorphic tenant type column names a constant that is not a model, such as `"Kernel"` submitted in form params. The record now fails validation. Reported by [@mariokam](https://github.com/mariokam).
 
 2.2.1
 -----
