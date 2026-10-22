@@ -172,12 +172,23 @@ module ActsAsTenant
           end
         end
 
-        # Tenant writers raise if the tenant changes on a persisted record
+        # Tenant writers raise if the tenant changes on a persisted record. The change is
+        # undone before raising so it isn't saved later, for example by update_attribute.
+        tenant_attributes = [fkey, polymorphic_type].compact
+
         to_include = Module.new {
           define_method :"#{fkey}=" do |integer|
             write_attribute(fkey, integer)
             raise_if_tenant_changed
             integer
+          end
+
+          if polymorphic_type
+            define_method :"#{polymorphic_type}=" do |type|
+              write_attribute(polymorphic_type, type)
+              raise_if_tenant_changed
+              type
+            end
           end
 
           define_method :"#{tenant}=" do |model|
@@ -187,12 +198,15 @@ module ActsAsTenant
           end
 
           define_method :raise_if_tenant_changed do
-            raise ActsAsTenant::Errors::TenantIsImmutable if !ActsAsTenant.mutable_tenant? && tenant_modified?
+            return if ActsAsTenant.mutable_tenant? || !tenant_modified?
+
+            restore_attributes(tenant_attributes)
+            raise ActsAsTenant::Errors::TenantIsImmutable
           end
           private :raise_if_tenant_changed
 
           define_method :tenant_modified? do
-            will_save_change_to_attribute?(fkey) && persisted? && attribute_in_database(fkey).present?
+            persisted? && attribute_in_database(fkey).present? && tenant_attributes.any? { |attr| will_save_change_to_attribute?(attr) }
           end
         }
         include to_include

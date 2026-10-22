@@ -3,6 +3,8 @@ Unreleased
 
 * Fix `set_current_tenant_by_subdomain_or_domain` raising `NoMethodError` when the host is an IP address, for which `request.domain` is `nil`. No tenant is set for such hosts. Reported by [@mariokam](https://github.com/mariokam). [#398](https://github.com/ErwinM/acts_as_tenant/pull/398)
 * Fix the tenant validation raising `NoMethodError` when a polymorphic tenant type column names a constant that is not a model, such as `"Kernel"` submitted in form params. The record now fails validation. Reported by [@mariokam](https://github.com/mariokam). [#399](https://github.com/ErwinM/acts_as_tenant/pull/399)
+* Raise `TenantIsImmutable` when the type column of a polymorphic tenant is changed on a persisted record, like the id column. Reported by [@mariokam](https://github.com/mariokam).
+* Undo the tenant change before raising `TenantIsImmutable`, so it is no longer saved by a later `update_attribute` or `save(validate: false)` on the same record. Reported by [@mariokam](https://github.com/mariokam).
 
 2.2.1
 -----
