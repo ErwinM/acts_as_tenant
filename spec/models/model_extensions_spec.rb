@@ -569,6 +569,17 @@ describe ActsAsTenant do
       expect(PolymorphicTenantComment.new(polymorphic_tenant_commentable: projects(:bar))).not_to be_valid
       expect(PolymorphicTenantComment.new(polymorphic_tenant_commentable: projects(:foo))).to be_valid
     end
+
+    it "is invalid when a polymorphic tenant type is not a model" do
+      ActsAsTenant.current_tenant = projects(:foo)
+
+      ["Kernel", "String", "Object", "NoSuch::Thing"].each do |type|
+        comment = PolymorphicTenantComment.new(polymorphic_tenant_commentable_type: type, polymorphic_tenant_commentable_id: projects(:foo).id)
+
+        expect(comment).not_to be_valid
+        expect(comment.errors[:polymorphic_tenant_commentable_id]).to include("must be the current tenant [ActsAsTenant]")
+      end
+    end
   end
 
   describe "It should be possible to use associations with foreign_key from polymorphic" do
