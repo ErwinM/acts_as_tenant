@@ -12,7 +12,7 @@ describe DomainController, type: :controller do
   controller do
     def index
       # Exercise current_tenant helper method
-      render plain: current_tenant.name
+      render plain: current_tenant&.name.to_s
     end
   end
 
@@ -40,6 +40,13 @@ describe DomainController, type: :controller do
     @request.host = "#{account.subdomain.upcase}.example.com"
     get :index
     expect(ActsAsTenant.current_tenant).to eq account
+  end
+
+  it "finds no tenant when the host is an IP address" do
+    @request.host = "127.0.0.1"
+    get :index
+    expect(ActsAsTenant.current_tenant).to be_nil
+    expect(response.body).to eq ""
   end
 
   context "overriding subdomain lookup" do

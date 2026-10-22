@@ -1,6 +1,8 @@
 Unreleased
 ----------
 
+* Fix `set_current_tenant_by_subdomain_or_domain` raising `NoMethodError` when the host is an IP address, for which `request.domain` is `nil`. No tenant is set for such hosts. Reported by [@mariokam](https://github.com/mariokam).
+
 2.2.1
 -----
 
