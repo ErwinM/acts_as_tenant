@@ -21,7 +21,7 @@ module ActsAsTenant
           {tenant_second_column => domain.downcase}
         end
 
-        ActsAsTenant.current_tenant = query && tenant_class.where(query).first
+        ActsAsTenant.current_tenant = query && tenant_class.find_by(query)
       end
     end
   end
