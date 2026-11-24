@@ -1,8 +1,8 @@
 Unreleased
 ----------
 
-* Raise `ActiveJob::DeserializationError` when a job's tenant was deleted after the job was enqueued, as Rails does for a deleted argument, so `discard_on ActiveJob::DeserializationError` drops the job instead of retrying it. The error's cause is the `ActiveRecord::RecordNotFound` that was raised before, so `discard_on ActiveRecord::RecordNotFound` still matches. Code that rescues `ActiveRecord::RecordNotFound` around `perform_now` directly needs to rescue `ActiveJob::DeserializationError` instead.
-* Fix the Sidekiq server middleware raising `ActiveRecord::RecordNotFound` for an ActiveJob job whose tenant was deleted. It looked the tenant up before the job ran, where no `discard_on` could handle the error, so Sidekiq retried the job until it gave up. ActiveJob jobs now set their own tenant while they perform. Plain Sidekiq jobs still have their tenant set by the middleware, and still raise when it no longer exists.
+* Raise `ActiveJob::DeserializationError` when a job's tenant was deleted after the job was enqueued, as Rails does for a deleted argument, so `discard_on ActiveJob::DeserializationError` drops the job instead of retrying it. The error's cause is the `ActiveRecord::RecordNotFound` that was raised before, so `discard_on ActiveRecord::RecordNotFound` still matches. Code that rescues `ActiveRecord::RecordNotFound` around `perform_now` directly needs to rescue `ActiveJob::DeserializationError` instead. [#402](https://github.com/ErwinM/acts_as_tenant/pull/402)
+* Fix the Sidekiq server middleware raising `ActiveRecord::RecordNotFound` for an ActiveJob job whose tenant was deleted. It looked the tenant up before the job ran, where no `discard_on` could handle the error, so Sidekiq retried the job until it gave up. ActiveJob jobs now set their own tenant while they perform. Plain Sidekiq jobs still have their tenant set by the middleware, and still raise when it no longer exists. [#402](https://github.com/ErwinM/acts_as_tenant/pull/402)
 
 2.2.2
 -----
