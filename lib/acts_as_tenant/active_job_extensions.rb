@@ -34,8 +34,16 @@ module ActsAsTenant
     def deserialize_arguments_if_needed
       return super unless @acts_as_tenant_global_id
 
-      @acts_as_tenant_job_tenant = GlobalID::Locator.locate(@acts_as_tenant_global_id)
+      @acts_as_tenant_job_tenant = locate_tenant
       ActsAsTenant.with_tenant(@acts_as_tenant_job_tenant) { super }
+    end
+
+    # Raise for a deleted tenant as Rails does for a deleted argument. The error's cause is the
+    # ActiveRecord::RecordNotFound, so `discard_on ActiveRecord::RecordNotFound` still matches.
+    def locate_tenant
+      GlobalID::Locator.locate(@acts_as_tenant_global_id)
+    rescue ActiveRecord::RecordNotFound
+      raise ActiveJob::DeserializationError
     end
   end
 end

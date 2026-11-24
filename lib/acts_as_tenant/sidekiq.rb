@@ -23,7 +23,10 @@ module ActsAsTenant::Sidekiq
     include Sidekiq::ServerMiddleware if sidekiq_7_and_up?
 
     def call(worker_class, msg, queue)
-      if msg.has_key?("acts_as_tenant")
+      # An ActiveJob job carries its own tenant and sets it while it performs (see
+      # ActsAsTenant::ActiveJobExtensions), where `discard_on` can handle a tenant that no
+      # longer exists. Looking it up here would raise before the job could.
+      if msg.has_key?("acts_as_tenant") && !msg.has_key?("wrapped")
         klass = msg["acts_as_tenant"]["class"].constantize
         id = msg["acts_as_tenant"]["id"]
         account = klass.class_eval(&ActsAsTenant.configuration.job_scope).find(id)

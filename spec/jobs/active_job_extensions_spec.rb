@@ -21,6 +21,10 @@ class DiscardingTestJob < ApplicationTestJob
   discard_on ActiveRecord::RecordNotFound
 end
 
+class DeserializationDiscardingTestJob < ApplicationTestJob
+  discard_on ActiveJob::DeserializationError
+end
+
 class CallbackTestJob < ApplicationTestJob
   cattr_accessor :tenant_in_callback
   before_perform { self.class.tenant_in_callback = ActsAsTenant.current_tenant }
@@ -105,7 +109,7 @@ RSpec.describe ApplicationTestJob, type: :job do
       job.perform_now
 
       account.destroy
-      expect { job.perform_now }.to raise_error(ActiveRecord::RecordNotFound)
+      expect { job.perform_now }.to raise_error(ActiveJob::DeserializationError)
     end
 
     it "does not run a job enqueued without a tenant under the tenant of the performing thread" do
@@ -127,12 +131,20 @@ RSpec.describe ApplicationTestJob, type: :job do
         expect { described_class.new.deserialize(job_data) }.not_to raise_error
       end
 
-      it "raises when the job is performed" do
-        expect { ActiveJob::Base.execute(job_data) }.to raise_error(ActiveRecord::RecordNotFound)
+      it "raises ActiveJob::DeserializationError caused by the missing record when the job is performed" do
+        expect { ActiveJob::Base.execute(job_data) }.to raise_error(ActiveJob::DeserializationError) { |error|
+          expect(error.cause).to be_a(ActiveRecord::RecordNotFound)
+        }
       end
 
-      it "lets the job discard itself" do
+      it "lets the job discard itself on ActiveRecord::RecordNotFound" do
         job_data["job_class"] = DiscardingTestJob.name
+        expect { ActiveJob::Base.execute(job_data) }.not_to raise_error
+      end
+
+      it "lets the job discard itself on ActiveJob::DeserializationError" do
+        job_data["job_class"] = DeserializationDiscardingTestJob.name
+        expect_any_instance_of(DeserializationDiscardingTestJob).not_to receive(:perform)
         expect { ActiveJob::Base.execute(job_data) }.not_to raise_error
       end
     end
