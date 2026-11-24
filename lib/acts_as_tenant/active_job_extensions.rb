@@ -1,9 +1,7 @@
 module ActsAsTenant
   module Errors
-    # Raised when a job runs after its tenant was deleted. A DeserializationError, like a
-    # deleted argument, so `discard_on ActiveJob::DeserializationError` drops the job too;
-    # `discard_on ActsAsTenant::Errors::TenantNotFound` drops only these. Defined here, with
-    # the extension, because it needs ActiveJob.
+    # Raised when a job runs after its tenant was deleted. Defined here rather than in errors.rb
+    # because it subclasses an ActiveJob error, and this file loads only once ActiveJob does.
     class TenantNotFound < ActiveJob::DeserializationError
     end
   end

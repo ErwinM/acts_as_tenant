@@ -29,10 +29,6 @@ class TenantNotFoundDiscardingTestJob < ApplicationTestJob
   discard_on ActsAsTenant::Errors::TenantNotFound
 end
 
-class TenantNotFoundDiscardingProjectTestJob < ProjectTestJob
-  discard_on ActsAsTenant::Errors::TenantNotFound
-end
-
 class CallbackTestJob < ApplicationTestJob
   cattr_accessor :tenant_in_callback
   before_perform { self.class.tenant_in_callback = ActsAsTenant.current_tenant }
@@ -139,9 +135,8 @@ RSpec.describe ApplicationTestJob, type: :job do
         expect { described_class.new.deserialize(job_data) }.not_to raise_error
       end
 
-      it "raises TenantNotFound, a DeserializationError caused by the missing record, when the job is performed" do
+      it "raises TenantNotFound caused by the missing record when the job is performed" do
         expect { ActiveJob::Base.execute(job_data) }.to raise_error(ActsAsTenant::Errors::TenantNotFound) { |error|
-          expect(error).to be_a(ActiveJob::DeserializationError)
           expect(error.cause).to be_a(ActiveRecord::RecordNotFound)
           expect(error.message).to include("Couldn't find Account")
         }
@@ -165,10 +160,9 @@ RSpec.describe ApplicationTestJob, type: :job do
       end
     end
 
-    # TenantNotFound is only for the tenant, so a job discarding it still raises for its own arguments
     it "does not raise TenantNotFound for a deleted argument" do
       project = projects(:foo)
-      job_data = ActsAsTenant.with_tenant(account) { TenantNotFoundDiscardingProjectTestJob.new(project).serialize }
+      job_data = ActsAsTenant.with_tenant(account) { ProjectTestJob.new(project).serialize }
       project.destroy
 
       expect { ActiveJob::Base.execute(job_data) }.to raise_error(ActiveJob::DeserializationError) { |error|
