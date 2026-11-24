@@ -1,4 +1,11 @@
 module ActsAsTenant
+  module Errors
+    # Raised when a job runs after its tenant was deleted. Defined here rather than in errors.rb
+    # because it subclasses an ActiveJob error, and this file loads only once ActiveJob does.
+    class TenantNotFound < ActiveJob::DeserializationError
+    end
+  end
+
   module ActiveJobExtensions
     def self.prepended(base)
       # Resolve the tenant inside the perform callbacks so `rescue_from`, `retry_on`
@@ -43,7 +50,7 @@ module ActsAsTenant
     def locate_tenant
       GlobalID::Locator.locate(@acts_as_tenant_global_id)
     rescue ActiveRecord::RecordNotFound
-      raise ActiveJob::DeserializationError
+      raise Errors::TenantNotFound
     end
   end
 end

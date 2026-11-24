@@ -25,6 +25,10 @@ class DeserializationDiscardingTestJob < ApplicationTestJob
   discard_on ActiveJob::DeserializationError
 end
 
+class TenantNotFoundDiscardingTestJob < ApplicationTestJob
+  discard_on ActsAsTenant::Errors::TenantNotFound
+end
+
 class CallbackTestJob < ApplicationTestJob
   cattr_accessor :tenant_in_callback
   before_perform { self.class.tenant_in_callback = ActsAsTenant.current_tenant }
@@ -131,10 +135,17 @@ RSpec.describe ApplicationTestJob, type: :job do
         expect { described_class.new.deserialize(job_data) }.not_to raise_error
       end
 
-      it "raises ActiveJob::DeserializationError caused by the missing record when the job is performed" do
-        expect { ActiveJob::Base.execute(job_data) }.to raise_error(ActiveJob::DeserializationError) { |error|
+      it "raises TenantNotFound caused by the missing record when the job is performed" do
+        expect { ActiveJob::Base.execute(job_data) }.to raise_error(ActsAsTenant::Errors::TenantNotFound) { |error|
           expect(error.cause).to be_a(ActiveRecord::RecordNotFound)
+          expect(error.message).to include("Couldn't find Account")
         }
+      end
+
+      it "lets the job discard itself on TenantNotFound" do
+        job_data["job_class"] = TenantNotFoundDiscardingTestJob.name
+        expect_any_instance_of(TenantNotFoundDiscardingTestJob).not_to receive(:perform)
+        expect { ActiveJob::Base.execute(job_data) }.not_to raise_error
       end
 
       it "lets the job discard itself on ActiveRecord::RecordNotFound" do
@@ -147,6 +158,16 @@ RSpec.describe ApplicationTestJob, type: :job do
         expect_any_instance_of(DeserializationDiscardingTestJob).not_to receive(:perform)
         expect { ActiveJob::Base.execute(job_data) }.not_to raise_error
       end
+    end
+
+    it "does not raise TenantNotFound for a deleted argument" do
+      project = projects(:foo)
+      job_data = ActsAsTenant.with_tenant(account) { ProjectTestJob.new(project).serialize }
+      project.destroy
+
+      expect { ActiveJob::Base.execute(job_data) }.to raise_error(ActiveJob::DeserializationError) { |error|
+        expect(error).not_to be_a(ActsAsTenant::Errors::TenantNotFound)
+      }
     end
   end
 
