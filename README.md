@@ -451,6 +451,13 @@ Background Processing libraries
 ActsAsTenant supports
 
 - ActiveJob - ActsAsTenant will automatically save the current tenant in ActiveJob arguments and set it when the job runs.
+  A job whose tenant was deleted before it ran raises `ActsAsTenant::Errors::TenantNotFound`, an `ActiveJob::DeserializationError`. `discard_on ActiveJob::DeserializationError` drops it along with jobs whose arguments were deleted, and `discard_on ActsAsTenant::Errors::TenantNotFound` drops only those:
+
+  ```ruby
+  class ApplicationJob < ActiveJob::Base
+    discard_on ActsAsTenant::Errors::TenantNotFound
+  end
+  ```
 
 - [Sidekiq](//sidekiq.org/)
 Add the following code to `config/initializers/acts_as_tenant.rb`:

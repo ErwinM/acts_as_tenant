@@ -1,4 +1,13 @@
 module ActsAsTenant
+  module Errors
+    # Raised when a job runs after its tenant was deleted. A DeserializationError, like a
+    # deleted argument, so `discard_on ActiveJob::DeserializationError` drops the job too;
+    # `discard_on ActsAsTenant::Errors::TenantNotFound` drops only these. Defined here, with
+    # the extension, because it needs ActiveJob.
+    class TenantNotFound < ActiveJob::DeserializationError
+    end
+  end
+
   module ActiveJobExtensions
     def self.prepended(base)
       # Resolve the tenant inside the perform callbacks so `rescue_from`, `retry_on`
@@ -43,7 +52,7 @@ module ActsAsTenant
     def locate_tenant
       GlobalID::Locator.locate(@acts_as_tenant_global_id)
     rescue ActiveRecord::RecordNotFound
-      raise ActiveJob::DeserializationError
+      raise Errors::TenantNotFound
     end
   end
 end

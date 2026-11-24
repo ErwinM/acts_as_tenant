@@ -1,6 +1,8 @@
 Unreleased
 ----------
 
+* Raise `ActsAsTenant::Errors::TenantNotFound` for a job whose tenant was deleted. It is an `ActiveJob::DeserializationError`, so `discard_on ActiveJob::DeserializationError` still drops these jobs, and `discard_on ActsAsTenant::Errors::TenantNotFound` drops them without also dropping jobs whose arguments were deleted.
+
 2.3.0
 -----
 
