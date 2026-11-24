@@ -47,6 +47,19 @@ describe "ActsAsTenant::Sidekiq" do
       expect(ActsAsTenant.current_tenant).to be_nil
     end
 
+    it "leaves an ActiveJob job to set its own tenant" do
+      expect(Account).not_to receive(:find)
+
+      msg = message.merge("wrapped" => "SomeJob")
+      subject.call(nil, msg, nil) do
+        expect(ActsAsTenant.current_tenant).to be_nil
+      end
+    end
+
+    it "raises for a plain Sidekiq job whose tenant no longer exists" do
+      expect { subject.call(nil, message, nil) {} }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
     it "restores tenant with custom scope" do
       original_job_scope = ActsAsTenant.configuration.job_scope
       ActsAsTenant.configuration.job_scope = -> { unscope(where: :deleted_at) }

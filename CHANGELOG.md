@@ -1,6 +1,9 @@
 Unreleased
 ----------
 
+* Raise `ActiveJob::DeserializationError` when a job's tenant was deleted after the job was enqueued, as Rails does for a deleted argument, so `discard_on ActiveJob::DeserializationError` drops the job instead of retrying it. The error's cause is the `ActiveRecord::RecordNotFound` that was raised before, so `discard_on ActiveRecord::RecordNotFound` still matches. Code that rescues `ActiveRecord::RecordNotFound` around `perform_now` directly needs to rescue `ActiveJob::DeserializationError` instead.
+* Leave ActiveJob jobs to the ActiveJob extension in the Sidekiq server middleware. The middleware looked the tenant up before the job ran, so a deleted tenant raised `ActiveRecord::RecordNotFound` where no `discard_on` could handle it and Sidekiq retried the job until it gave up. Plain Sidekiq jobs still have their tenant set by the middleware, and still raise when it no longer exists.
+
 2.2.2
 -----
 
