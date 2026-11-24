@@ -38,10 +38,8 @@ module ActsAsTenant
       ActsAsTenant.with_tenant(@acts_as_tenant_job_tenant) { super }
     end
 
-    # A tenant deleted after the job was enqueued is a missing record like any of the job's
-    # arguments, so it raises ActiveJob::DeserializationError and `discard_on` that error
-    # drops the job. The error's cause is the ActiveRecord::RecordNotFound, which
-    # `discard_on ActiveRecord::RecordNotFound` still matches.
+    # Raise for a deleted tenant as Rails does for a deleted argument. The error's cause is the
+    # ActiveRecord::RecordNotFound, so `discard_on ActiveRecord::RecordNotFound` still matches.
     def locate_tenant
       GlobalID::Locator.locate(@acts_as_tenant_global_id)
     rescue ActiveRecord::RecordNotFound

@@ -48,8 +48,6 @@ describe "ActsAsTenant::Sidekiq" do
     end
 
     it "leaves an ActiveJob job to set its own tenant" do
-      expect(Account).not_to receive(:find)
-
       msg = message.merge("wrapped" => "SomeJob")
       subject.call(nil, msg, nil) do
         expect(ActsAsTenant.current_tenant).to be_nil

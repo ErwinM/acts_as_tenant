@@ -144,13 +144,8 @@ RSpec.describe ApplicationTestJob, type: :job do
 
       it "lets the job discard itself on ActiveJob::DeserializationError" do
         job_data["job_class"] = DeserializationDiscardingTestJob.name
-        expect { ActiveJob::Base.execute(job_data) }.not_to raise_error
-      end
-
-      it "does not perform a discarded job" do
-        job_data["job_class"] = DeserializationDiscardingTestJob.name
         expect_any_instance_of(DeserializationDiscardingTestJob).not_to receive(:perform)
-        ActiveJob::Base.execute(job_data)
+        expect { ActiveJob::Base.execute(job_data) }.not_to raise_error
       end
     end
   end
