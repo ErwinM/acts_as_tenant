@@ -644,6 +644,15 @@ describe ActsAsTenant do
         expect(comment.errors[:commentable_id]).to include("association is invalid [ActsAsTenant]")
       end
 
+      it "resolves the type like Active Record does" do
+        skip "Rails 6.0 doesn't use polymorphic_class_for" if ActiveRecord.version < Gem::Version.new("6.1")
+        allow(Comment).to receive(:polymorphic_class_for) { |name| {"P" => Project}.fetch(name) }
+        ActsAsTenant.current_tenant = account
+
+        expect(Comment.new(commentable_type: "P", commentable_id: account.projects.first.id).valid?).to eq(true)
+        expect(Comment.new(commentable_type: "P", commentable_id: other_project.id).valid?).to eq(false)
+      end
+
       it "is valid for untenanted records" do
         ActsAsTenant.current_tenant = account
 

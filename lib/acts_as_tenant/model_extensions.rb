@@ -66,10 +66,16 @@ module ActsAsTenant
           end
         }, on: :create
 
-        # Returns the model class named by a polymorphic type column, or nil when the name
-        # is not a model, such as "Kernel" or "String" submitted in form params
-        polymorphic_class = lambda do |name|
-          klass = name&.safe_constantize
+        # Returns the model class for a polymorphic association, resolved like Active Record
+        # does when loading it so custom type names and integer types work. Returns nil when
+        # the type is not a model, such as "Kernel" or "String" submitted in form params.
+        polymorphic_class = lambda do |model, reflection|
+          klass = begin
+            model.association(reflection.name).klass
+          rescue NoMethodError
+            raise
+          rescue NameError
+          end
           klass if klass.is_a?(Class) && klass < ActiveRecord::Base
         end
 
@@ -81,8 +87,7 @@ module ActsAsTenant
 
           if id
             type = if reflection.polymorphic?
-              stored_type = model.read_attribute(reflection.foreign_type)
-              polymorphic_class.call(stored_type)&.polymorphic_name || stored_type
+              polymorphic_class.call(model, reflection)&.polymorphic_name || model.read_attribute(reflection.foreign_type)
             else
               reflection.klass.polymorphic_name
             end
@@ -150,7 +155,7 @@ module ActsAsTenant
             next unless record.validate_tenant_association?(association)
 
             klass = if association.polymorphic?
-              polymorphic_class.call(record.read_attribute(association.foreign_type))
+              polymorphic_class.call(record, association)
             else
               # Raises for composite keys whose column counts don't match, like loading the association would
               association.check_validity! if attrs.size > 1
