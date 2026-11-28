@@ -70,13 +70,11 @@ module ActsAsTenant
         # does when loading it so custom type names and integer types work. Returns nil when
         # the type is not a model, such as "Kernel" or "String" submitted in form params.
         polymorphic_class = lambda do |model, reflection|
-          klass = begin
-            model.association(reflection.name).klass
-          rescue NoMethodError
-            raise
-          rescue NameError
-          end
+          klass = model.association(reflection.name).klass
           klass if klass.is_a?(Class) && klass < ActiveRecord::Base
+        rescue NoMethodError
+          raise
+        rescue NameError
         end
 
         # Returns [tenant id, tenant class] for a record, or nil if it has no tenant.
