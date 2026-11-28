@@ -72,7 +72,7 @@ module ActsAsTenant
         polymorphic_class = lambda do |model, reflection|
           klass = model.association(reflection.name).klass
           klass if klass.is_a?(Class) && klass < ActiveRecord::Base
-        rescue NoMethodError
+        rescue NoMethodError # a NameError, but from app code such as polymorphic_class_for
           raise
         rescue NameError
         end

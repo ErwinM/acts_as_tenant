@@ -646,7 +646,7 @@ describe ActsAsTenant do
 
       it "resolves the type like Active Record does" do
         skip "Rails 6.0 doesn't use polymorphic_class_for" if ActiveRecord.version < Gem::Version.new("6.1")
-        allow(Comment).to receive(:polymorphic_class_for) { |name| {"P" => Project}.fetch(name) }
+        allow(Comment).to receive(:polymorphic_class_for).with("P").and_return(Project)
         ActsAsTenant.current_tenant = account
 
         expect(Comment.new(commentable_type: "P", commentable_id: account.projects.first.id).valid?).to eq(true)
