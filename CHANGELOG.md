@@ -1,7 +1,7 @@
 Unreleased
 ----------
 
-* Resolve polymorphic types in the tenant and `belongs_to` validations through the association, like Active Record does when loading it. Types mapped by a custom `polymorphic_class_for` no longer fail validation, and integer types such as those stored by `polymorphic_integer_type` no longer raise `NoMethodError`. Reported by [@alwesam](https://github.com/alwesam). [#404](https://github.com/ErwinM/acts_as_tenant/issues/404)
+* Resolve polymorphic types in the tenant and `belongs_to` validations through the association, like Active Record does when loading it. Types mapped by a custom `polymorphic_class_for` no longer fail validation, and integer types such as those stored by `polymorphic_integer_type` no longer raise `NoMethodError`. Reported by [@alwesam](https://github.com/alwesam). [#405](https://github.com/ErwinM/acts_as_tenant/pull/405)
 
 2.3.1
 -----
